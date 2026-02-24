@@ -1,4 +1,5 @@
 mod arch;
+mod common;
 mod package;
 mod profile;
 mod registry;
@@ -7,6 +8,7 @@ mod target;
 mod version;
 
 pub use arch::*;
+pub use common::*;
 pub use package::*;
 pub use profile::*;
 pub use registry::*;

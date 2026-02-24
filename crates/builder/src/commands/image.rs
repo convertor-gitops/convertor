@@ -1,13 +1,16 @@
-use crate::args::{Arch, Package, Profile, Registry, Tag, Target, Version};
+use crate::args::{Arch, CommonArgs, Package, Profile, Registry, Tag, Target, Version};
 use crate::commands::{BuildCommand, Commander};
-use crate::conv_cli::CommonArgs;
 use clap::{Args, ValueEnum};
 use color_eyre::Result;
-use color_eyre::eyre::bail;
 use std::process::Command;
 
 #[derive(Debug, Args)]
 pub struct ImageCommand {
+    /// 指定镜像名称
+    /// oci://domain/user/project/name:tag 中的 name 部分
+    #[arg(value_enum)]
+    pub name: ImageName,
+
     /// 指定编译 profile
     #[arg(value_enum)]
     pub profile: Profile,
@@ -21,18 +24,13 @@ pub struct ImageCommand {
 
     /// 指定镜像注册表用户名
     /// oci://domain/user/project/name:tag 中的 user 部分
-    #[arg(long, default_value_t = default_user())]
+    #[arg(short, long, default_value_t = default_user())]
     pub user: String,
 
     /// 指定镜像注册表项目名称
     /// oci://domain/user/project/name:tag 中的 project 部分
-    #[arg(long, default_value_t = default_project())]
+    #[arg(short, long, default_value_t = default_project())]
     pub project: String,
-
-    /// 指定镜像名称
-    /// oci://domain/user/project/name:tag 中的 name 部分
-    #[arg(long, value_enum, default_value_t = default_name())]
-    pub name: ImageName,
 
     /// 指定镜像注册表，[local, docker, ghcr, custom_url]
     #[arg(short, long, value_enum, value_delimiter = ',')]
@@ -45,10 +43,6 @@ pub struct ImageCommand {
     /// 是否仅推送
     #[arg(long, alias = "po", default_value_t = false)]
     pub push_only: bool,
-
-    /// 仅打印镜像标签（不构建）
-    #[arg(short, long, alias = "to", default_value_t = false)]
-    pub tag: bool,
 }
 
 impl ImageCommand {
@@ -63,7 +57,7 @@ impl ImageCommand {
             target: Some(Target::Musl { arch: self.arch.clone() }),
             dashboard: self.dashboard,
         }
-        .create_command()
+            .create_command()
     }
 
     fn build_image(&self, tag: &Tag, arch: Arch) -> Command {
@@ -124,15 +118,6 @@ impl Commander for ImageCommand {
             self.version.clone(),
             self.profile,
         );
-
-        // 仅打印标签
-        if self.tag {
-            let Some(registry) = self.registries.first() else {
-                bail!("--tag 需要指定至少一个 --registry");
-            };
-            println!("{}", tag.remote(registry, self.arch.first().copied(), Some(&self.version)));
-            return Ok(vec![]);
-        }
 
         let mut commands = vec![];
 
@@ -224,7 +209,7 @@ impl BuildArgument for Command {
     }
 }
 
-#[derive(Debug, Copy, Clone, ValueEnum)]
+#[derive(Debug, Clone, Copy, ValueEnum)]
 pub enum ImageName {
     Base,
     Convd,
@@ -256,10 +241,6 @@ fn default_user() -> String {
 
 fn default_project() -> String {
     "convertor".to_string()
-}
-
-fn default_name() -> ImageName {
-    ImageName::Convd
 }
 
 fn default_version() -> Version {

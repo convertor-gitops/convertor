@@ -29,8 +29,8 @@ impl Arch {
 
     pub fn as_image_tag(&self) -> &'static str {
         match self {
-            Arch::Amd => "linux_amd64",
-            Arch::Arm => "linux_arm64",
+            Arch::Amd => "-amd64",
+            Arch::Arm => "-arm64v8",
         }
     }
 }

@@ -7,11 +7,11 @@ on:
   workflow_dispatch:
     inputs:
       profile:
-        description: "构建配置 (dev/prod)"
+        description: "构建配置 (release/debug)"
         type: choice
-        options: [ prod, dev ]
+        options: [ release, debug ]
         required: false
-        default: prod
+        default: release
 
 permissions:
   contents: read
@@ -29,9 +29,9 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
-      # 构建 conv 工具用于后续步骤
-      - name: 构建 conv 工具
-        run: cargo install --path crates/conv
+      # 构建 builder 工具用于后续步骤
+      - name: 构建 builder 工具
+        run: cargo install --path crates/builder
 
       - name: 设置构建参数
         id: vars
@@ -89,7 +89,7 @@ jobs:
         run: |
           set -e
           # 使用 conv 生成 base 镜像标签（latest），用于后续检查
-          BASE_IMAGE=$(conv image prod --name base -r ghcr.io --user convertor-gitops -v latest -t)
+          BASE_IMAGE=$(builder tag base release -r ghcr -u convertor-gitops -v latest)
 
           echo "🔍 检查基础镜像: $BASE_IMAGE"
           echo "👤 当前登录用户: ${{ github.actor }}"
@@ -110,12 +110,12 @@ jobs:
 
       - name: 使用 conv 构建并推送镜像（多架构）
         run: |
-          # conv image 会自动：
+          # builder image convd 会自动：
           # 1. 构建二进制、Dashboard 和 Docker 镜像（多架构）
           # 2. 推送到指定的 registries
           # 3. 创建多架构 manifest（版本号 + latest 标签）
-          conv image ${{ steps.vars.outputs.profile }} \
-            --name convd \
+          builder image convd \
+            ${{ steps.vars.outputs.profile }} \
             --arch amd,arm \
             --dashboard \
             --user ${{ github.repository_owner }} \

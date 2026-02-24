@@ -16,11 +16,11 @@ impl DashboardCommand {
     }
 
     pub fn dev() -> Self {
-        Self { profile: Profile::Dev }
+        Self { profile: Profile::Debug }
     }
 
     pub fn prod() -> Self {
-        Self { profile: Profile::Prod }
+        Self { profile: Profile::Release }
     }
 }
 
