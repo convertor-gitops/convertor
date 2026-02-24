@@ -31,6 +31,9 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
+      - name: 安装 Rust 工具链
+        uses: dtolnay/rust-toolchain@stable
+
       # 构建 builder 工具用于后续步骤
       - name: 构建 builder 工具
         run: cargo install --path crates/builder
