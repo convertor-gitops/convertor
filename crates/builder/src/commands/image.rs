@@ -12,7 +12,7 @@ pub struct ImageCommand {
     pub name: ImageName,
 
     /// 指定编译 profile
-    #[arg(value_enum)]
+    #[arg(value_enum, default_value_t = default_profile())]
     pub profile: Profile,
 
     /// 指定编译架构
@@ -233,6 +233,10 @@ impl ImageName {
             ImageName::Convd => "Dockerfile",
         }
     }
+}
+
+fn default_profile() -> Profile {
+    Profile::Release
 }
 
 fn default_user() -> String {

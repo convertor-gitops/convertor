@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "v*"
+    branches:
+      - dev
   workflow_dispatch:
     inputs:
       profile:
@@ -23,7 +25,7 @@ env:
 jobs:
   build-and-push:
     name: 构建多平台镜像并推送到 GHCR
-    runs-on: ubuntu-latest
+    runs-on: arc-runner-set
 
     steps:
       - name: 检出代码
@@ -37,7 +39,8 @@ jobs:
         id: vars
         run: |
           PROFILE="${{ github.event.inputs.profile }}"
-          if [ -z "$PROFILE" ]; then PROFILE="prod"; fi
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/dev" ]; then PROFILE="debug"; fi
+          if [ -z "$PROFILE" ]; then PROFILE="release"; fi
           echo "profile=$PROFILE" >> "$GITHUB_OUTPUT"
 
       - name: 添加 MUSL 目标平台
