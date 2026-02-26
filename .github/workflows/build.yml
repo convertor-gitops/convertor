@@ -43,7 +43,7 @@ jobs:
           path: |
             ~/.rustup/toolchains
             ~/.rustup/update-hashes
-          key: ${{ runner.os }}-rustup-stable-${{ hashFiles('**/rust-toolchain.toml') }}
+          key: ${{ runner.os }}-rustup-stable-${{ hashFiles('**/rust-toolchain.toml') || 'default' }}
           restore-keys: |
             ${{ runner.os }}-rustup-stable-
 
@@ -56,6 +56,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
+            ~/.cargo/bin
             ~/.cargo/registry
             ~/.cargo/git
             target
@@ -81,23 +82,17 @@ jobs:
       - name: 安装 cargo-zigbuild
         run: cargo install cargo-zigbuild --locked
 
-      - name: 安装 Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-
       - name: 安装 pnpm
         uses: pnpm/action-setup@v4
         with:
           version: latest
 
-      - name: 缓存 pnpm 依赖
-        uses: actions/cache@v4
+      - name: 安装 Node.js（含 pnpm store 缓存）
+        uses: actions/setup-node@v4
         with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('dashboard/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
+          node-version: lts/*
+          cache: pnpm
+          cache-dependency-path: dashboard/pnpm-lock.yaml
 
       - name: 安装 Dashboard 依赖
         run: pnpm install
@@ -106,11 +101,6 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: network=host
-
       - name: 登录到 GHCR
         uses: docker/login-action@v3
         with:
@@ -118,28 +108,32 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: network=host
+          config-inline: |
+            [registry."ghcr.io"]
+              [registry."ghcr.io".auth]
+                username = "${{ github.repository_owner }}"
+                password = "${{ secrets.GITHUB_TOKEN }}"
 
-      - name: 检查基础镜像可访问性
+      - name: 检查基础镜像可访问性，不存在则构建并推送
         run: |
           set -e
-          # 使用 conv 生成 base 镜像标签（latest），用于后续检查
-          BASE_IMAGE=$(builder tag base release -r ghcr -u convertor-gitops -v latest)
-
+          BASE_IMAGE=$(builder tag base ${{ steps.vars.outputs.profile }} -r ghcr -u ${{ github.repository_owner }} -v latest)
           echo "🔍 检查基础镜像: $BASE_IMAGE"
-          echo "👤 当前登录用户: ${{ github.actor }}"
-          echo "📦 仓库所有者: ${{ github.repository_owner }}"
 
-          # 尝试 inspect 镜像
           if docker buildx imagetools inspect "$BASE_IMAGE" > /dev/null 2>&1; then
-            echo "✅ 基础镜像可访问"
+            echo "✅ 基础镜像已存在，跳过构建"
           else
-            echo "❌ 基础镜像不可访问，尝试拉取..."
-            if docker pull "$BASE_IMAGE"; then
-              echo "✅ 基础镜像拉取成功"
-            else
-              echo "❌ 基础镜像拉取失败"
-              exit 1
-            fi
+            echo "⚠️ 基础镜像不存在，开始构建并推送..."
+            builder image base \
+              ${{ steps.vars.outputs.profile }} \
+              --arch amd,arm \
+              --user ${{ github.repository_owner }} \
+              --registries ghcr
+            echo "✅ 基础镜像构建并推送完成"
           fi
 
       - name: 使用 conv 构建并推送镜像（多架构）

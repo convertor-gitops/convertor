@@ -33,8 +33,8 @@ pub struct ImageCommand {
     pub project: String,
 
     /// 指定镜像注册表，[local, docker, ghcr, custom_url]
-    #[arg(short, long, value_enum, value_delimiter = ',')]
-    pub registries: Vec<Registry>,
+    #[arg(short, long, value_enum)]
+    pub registry: Registry,
 
     /// 是否打包 dashboard
     #[arg(short, long, default_value_t = false)]
@@ -57,7 +57,7 @@ impl ImageCommand {
             target: Some(Target::Musl { arch: self.arch.clone() }),
             dashboard: self.dashboard,
         }
-            .create_command()
+        .create_command()
     }
 
     fn build_image(&self, tag: &Tag, arch: Arch) -> Command {
@@ -71,7 +71,7 @@ impl ImageCommand {
                     self.version.clone(),
                     self.profile,
                 )
-                    .remote(&Registry::Local, Some(arch), None),
+                .remote(&self.registry, Some(arch), None),
             ),
         };
         let build_args = BuildArgs::new(self.name.image_name(), self.version.to_string(), arch, self.profile, base_image);
@@ -86,23 +86,23 @@ impl ImageCommand {
         command
     }
 
-    fn push_image(&self, tag: &Tag, registry: &Registry, arch: Arch) -> Command {
+    fn push_image(&self, tag: &Tag, arch: Arch) -> Command {
         let mut command = Command::new("skopeo");
         command
             .arg("copy")
             .arg(format!("docker-daemon:{}", tag.local(Some(arch), None)))
-            .arg(format!("docker://{}", tag.remote(registry, Some(arch), None)));
+            .arg(format!("docker://{}", tag.remote(&self.registry, Some(arch), None)));
 
         command
     }
 
-    fn manifest_image(&self, tag: &Tag, registry: &Registry, version: &Version) -> Command {
+    fn manifest_image(&self, tag: &Tag, version: &Version) -> Command {
         let mut command = Command::new("docker");
         command
             .args(["buildx", "imagetools", "create"])
-            .args(["-t", tag.remote(registry, None, Some(version)).as_str()]);
+            .args(["-t", tag.remote(&self.registry, None, Some(version)).as_str()]);
         for arch in self.arch.iter().copied() {
-            command.arg(tag.remote(registry, Some(arch), None));
+            command.arg(tag.remote(&self.registry, Some(arch), None));
         }
 
         command
@@ -130,16 +130,13 @@ impl Commander for ImageCommand {
             }
         }
 
-        // 然后以注册表为单位，给每个架构的镜像打标签并推送
-        for registry in &self.registries {
-            for arch in self.arch.iter().copied() {
-                commands.push(self.push_image(&tag, registry, arch));
-            }
-            // 最后创建多架构清单并推送，需要包含version标签和latest标签
-            for version in [&self.version, &Version::Latest] {
-                commands.push(self.manifest_image(&tag, registry, version));
-            }
+        // 然后给每个架构的镜像打标签并推送
+        for arch in self.arch.iter().copied() {
+            commands.push(self.push_image(&tag, arch));
         }
+        // 最后创建多架构清单并推送，需要包含version标签和latest标签
+        commands.push(self.manifest_image(&tag, &self.version));
+        commands.push(self.manifest_image(&tag, &Version::Latest));
 
         Ok(commands)
     }
