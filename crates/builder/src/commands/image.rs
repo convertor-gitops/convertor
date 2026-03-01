@@ -86,12 +86,26 @@ impl ImageCommand {
         command
     }
 
-    fn push_image(&self, tag: &Tag, arch: Arch) -> Command {
-        let mut command = Command::new("skopeo");
+    fn remote_tag_image(&self, tag: &Tag, arch: Arch) -> Command {
+        let mut command = Command::new("docker");
         command
-            .arg("copy")
-            .arg(format!("docker-daemon:{}", tag.local(Some(arch), None)))
-            .arg(format!("docker://{}", tag.remote(&self.registry, Some(arch), None)));
+            .arg("tag")
+            .arg(tag.local(Some(arch), None))
+            .arg(tag.remote(&self.registry, Some(arch), None));
+
+        command
+    }
+
+    fn push_image(&self, tag: &Tag, arch: Arch) -> Command {
+        let mut command = Command::new("docker");
+        command.arg("push").arg(tag.remote(&self.registry, Some(arch), None));
+
+        command
+    }
+
+    fn cleanup_remote_tag(&self, tag: &Tag, arch: Arch) -> Command {
+        let mut command = Command::new("docker");
+        command.arg("rmi").arg(tag.remote(&self.registry, Some(arch), None));
 
         command
     }
@@ -132,7 +146,9 @@ impl Commander for ImageCommand {
 
         // 然后给每个架构的镜像打标签并推送
         for arch in self.arch.iter().copied() {
+            commands.push(self.remote_tag_image(&tag, arch));
             commands.push(self.push_image(&tag, arch));
+            commands.push(self.cleanup_remote_tag(&tag, arch));
         }
         // 最后创建多架构清单并推送，需要包含version标签和latest标签
         commands.push(self.manifest_image(&tag, &self.version));
