@@ -334,6 +334,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "builder"
+version = "2.6.15"
+dependencies = [
+ "chrono",
+ "clap",
+ "color-eyre",
+ "console 0.16.1",
+]
+
+[[package]]
 name = "bumpalo"
 version = "3.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -557,16 +567,6 @@ dependencies = [
  "libc",
  "once_cell",
  "windows-sys 0.61.1",
-]
-
-[[package]]
-name = "conv"
-version = "2.6.15"
-dependencies = [
- "chrono",
- "clap",
- "color-eyre",
- "console 0.16.1",
 ]
 
 [[package]]

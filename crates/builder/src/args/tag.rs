@@ -36,12 +36,12 @@ impl Tag {
         }
         write!(
             tag,
-            "/{}/{}:{}{}{}",
+            "/{}/{}{}:{}{}",
             self.project,
             self.name,
-            version.unwrap_or(&self.version),
             self.profile.as_image_profile(),
-            arch.map(|a| format!("-{}", a.as_image_tag())).unwrap_or_default(),
+            version.unwrap_or(&self.version),
+            arch.as_ref().map(Arch::as_image_tag).unwrap_or_default(),
         )
             .unwrap();
         tag

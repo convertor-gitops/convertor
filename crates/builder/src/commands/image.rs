@@ -1,15 +1,18 @@
-use crate::args::{Arch, Package, Profile, Registry, Tag, Target, Version};
+use crate::args::{Arch, CommonArgs, Package, Profile, Registry, Tag, Target, Version};
 use crate::commands::{BuildCommand, Commander};
-use crate::conv_cli::CommonArgs;
 use clap::{Args, ValueEnum};
 use color_eyre::Result;
-use color_eyre::eyre::bail;
 use std::process::Command;
 
 #[derive(Debug, Args)]
 pub struct ImageCommand {
-    /// 指定编译 profile
+    /// 指定镜像名称
+    /// oci://domain/user/project/name:tag 中的 name 部分
     #[arg(value_enum)]
+    pub name: ImageName,
+
+    /// 指定编译 profile
+    #[arg(value_enum, default_value_t = default_profile())]
     pub profile: Profile,
 
     /// 指定编译架构
@@ -21,22 +24,17 @@ pub struct ImageCommand {
 
     /// 指定镜像注册表用户名
     /// oci://domain/user/project/name:tag 中的 user 部分
-    #[arg(long, default_value_t = default_user())]
+    #[arg(short, long, default_value_t = default_user())]
     pub user: String,
 
     /// 指定镜像注册表项目名称
     /// oci://domain/user/project/name:tag 中的 project 部分
-    #[arg(long, default_value_t = default_project())]
+    #[arg(short, long, default_value_t = default_project())]
     pub project: String,
 
-    /// 指定镜像名称
-    /// oci://domain/user/project/name:tag 中的 name 部分
-    #[arg(long, value_enum, default_value_t = default_name())]
-    pub name: ImageName,
-
     /// 指定镜像注册表，[local, docker, ghcr, custom_url]
-    #[arg(short, long, value_enum, value_delimiter = ',')]
-    pub registries: Vec<Registry>,
+    #[arg(short, long, value_enum)]
+    pub registry: Registry,
 
     /// 是否打包 dashboard
     #[arg(short, long, default_value_t = false)]
@@ -45,10 +43,6 @@ pub struct ImageCommand {
     /// 是否仅推送
     #[arg(long, alias = "po", default_value_t = false)]
     pub push_only: bool,
-
-    /// 仅打印镜像标签（不构建）
-    #[arg(short, long, alias = "to", default_value_t = false)]
-    pub tag: bool,
 }
 
 impl ImageCommand {
@@ -77,7 +71,7 @@ impl ImageCommand {
                     self.version.clone(),
                     self.profile,
                 )
-                    .remote(&Registry::Local, Some(arch), None),
+                .remote(&self.registry, Some(arch), None),
             ),
         };
         let build_args = BuildArgs::new(self.name.image_name(), self.version.to_string(), arch, self.profile, base_image);
@@ -92,23 +86,37 @@ impl ImageCommand {
         command
     }
 
-    fn push_image(&self, tag: &Tag, registry: &Registry, arch: Arch) -> Command {
-        let mut command = Command::new("skopeo");
+    fn remote_tag_image(&self, tag: &Tag, arch: Arch) -> Command {
+        let mut command = Command::new("docker");
         command
-            .arg("copy")
-            .arg(format!("docker-daemon:{}", tag.local(Some(arch), None)))
-            .arg(format!("docker://{}", tag.remote(registry, Some(arch), None)));
+            .arg("tag")
+            .arg(tag.local(Some(arch), None))
+            .arg(tag.remote(&self.registry, Some(arch), None));
 
         command
     }
 
-    fn manifest_image(&self, tag: &Tag, registry: &Registry, version: &Version) -> Command {
+    fn push_image(&self, tag: &Tag, arch: Arch) -> Command {
+        let mut command = Command::new("docker");
+        command.arg("push").arg(tag.remote(&self.registry, Some(arch), None));
+
+        command
+    }
+
+    fn cleanup_remote_tag(&self, tag: &Tag, arch: Arch) -> Command {
+        let mut command = Command::new("docker");
+        command.arg("rmi").arg(tag.remote(&self.registry, Some(arch), None));
+
+        command
+    }
+
+    fn manifest_image(&self, tag: &Tag, version: &Version) -> Command {
         let mut command = Command::new("docker");
         command
             .args(["buildx", "imagetools", "create"])
-            .args(["-t", tag.remote(registry, None, Some(version)).as_str()]);
+            .args(["-t", tag.remote(&self.registry, None, Some(version)).as_str()]);
         for arch in self.arch.iter().copied() {
-            command.arg(tag.remote(registry, Some(arch), None));
+            command.arg(tag.remote(&self.registry, Some(arch), None));
         }
 
         command
@@ -125,15 +133,6 @@ impl Commander for ImageCommand {
             self.profile,
         );
 
-        // 仅打印标签
-        if self.tag {
-            let Some(registry) = self.registries.first() else {
-                bail!("--tag 需要指定至少一个 --registry");
-            };
-            println!("{}", tag.remote(registry, self.arch.first().copied(), Some(&self.version)));
-            return Ok(vec![]);
-        }
-
         let mut commands = vec![];
 
         let need_build = !self.push_only;
@@ -145,16 +144,15 @@ impl Commander for ImageCommand {
             }
         }
 
-        // 然后以注册表为单位，给每个架构的镜像打标签并推送
-        for registry in &self.registries {
-            for arch in self.arch.iter().copied() {
-                commands.push(self.push_image(&tag, registry, arch));
-            }
-            // 最后创建多架构清单并推送，需要包含version标签和latest标签
-            for version in [&self.version, &Version::Latest] {
-                commands.push(self.manifest_image(&tag, registry, version));
-            }
+        // 然后给每个架构的镜像打标签并推送
+        for arch in self.arch.iter().copied() {
+            commands.push(self.remote_tag_image(&tag, arch));
+            commands.push(self.push_image(&tag, arch));
+            commands.push(self.cleanup_remote_tag(&tag, arch));
         }
+        // 最后创建多架构清单并推送，需要包含version标签和latest标签
+        commands.push(self.manifest_image(&tag, &self.version));
+        commands.push(self.manifest_image(&tag, &Version::Latest));
 
         Ok(commands)
     }
@@ -224,7 +222,7 @@ impl BuildArgument for Command {
     }
 }
 
-#[derive(Debug, Copy, Clone, ValueEnum)]
+#[derive(Debug, Clone, Copy, ValueEnum)]
 pub enum ImageName {
     Base,
     Convd,
@@ -250,16 +248,16 @@ impl ImageName {
     }
 }
 
+fn default_profile() -> Profile {
+    Profile::Release
+}
+
 fn default_user() -> String {
     "convertor-gitops".to_string()
 }
 
 fn default_project() -> String {
     "convertor".to_string()
-}
-
-fn default_name() -> ImageName {
-    ImageName::Convd
 }
 
 fn default_version() -> Version {
