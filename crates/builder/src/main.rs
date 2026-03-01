@@ -1,20 +1,25 @@
-use crate::commands::{Commander, pretty_command};
-use crate::conv_cli::ConvCli;
+use crate::commands::{Command, Commander, pretty_command};
 use clap::Parser;
 use color_eyre::Result;
 use color_eyre::eyre::eyre;
 use color_eyre::owo_colors::OwoColorize;
 use console::style;
+use std::process::Command as StdCommand;
 
 mod args;
 mod commands;
-mod conv_cli;
+
+#[derive(Debug, Parser)]
+pub struct Cli {
+    #[command(subcommand)]
+    pub command: Command,
+}
 
 fn main() -> Result<()> {
     color_eyre::install()?;
 
-    let cli = ConvCli::parse();
-    let mut commands = cli.command.create_command()?;
+    let cli = Cli::parse();
+    let mut commands: Vec<StdCommand> = cli.command.create_command()?;
     let len = commands.len();
     for (i, command) in commands.iter_mut().enumerate() {
         let command_str = pretty_command(command);

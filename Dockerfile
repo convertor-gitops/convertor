@@ -7,7 +7,7 @@ ARG TARGETARCH
 ARG TITLE=convertor
 ARG NAME=convd
 ARG DESCRIPTION="A profile converter for Surge/Clash."
-ARG URL="https://github.com/BppleMan/convertor"
+ARG URL="https://github.com/convertor-gitops/convertor"
 ARG SOURCE="${URL}"
 ARG DOCUMENTATION="${URL}#readme"
 ARG VENDOR=BppleMan

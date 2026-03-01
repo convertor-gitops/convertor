@@ -4,7 +4,7 @@ members = [
     "crates/convd",
     "crates/confly",
     "crates/convertor",
-    "crates/conv",
+    "crates/builder",
     "crates/example",
 ]
 
