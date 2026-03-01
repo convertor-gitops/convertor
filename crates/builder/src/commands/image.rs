@@ -103,6 +103,7 @@ impl ImageCommand {
         command
     }
 
+    #[allow(unused)]
     fn cleanup_remote_tag(&self, tag: &Tag, arch: Arch) -> Command {
         let mut command = Command::new("docker");
         command.arg("rmi").arg(tag.remote(&self.registry, Some(arch), None));
@@ -148,7 +149,6 @@ impl Commander for ImageCommand {
         for arch in self.arch.iter().copied() {
             commands.push(self.remote_tag_image(&tag, arch));
             commands.push(self.push_image(&tag, arch));
-            commands.push(self.cleanup_remote_tag(&tag, arch));
         }
         // 最后创建多架构清单并推送，需要包含version标签和latest标签
         commands.push(self.manifest_image(&tag, &self.version));
