@@ -12,3 +12,5 @@ color-eyre = { workspace = true }
 clap = { workspace = true, features = ["default", "derive", "help", "string"] }
 console = { workspace = true, features = ["std"] }
 chrono = { workspace = true, features = ["now"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true, features = ["default"] }
