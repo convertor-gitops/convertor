@@ -10,11 +10,11 @@ members = [
 
 [workspace.package]
 description = "A profile converter for surge/clash."
-authors = ["BppleMan"]
-version = "2.6.15"
-edition = "2024"
-license = "Apache-2.0"
 repository = "https://github.com/convertor-gitops/convertor"
+authors = ["BppleMan"]
+license = "Apache-2.0"
+version = "2.6.16"
+edition = "2024"
 
 [workspace.dependencies]
 # 本地/工作区包

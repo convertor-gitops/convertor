@@ -158,6 +158,7 @@ impl Commander for ImageCommand {
     }
 }
 
+#[derive(Debug)]
 struct BuildArgs {
     base_image: Option<String>,
     name: String,

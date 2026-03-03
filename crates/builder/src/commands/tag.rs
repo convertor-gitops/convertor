@@ -1,5 +1,5 @@
 use crate::args::{Arch, Profile, Registry, Tag, Version};
-use crate::commands::ImageName;
+use crate::commands::{Commander, ImageName, StdCommand};
 use clap::Args;
 
 #[derive(Debug, Args)]
@@ -35,8 +35,8 @@ pub struct TagCommand {
     pub registry: Registry,
 }
 
-impl TagCommand {
-    pub fn run(&self) -> color_eyre::Result<()> {
+impl Commander for TagCommand {
+    fn create_command(&self) -> color_eyre::Result<Vec<StdCommand>> {
         let tag = Tag::new(
             &self.user,
             &self.project,
@@ -46,7 +46,8 @@ impl TagCommand {
         );
 
         println!("{}", tag.remote(&self.registry, self.arch.first().copied(), Some(&self.version)));
-        Ok(())
+
+        Ok(vec![])
     }
 }
 

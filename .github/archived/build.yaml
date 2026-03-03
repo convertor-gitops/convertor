@@ -1,0 +1,130 @@
+name: 构建并推送
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "构建配置 (release/debug)"
+        type: choice
+        options: [ release, debug ]
+        required: false
+        default: release
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  HTTP_PROXY: http://127.0.0.1:6152
+  HTTPS_PROXY: http://127.0.0.1:6152
+
+jobs:
+  build-and-push:
+    name: 构建多平台镜像并推送到 GHCR
+    runs-on: [ self-hosted, macOS, ARM64 ]
+
+    steps:
+      # - name: 登录到 GHCR
+      #   uses: docker/login-action@v3
+      #   with:
+      #     registry: ${{ env.REGISTRY }}
+      #     username: ${{ github.repository_owner }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: 检查 base-debug 可用性
+      #   run: |
+      #     docker pull ghcr.io/${{ github.repository_owner }}/convertor/base-debug:2.6.15 || echo "base-debug 镜像不可用，继续构建"
+      #     sleep 600
+
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 确认 Xcode 命令行工具已安装
+        run: xcode-select -p || sudo xcode-select --install
+
+      - name: 安装 Rust 工具链
+        uses: dtolnay/rust-toolchain@stable
+
+      # 构建 builder 工具用于后续步骤
+      - name: 构建 builder 工具
+        run: cargo install --path crates/builder
+
+      - name: 设置构建参数
+        id: vars
+        run: |
+          PROFILE="${{ github.event.inputs.profile }}"
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/dev" ]; then PROFILE="debug"; fi
+          if [ -z "$PROFILE" ]; then PROFILE="release"; fi
+          echo "profile=$PROFILE" >> "$GITHUB_OUTPUT"
+
+      - name: 安装 Zig 编译器
+        uses: mlugg/setup-zig@v2
+
+      - name: 安装 cargo-zigbuild
+        run: command -v cargo-zigbuild || cargo install cargo-zigbuild --locked
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: 安装 Dashboard 依赖
+        run: pnpm install
+        working-directory: dashboard
+
+      - name: 登录到 GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: network=host
+          config-inline: |
+            [registry."ghcr.io"]
+              [registry."ghcr.io".auth]
+                username = "${{ github.repository_owner }}"
+                password = "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: 检查基础镜像可访问性，不存在则构建并推送
+        run: |
+          set -e
+          BASE_IMAGE=$(builder tag base ${{ steps.vars.outputs.profile }} --registry ghcr --user ${{ github.repository_owner }})
+          echo "🔍 检查基础镜像: $BASE_IMAGE"
+
+          if docker buildx imagetools inspect "$BASE_IMAGE" > /dev/null 2>&1; then
+            echo "✅ 基础镜像已存在，跳过构建"
+          else
+            echo "⚠️ 基础镜像不存在，开始构建并推送..."
+            builder image base \
+              ${{ steps.vars.outputs.profile }} \
+              --arch amd,arm \
+              --user ${{ github.repository_owner }} \
+              --registry ghcr
+            echo "✅ 基础镜像构建并推送完成"
+          fi
+
+      - name: 使用 conv 构建并推送镜像（多架构）
+        run: |
+          # builder image convd 会自动：
+          # 1. 构建二进制、Dashboard 和 Docker 镜像（多架构）
+          # 2. 推送到指定的 registry
+          # 3. 创建多架构 manifest（版本号 + latest 标签）
+          builder image convd \
+            ${{ steps.vars.outputs.profile }} \
+            --arch amd,arm \
+            --dashboard \
+            --user ${{ github.repository_owner }} \
+            --registry ghcr
