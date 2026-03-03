@@ -6,86 +6,10 @@ on:
       - debug
   workflow_dispatch:
 
-permissions:
-  contents: read
-  packages: read
-
-env:
-  REGISTRY: harbor.internal.bppleman.cn:30443
-  REGISTRY_USERNAME: robot$harbor-bppleman
-  REGISTRY_SECRET: ${{ secrets.HARBOR_SECRET }}
-  HTTP_PROXY: http://127.0.0.1:6152
-  HTTPS_PROXY: http://127.0.0.1:6152
-
 jobs:
-  build-and-push:
-    name: 构建多平台镜像并推送到 Harbor
-    runs-on: [ self-hosted, macOS, ARM64 ]
-
-    steps:
-      - name: 检出代码
-        uses: actions/checkout@v4
-
-      # 构建 builder 工具用于后续步骤
-      - name: 构建 builder 工具
-        run: cargo install --path crates/builder
-
-      - name: 初始化 fnm 环境
-        run: |
-          eval "$(fnm env --shell bash)"
-          fnm use 24
-          echo "$(dirname $(which node))" >> "$GITHUB_PATH"
-
-      - name: 安装 Dashboard 依赖
-        run: pnpm install
-        working-directory: dashboard
-
-      - name: 登录到 Harbor
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ env.REGISTRY_USERNAME }}
-          password: ${{ env.REGISTRY_SECRET }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: network=host
-          config-inline: |
-            [registry."${{ env.REGISTRY }}"]
-              [registry."${{ env.REGISTRY }}".auth]
-                username = "${{ env.REGISTRY_USERNAME }}"
-                password = "${{ env.REGISTRY_SECRET }}"
-
-      - name: 检查基础镜像可访问性，不存在则构建并推送
-        run: |
-          set -e
-          BASE_IMAGE=$( \
-            builder tag base debug \
-            --registry ${{ env.REGISTRY }} \
-            --user ${{ github.repository_owner }}
-          )
-          echo "🔍 检查基础镜像: $BASE_IMAGE"
-
-          if docker buildx imagetools inspect "$BASE_IMAGE" > /dev/null 2>&1; then
-            echo "✅ 基础镜像已存在，跳过构建"
-          else
-            echo "⚠️ 基础镜像不存在，开始构建并推送..."
-            builder image base debug \
-              --arch amd,arm \
-              --registry ${{ env.REGISTRY }} \
-              --user ${{ github.repository_owner }}
-            echo "✅ 基础镜像构建并推送完成"
-          fi
-
-      - name: 使用 conv 构建并推送镜像（多架构）
-        run: |
-          # builder image convd 会自动：
-          # 1. 构建二进制、Dashboard 和 Docker 镜像（多架构）
-          # 2. 推送到指定的 registry
-          # 3. 创建多架构 manifest（版本号 + latest 标签）
-          builder image convd debug \
-            --arch amd,arm \
-            --dashboard \
-            --registry ${{ env.REGISTRY }} \
-            --user ${{ github.repository_owner }}
+  build:
+    uses: ./.github/workflows/_build-shared.yml
+    with:
+      profile: debug
+    secrets:
+      HARBOR_SECRET: ${{ secrets.HARBOR_SECRET }}
