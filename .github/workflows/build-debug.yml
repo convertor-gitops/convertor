@@ -20,7 +20,7 @@ env:
 jobs:
   build-and-push:
     name: 构建多平台镜像并推送到 Harbor
-    runs-on: [self-hosted, macOS, ARM64]
+    runs-on: [ self-hosted, macOS, ARM64 ]
 
     steps:
       - name: 检出代码
@@ -84,8 +84,7 @@ jobs:
           # 1. 构建二进制、Dashboard 和 Docker 镜像（多架构）
           # 2. 推送到指定的 registry
           # 3. 创建多架构 manifest（版本号 + latest 标签）
-          builder image convd \
-            debug \
+          builder image convd debug \
             --arch amd,arm \
             --dashboard \
             --registry ${{ env.REGISTRY }} \
