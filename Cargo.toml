@@ -14,7 +14,7 @@ authors = ["BppleMan"]
 version = "2.6.15"
 edition = "2024"
 license = "Apache-2.0"
-repository = "https://github.com/BppleMan/convertor"
+repository = "https://github.com/convertor-gitops/convertor"
 
 [workspace.dependencies]
 # 本地/工作区包
