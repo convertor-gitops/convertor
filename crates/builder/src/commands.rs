@@ -3,6 +3,7 @@ mod dashboard;
 mod image;
 mod publish;
 mod tag;
+mod version;
 
 pub use build::*;
 use clap::Subcommand;
@@ -10,13 +11,13 @@ use color_eyre::Result;
 pub use dashboard::*;
 pub use image::*;
 pub use publish::*;
-use std::process::Command as StdCommand;
 pub use tag::*;
+pub use version::*;
 
 #[derive(Debug, Subcommand)]
 pub enum Command {
     /// 显示版本信息
-    Version,
+    Version(VersionCommand),
 
     /// 编译 convertor
     Build(BuildCommand),
@@ -34,6 +35,8 @@ pub enum Command {
     Tag(TagCommand),
 }
 
+pub type StdCommand = std::process::Command;
+
 pub trait Commander {
     fn create_command(&self) -> Result<Vec<StdCommand>>;
 }
@@ -50,14 +53,8 @@ pub fn pretty_command(command: &StdCommand) -> String {
 impl Commander for Command {
     fn create_command(&self) -> Result<Vec<StdCommand>> {
         match self {
-            Command::Version => {
-                println!("{}", env!("CARGO_PKG_VERSION"));
-                Ok(vec![])
-            }
-            Command::Tag(tag) => {
-                tag.run()?;
-                Ok(vec![])
-            }
+            Command::Version(version) => version.create_command(),
+            Command::Tag(tag) => tag.create_command(),
             Command::Build(build) => build.create_command(),
             Command::Publish(publish) => publish.create_command(),
             Command::Image(image) => image.create_command(),
