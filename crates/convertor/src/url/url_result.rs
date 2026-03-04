@@ -1,22 +1,22 @@
-use crate::url::convertor_url::ConvertorUrl;
+use crate::url::conv_url::ConvUrl;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::fmt::Display;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UrlResult {
-    pub raw_url: ConvertorUrl,
-    pub raw_profile_url: ConvertorUrl,
-    pub profile_url: ConvertorUrl,
-    pub rule_providers_url: Vec<ConvertorUrl>,
+    pub raw_url: ConvUrl,
+    pub raw_profile_url: ConvUrl,
+    pub profile_url: ConvUrl,
+    pub rule_providers_url: Vec<ConvUrl>,
 }
 
 impl UrlResult {
     pub fn empty() -> Self {
         Self {
-            raw_url: ConvertorUrl::empty(),
-            raw_profile_url: ConvertorUrl::empty(),
-            profile_url: ConvertorUrl::empty(),
+            raw_url: ConvUrl::empty(),
+            raw_profile_url: ConvUrl::empty(),
+            profile_url: ConvUrl::empty(),
             rule_providers_url: vec![],
         }
     }

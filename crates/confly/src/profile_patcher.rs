@@ -7,10 +7,8 @@ use convertor::core::profile::rule::Rule;
 use convertor::core::profile::surge_header::SurgeHeader;
 use convertor::core::renderer::Renderer;
 use convertor::core::renderer::clash_renderer::ClashRenderer;
-use convertor::core::renderer::surge_renderer::{
-    SURGE_RULE_PROVIDER_COMMENT_END, SURGE_RULE_PROVIDER_COMMENT_START, SurgeRenderer,
-};
-use convertor::url::convertor_url::UrlType;
+use convertor::core::renderer::surge_renderer::{SURGE_RULE_PROVIDER_COMMENT_END, SURGE_RULE_PROVIDER_COMMENT_START, SurgeRenderer};
+use convertor::url::conv_url::UrlType;
 use convertor::url::url_builder::UrlBuilder;
 use std::borrow::Cow;
 
@@ -29,19 +27,13 @@ impl ClientConfig {
         file_provider.write(self.main_profile_path(), main_profile)?;
 
         if let Some(path) = self.raw_path() {
-            let raw = Self::update_surge_conf(
-                file_provider.read(&path)?,
-                url_builder.build_surge_header(UrlType::Raw)?,
-            )?;
+            let raw = Self::update_surge_conf(file_provider.read(&path)?, url_builder.build_surge_header(UrlType::Raw)?)?;
             file_provider.write(path, raw)?;
         }
 
         // 更新转发原始订阅配置，即由 convertor 生成的原始订阅配置
         if let Some(path) = self.raw_profile_path() {
-            let raw_profile = Self::update_surge_conf(
-                file_provider.read(&path)?,
-                url_builder.build_surge_header(UrlType::RawProfile)?,
-            )?;
+            let raw_profile = Self::update_surge_conf(file_provider.read(&path)?, url_builder.build_surge_header(UrlType::RawProfile)?)?;
             file_provider.write(path, raw_profile)?;
         }
 

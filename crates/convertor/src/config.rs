@@ -1,9 +1,9 @@
 use crate::common::encrypt::encrypt;
 use crate::common::once::HOME_CONFIG_DIR;
-use crate::config::config_error::ConfigError;
 use crate::config::proxy_client::ProxyClient;
 use crate::config::redis_config::RedisConfig;
 use crate::config::subscription_config::SubscriptionConfig;
+use crate::error::ConfigError;
 use crate::url::url_builder::UrlBuilder;
 use serde::{Deserialize, Serialize};
 use std::ffi::OsStr;
@@ -13,7 +13,6 @@ use std::str::FromStr;
 use tracing::debug;
 use url::Url;
 
-pub mod config_error;
 pub mod proxy_client;
 pub mod redis_config;
 pub mod subscription_config;
@@ -156,7 +155,7 @@ impl Config {
         let server = self.server.clone();
         let secret = self.secret.clone();
         let enc_secret = encrypt(secret.as_bytes(), &secret)?;
-        let url_builder = UrlBuilder::new(secret, Some(enc_secret), client, server, sub_url, None, interval, strict)?;
+        let url_builder = UrlBuilder::new(secret, client, server, sub_url, interval, strict)?.set_enc_secret(enc_secret);
         Ok(url_builder)
     }
 }

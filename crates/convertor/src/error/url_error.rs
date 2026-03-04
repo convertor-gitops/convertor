@@ -1,5 +1,5 @@
 use crate::error::{EncryptError, QueryError};
-use crate::url::convertor_url::UrlType;
+use crate::url::conv_url::UrlType;
 use std::str::Utf8Error;
 use thiserror::Error;
 use url::Url;

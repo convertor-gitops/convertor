@@ -49,10 +49,7 @@ impl SubscriptionCmd {
         let raw_profile_content = subs_provider
             .get_raw_profile(raw_url.into(), [("User-Agent", "Surge Mac/8310")].into())
             .await?;
-        let sub_host = url_builder
-            .sub_url
-            .host_port()
-            .ok_or_eyre("无法从 sub_url 中提取 host port")?;
+        let sub_host = url_builder.sub_url.host_port().ok_or_eyre("无法从 sub_url 中提取 host port")?;
         let (client_profile, policies) = match self.client {
             ProxyClient::Surge => {
                 let mut raw_profile = SurgeProfile::parse(raw_profile_content)?;
@@ -109,16 +106,9 @@ impl SubscriptionCmd {
         let interval = subscription_config.interval;
         let strict = subscription_config.strict;
 
-        let url_builder = UrlBuilder::new(
-            secret,
-            Some(enc_secret),
-            *client,
-            server,
-            sub_url,
-            Some(enc_sub_url),
-            interval,
-            strict,
-        )?;
+        let url_builder = UrlBuilder::new(secret, *client, server, sub_url, interval, strict)?
+            .set_enc_secret(enc_secret)
+            .set_enc_sub_url(enc_sub_url);
 
         Ok(url_builder)
     }
