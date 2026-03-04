@@ -12,7 +12,7 @@ use url::Url;
 pub struct ConvQuery {
     // common
     pub server: Url,
-    pub sub_url: Url,
+    pub sub_url: String,
     pub enc_sub_url: String,
     pub interval: u64,
 
@@ -35,9 +35,7 @@ impl ConvQuery {
 
         // 解析 sub_url
         let enc_sub_url = query_map.get("sub_url").ok_or(ParseUrlError::NotFoundParam("sub_url"))?.to_string();
-        let sub_url = decrypt(secret.as_bytes(), enc_sub_url.as_ref())?
-            .parse::<Url>()
-            .map_err(ParseUrlError::from)?;
+        let sub_url = decrypt(secret.as_bytes(), enc_sub_url.as_ref())?;
 
         // 解析 interval
         let interval = query_map

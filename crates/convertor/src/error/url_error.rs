@@ -12,6 +12,9 @@ pub enum UrlBuilderError {
     #[error("从 URL 中解析失败, 没有 query 参数: {0}")]
     ParseFromUrlNoQuery(Url),
 
+    #[error(transparent)]
+    ParseUrlError(#[from] url::ParseError),
+
     #[error("不支持将 {0} 构造为 SurgeHeader")]
     UnsupportedUrlType(UrlType),
 
@@ -29,11 +32,6 @@ pub enum ParseUrlError {
 
     #[error("无法从 URL 中解析 ConvertorUrl: 没有查询字符串")]
     UrlNoQuery(String),
-
-    // #[error(transparent)]
-    // ParseClientError(#[from] ParseClientError),
-    #[error(transparent)]
-    ParseServerError(#[from] url::ParseError),
 
     #[error(transparent)]
     ParseNumError(#[from] std::num::ParseIntError),

@@ -59,6 +59,7 @@ impl UrlBuilder {
         } = query;
         let secret = secret_opt.unwrap_or(secret.as_ref().to_string());
         let strict = strict.unwrap_or(true);
+        let sub_url = sub_url.parse::<Url>().map_err(UrlBuilderError::ParseUrlError)?;
         let mut url_builder = Self::new(secret, client, server, sub_url, interval, strict)?.set_enc_sub_url(enc_sub_url);
         if let Some(enc_secret) = enc_secret {
             url_builder = url_builder.set_enc_secret(enc_secret);
@@ -118,7 +119,7 @@ impl UrlBuilder {
     pub fn as_profile_query(&self) -> ConvQuery {
         ConvQuery {
             server: self.server.clone(),
-            sub_url: self.sub_url.clone(),
+            sub_url: self.sub_url.to_string(),
             enc_sub_url: self.enc_sub_url.clone(),
             interval: self.interval,
             strict: Some(self.strict),
