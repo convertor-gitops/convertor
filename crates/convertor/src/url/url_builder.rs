@@ -74,24 +74,19 @@ impl UrlBuilder {
 
     pub fn build_raw_profile_url(&self) -> Result<ConvUrl, UrlBuilderError> {
         let query = self.as_profile_query().encode_to_profile_query()?;
-        let url = ConvUrl::raw_profile(self.server.clone(), format!("/raw-profile/{}", self.client.as_str()), query);
+        let url = ConvUrl::create(UrlType::RawProfile, self.server.clone(), self.client, query);
         Ok(url)
     }
 
     pub fn build_profile_url(&self) -> Result<ConvUrl, UrlBuilderError> {
         let query = self.as_profile_query().encode_to_profile_query()?;
-        let url = ConvUrl::profile(self.server.clone(), format!("/profile/{}", self.client.as_str()), query);
+        let url = ConvUrl::create(UrlType::Profile, self.server.clone(), self.client, query);
         Ok(url)
     }
 
     pub fn build_rule_provider_url(&self, policy: &Policy) -> Result<ConvUrl, UrlBuilderError> {
         let query = self.as_rule_provider_query(policy).encode_to_rule_provider_query()?;
-        let url = ConvUrl::rule_provider(
-            policy.clone(),
-            self.server.clone(),
-            format!("/rule-provider/{}", self.client.as_str()),
-            query,
-        );
+        let url = ConvUrl::create(UrlType::RuleProvider(policy.clone()), self.server.clone(), self.client, query);
         Ok(url)
     }
 

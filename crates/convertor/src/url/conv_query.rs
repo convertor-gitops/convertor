@@ -2,12 +2,13 @@ use crate::common::encrypt::decrypt;
 use crate::core::profile::policy::Policy;
 use crate::error::{EncodeUrlError, ParseUrlError, QueryError};
 use percent_encoding::{percent_decode_str, utf8_percent_encode};
+use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::str::Utf8Error;
 use url::Url;
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct ConvQuery {
     // common
     pub server: Url,
