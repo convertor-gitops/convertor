@@ -59,8 +59,8 @@ axum-prometheus = { version = "0.9.0", default-features = false }
 metrics = { version = "0.24.2", default-features = false }
 
 # 加密/哈希/编码
-rand_chacha = { version = "0.9.0", default-features = false }
-rand_core = { version = "0.9.3", default-features = false }
+rand_chacha = { version = "0.10.0", default-features = false }
+rand_core = { version = "0.10.0", default-features = false }
 chacha20poly1305 = { version = "0.10.1", default-features = false }
 base64 = { version = "0.22.1", default-features = false }
 percent-encoding = { version = "2.3.2", default-features = false }

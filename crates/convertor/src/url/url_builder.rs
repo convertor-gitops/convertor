@@ -11,11 +11,9 @@ use url::Url;
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct UrlBuilder {
     pub secret: String,
-    pub enc_secret: String,
     pub client: ProxyClient,
     pub server: Url,
     pub sub_url: Url,
-    pub enc_sub_url: String,
     pub interval: u64,
     pub strict: bool,
 }
@@ -46,15 +44,14 @@ impl UrlBuilder {
         Ok(builder)
     }
 
-    pub fn from_convertor_query(query: ConvQuery, secret: impl AsRef<str>, client: ProxyClient) -> Result<Self, UrlBuilderError> {
+    pub fn from_conv_query(query: ConvQuery, secret: impl AsRef<str>) -> Result<Self, UrlBuilderError> {
         let ConvQuery {
             server,
             sub_url,
-            enc_sub_url,
+            client,
             interval,
             strict,
             secret: secret_opt,
-            enc_secret,
             policy: _,
         } = query;
         let secret = secret_opt.unwrap_or(secret.as_ref().to_string());
