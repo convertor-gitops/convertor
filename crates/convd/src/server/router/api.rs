@@ -9,7 +9,7 @@ pub mod subscription {
     use axum_extra::headers::HeaderMap;
     use convertor::config::proxy_client::ProxyClient;
     use convertor::config::subscription_config::Headers;
-    use convertor::url::query::ConvertorQuery;
+    use convertor::url::conv_query::ConvQuery;
     use convertor::url::url_builder::UrlBuilder;
     use convertor::url::url_result::UrlResult;
     use std::sync::Arc;
@@ -38,7 +38,7 @@ pub mod subscription {
     #[tracing::instrument(skip_all)]
     async fn internal_subscription(
         client: ProxyClient,
-        query: ConvertorQuery,
+        query: ConvQuery,
         state: Arc<AppState>,
         header_map: HeaderMap,
     ) -> Result<ApiResponse<UrlResult>, ApiError> {

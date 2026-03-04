@@ -14,7 +14,7 @@ use axum::routing::get;
 use axum_extra::extract::{Host, Scheme};
 use axum_prometheus::PrometheusMetricLayer;
 use convertor::error::QueryError;
-use convertor::url::query::ConvertorQuery;
+use convertor::url::conv_query::ConvQuery;
 use std::sync::Arc;
 use url::Url;
 
@@ -57,7 +57,7 @@ where
     }
 }
 
-pub struct ConvertorQueryExtractor(pub ConvertorQuery);
+pub struct ConvertorQueryExtractor(pub ConvQuery);
 
 impl FromRequestParts<Arc<AppState>> for ConvertorQueryExtractor {
     type Rejection = ApiError;
@@ -88,8 +88,7 @@ impl FromRequestParts<Arc<AppState>> for ConvertorQueryExtractor {
                 .ok_or(QueryError::EmptyQuery)
                 .map_err(AppError::QueryError)
                 .map_err(ApiError::bad_request)?;
-            let query =
-                ConvertorQuery::parse_from_query_string(query_string, &state.config.secret, server).map_err(ApiError::bad_request)?;
+            let query = ConvQuery::parse_from_query_string(query_string, &state.config.secret, server).map_err(ApiError::bad_request)?;
             Ok(ConvertorQueryExtractor(query))
         }
         .await;

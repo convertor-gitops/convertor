@@ -6,7 +6,7 @@ use std::fmt::{Display, Formatter};
 use url::Url;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ConvertorUrl {
+pub struct ConvUrl {
     pub r#type: UrlType,
     pub server: Url,
     pub desc: String,
@@ -14,7 +14,7 @@ pub struct ConvertorUrl {
     pub query: Option<String>,
 }
 
-impl ConvertorUrl {
+impl ConvUrl {
     pub fn new(r#type: UrlType, server: Url, path: impl Into<String>, query: impl Into<String>, desc: impl Into<String>) -> Self {
         let path = Some(path.into());
         let query = Some(query.into());
@@ -64,8 +64,8 @@ impl ConvertorUrl {
     }
 }
 
-impl From<&ConvertorUrl> for Url {
-    fn from(value: &ConvertorUrl) -> Self {
+impl From<&ConvUrl> for Url {
+    fn from(value: &ConvUrl) -> Self {
         let mut url = value.server.clone();
         if let Some(path) = &value.path {
             url.set_path(path);
@@ -77,13 +77,13 @@ impl From<&ConvertorUrl> for Url {
     }
 }
 
-impl From<ConvertorUrl> for Url {
-    fn from(value: ConvertorUrl) -> Self {
+impl From<ConvUrl> for Url {
+    fn from(value: ConvUrl) -> Self {
         Url::from(&value)
     }
 }
 
-impl Display for ConvertorUrl {
+impl Display for ConvUrl {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", Url::from(self))
     }
