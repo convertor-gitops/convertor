@@ -1,4 +1,3 @@
-use crate::common::encrypt::decrypt;
 use crate::core::profile::policy::Policy;
 use crate::error::{EncodeUrlError, ParseUrlError, QueryError};
 use percent_encoding::{percent_decode_str, utf8_percent_encode};

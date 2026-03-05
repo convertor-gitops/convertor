@@ -1,110 +1,266 @@
 use crate::error::EncryptError;
 use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD as B64URL;
+use blake3;
 use chacha20poly1305::aead::{Aead, KeyInit};
 use chacha20poly1305::{Key, XChaCha20Poly1305, XNonce};
-use rand_core::OsRng;
-use std::cell::RefCell;
-
-type Result<T> = core::result::Result<T, EncryptError>;
-
-// ===== 线程局部：给“当前线程”注入可复现的 RNG =====
-// 每个测试线程可在第一行设置自己的种子，互不影响，支持并行。
-thread_local! {
-    static TL_SEEDED_RNG: RefCell<Option<rand_chacha::ChaCha20Rng>> = const { RefCell::new(None) };
-}
-
-/// 在当前线程启用“固定种子”的伪随机数源（可复现，适合快照）
-pub fn nonce_rng_use_seed(seed: [u8; 32]) {
-    use rand_core::SeedableRng;
-    TL_SEEDED_RNG.with(|c| *c.borrow_mut() = Some(rand_chacha::ChaCha20Rng::from_seed(seed)));
-}
-
-/// 在当前线程恢复为系统 RNG（生产默认行为）
-pub fn nonce_rng_use_system() {
-    TL_SEEDED_RNG.with(|c| *c.borrow_mut() = None);
-}
-
-/// 统一生成 24B nonce：优先线程局部 RNG，缺省回退 OS RNG
-fn gen_nonce24() -> Result<[u8; 24]> {
-    // 1) 先试线程局部的“固定种子” RNG（可复现、并行互不影响）
-    if let Some(n) = TL_SEEDED_RNG.with(|cell| {
-        let mut opt = cell.borrow_mut();
-        if let Some(rng) = opt.as_mut() {
-            use rand_core::RngCore; // infallible
-            let mut n = [0u8; 24];
-            rng.fill_bytes(&mut n);
-            Some(n)
-        } else {
-            None
-        }
-    }) {
-        return Ok(n);
-    }
-
-    // 2) 否则使用 OS RNG（rand_core 0.9 里 OsRng 实现 TryRngCore）
-    let mut n = [0u8; 24];
-    {
-        use rand_core::TryRngCore;
-        let mut rng = OsRng;
-        rng.try_fill_bytes(&mut n)?;
-    }
-    Ok(n)
-}
+use core::cell::Cell;
+use core::hash::{Hash, Hasher};
+use serde::{Deserialize, Serialize};
+use std::fmt::{Debug, Formatter};
 
 const NONCE_LEN: usize = 24;
-const NONCE_B64URL_LEN: usize = 32; // 24 bytes -> 32 chars (url-safe, no pad)
+const NONCE_B64URL_LEN: usize = 32;
 
-fn normalize_key(key: &[u8]) -> [u8; 32] {
+pub type Result<T> = core::result::Result<T, EncryptError>;
+
+fn normalize_key_32(key: &[u8]) -> [u8; 32] {
+    // 兼容你旧逻辑：截断/补零（不是 KDF）
     let mut normalized = [0u8; 32];
     let len = key.len().min(32);
     normalized[..len].copy_from_slice(&key[..len]);
     normalized
 }
 
-pub fn encrypt(secret: &[u8], plaintext: &str) -> Result<String> {
-    let norm_key = normalize_key(secret);
-    let key = Key::from_slice(&norm_key);
-    let cipher = XChaCha20Poly1305::new(key);
-
-    // 统一从线程局部/OsRng 取 nonce
-    let nonce_bytes = gen_nonce24()?;
-    let nonce = XNonce::from_slice(&nonce_bytes);
-
-    let ciphertext = cipher
-        .encrypt(nonce, plaintext.as_bytes())
-        .map_err(|_| EncryptError::Encrypt)?;
-
-    // URL-safe, no padding；不加任何分隔符
-    let mut out = String::with_capacity(NONCE_B64URL_LEN + (ciphertext.len() * 4).div_ceil(3));
-    out.push_str(&B64URL.encode(nonce));
-    out.push_str(&B64URL.encode(ciphertext));
-    Ok(out)
+fn seed_from_label(label: &str) -> [u8; 32] {
+    *blake3::hash(label.as_bytes()).as_bytes()
 }
 
-pub fn decrypt(secret: &[u8], token: &str) -> Result<String> {
-    if token.len() < NONCE_B64URL_LEN {
-        return Err(EncryptError::NonceLength);
+fn nonce_from_seed_cursor(seed32: &[u8; 32], cursor: u64) -> [u8; NONCE_LEN] {
+    let mut hasher = blake3::Hasher::new_keyed(seed32);
+    hasher.update(&cursor.to_le_bytes());
+    let out = hasher.finalize(); // 32 bytes
+    let mut nonce = [0u8; NONCE_LEN];
+    nonce.copy_from_slice(&out.as_bytes()[..NONCE_LEN]);
+    nonce
+}
+
+/// 用于 serde 的“纯数据”表示（不含 Cell）
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
+enum NonceModeRepr {
+    Random,
+    Deterministic { seed: [u8; 32], cursor: u64 },
+}
+
+#[derive(Debug)]
+enum NonceMode {
+    Random,
+    Deterministic { seed: [u8; 32], cursor: Cell<u64> },
+}
+
+impl NonceMode {
+    fn to_repr(&self) -> NonceModeRepr {
+        match self {
+            NonceMode::Random => NonceModeRepr::Random,
+            NonceMode::Deterministic { seed, cursor } => NonceModeRepr::Deterministic {
+                seed: *seed,
+                cursor: cursor.get(),
+            },
+        }
     }
-    let (nonce_part, ct_part) = token.split_at(NONCE_B64URL_LEN);
 
-    // 先解 nonce
-    let nonce_raw = B64URL.decode(nonce_part).map_err(EncryptError::DecodeError)?;
-    if nonce_raw.len() != NONCE_LEN {
-        return Err(EncryptError::NonceLength);
+    fn from_repr(r: NonceModeRepr) -> Self {
+        match r {
+            NonceModeRepr::Random => NonceMode::Random,
+            NonceModeRepr::Deterministic { seed, cursor } => NonceMode::Deterministic {
+                seed,
+                cursor: Cell::new(cursor),
+            },
+        }
     }
-    let nonce = XNonce::from_slice(&nonce_raw);
+}
 
-    // 再解密文
-    let ciphertext = B64URL.decode(ct_part).map_err(EncryptError::DecodeError)?;
+/// 你需要的那个“可 Debug/Clone/Eq/Hash/serde”的 Encryptor
+pub struct Encryptor {
+    key: [u8; 32],
+    nonce: NonceMode,
+}
 
-    let norm_key = normalize_key(secret);
-    let key = Key::from_slice(&norm_key);
-    let cipher = XChaCha20Poly1305::new(key);
+impl Encryptor {
+    pub fn new_random(secret: impl AsRef<str>) -> Self {
+        Self {
+            key: normalize_key_32(secret.as_ref().as_bytes()),
+            nonce: NonceMode::Random,
+        }
+    }
 
-    let plaintext = cipher
-        .decrypt(nonce, ciphertext.as_ref())
-        .map_err(|_| EncryptError::Decrypt)?;
+    pub fn new_with_label(secret: &[u8], label: &str) -> Self {
+        Self {
+            key: normalize_key_32(secret),
+            nonce: NonceMode::Deterministic {
+                seed: seed_from_label(label),
+                cursor: Cell::new(0),
+            },
+        }
+    }
 
-    Ok(String::from_utf8(plaintext)?)
+    pub fn new_with_label_and_cursor(secret: &[u8], label: &str, cursor: u64) -> Self {
+        Self {
+            key: normalize_key_32(secret),
+            nonce: NonceMode::Deterministic {
+                seed: seed_from_label(label),
+                cursor: Cell::new(cursor),
+            },
+        }
+    }
+
+    #[inline]
+    fn cipher(&self) -> XChaCha20Poly1305 {
+        XChaCha20Poly1305::new(Key::from_slice(&self.key))
+    }
+
+    fn gen_nonce24(&self) -> Result<[u8; NONCE_LEN]> {
+        match &self.nonce {
+            NonceMode::Random => {
+                let mut n = [0u8; NONCE_LEN];
+                getrandom::fill(&mut n)?;
+                Ok(n)
+            }
+            NonceMode::Deterministic { seed, cursor } => {
+                let c = cursor.get();
+                // 只要在“单实例单 case/单 request”里用，Cell 足够；并发共享一个实例不建议
+                cursor.set(c.wrapping_add(1));
+                Ok(nonce_from_seed_cursor(seed, c))
+            }
+        }
+    }
+
+    /// token = b64url(nonce24) || b64url(ciphertext_with_tag)
+    pub fn encrypt(&self, plaintext: &str) -> Result<String> {
+        let nonce_bytes = self.gen_nonce24()?;
+        let nonce = XNonce::from_slice(&nonce_bytes);
+
+        let ciphertext = self
+            .cipher()
+            .encrypt(nonce, plaintext.as_bytes())
+            .map_err(|_| EncryptError::Encrypt)?;
+
+        let mut out = String::with_capacity(NONCE_B64URL_LEN + (ciphertext.len() * 4).div_ceil(3));
+        out.push_str(&B64URL.encode(nonce_bytes));
+        out.push_str(&B64URL.encode(ciphertext));
+        Ok(out)
+    }
+
+    pub fn decrypt(&self, token: &str) -> Result<String> {
+        if token.len() < NONCE_B64URL_LEN {
+            return Err(EncryptError::SplitError);
+        }
+        let (nonce_part, ct_part) = token.split_at(NONCE_B64URL_LEN);
+
+        let nonce_raw = B64URL.decode(nonce_part)?;
+        if nonce_raw.len() != NONCE_LEN {
+            return Err(EncryptError::NonceLength);
+        }
+        let nonce = XNonce::from_slice(&nonce_raw);
+
+        let ciphertext = B64URL.decode(ct_part)?;
+
+        let plaintext = self
+            .cipher()
+            .decrypt(nonce, ciphertext.as_ref())
+            .map_err(|_| EncryptError::Decrypt)?;
+
+        Ok(String::from_utf8(plaintext)?)
+    }
+}
+
+/* ===== 手动实现你要求的 trait：Debug/Clone/Eq/PartialEq/Hash/Serialize/Deserialize ===== */
+
+impl Debug for Encryptor {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        // key 只显示前 4 bytes + 长度，避免泄露
+        let key_prefix = &self.key[..4];
+
+        f.debug_struct("Encryptor")
+            .field("key_prefix", &key_prefix)
+            .field("key_len", &self.key.len())
+            .field("nonce", &self.nonce.to_repr()) // 用 repr，避免 Cell 细节
+            .finish()
+    }
+}
+
+impl Clone for Encryptor {
+    fn clone(&self) -> Self {
+        Self {
+            key: self.key,
+            nonce: NonceMode::from_repr(self.nonce.to_repr()),
+        }
+    }
+}
+
+impl PartialEq for Encryptor {
+    fn eq(&self, other: &Self) -> bool {
+        self.key == other.key && self.nonce.to_repr() == other.nonce.to_repr()
+    }
+}
+impl Eq for Encryptor {}
+
+impl Hash for Encryptor {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.key.hash(state);
+        self.nonce.to_repr().hash(state);
+    }
+}
+
+impl Serialize for Encryptor {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error> {
+        #[derive(Serialize)]
+        struct Repr {
+            key: [u8; 32],
+            nonce: NonceModeRepr,
+        }
+        let r = Repr {
+            key: self.key,
+            nonce: self.nonce.to_repr(),
+        };
+        r.serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for Encryptor {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> core::result::Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        struct Repr {
+            key: [u8; 32],
+            nonce: NonceModeRepr,
+        }
+        let r = Repr::deserialize(deserializer)?;
+        Ok(Self {
+            key: r.key,
+            nonce: NonceMode::from_repr(r.nonce),
+        })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn deterministic_first_token_by_label() -> Result<()> {
+        let secret = b"my-secret";
+
+        let e1 = Encryptor::new_with_label(secret, "case:hello:v1");
+        let t1 = e1.encrypt("hello")?;
+
+        let e2 = Encryptor::new_with_label(secret, "case:hello:v1");
+        let t1_again = e2.encrypt("hello")?;
+
+        assert_eq!(t1, t1_again);
+
+        let p = e2.decrypt(&t1)?;
+        assert_eq!(p, "hello");
+        Ok(())
+    }
+
+    #[test]
+    fn deterministic_advances_per_instance() -> Result<()> {
+        let secret = b"my-secret";
+        let e = Encryptor::new_with_label(secret, "case:seq:v1");
+
+        let t1 = e.encrypt("hello")?;
+        let t2 = e.encrypt("hello")?;
+        assert_ne!(t1, t2);
+        Ok(())
+    }
 }

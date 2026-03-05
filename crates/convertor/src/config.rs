@@ -1,4 +1,3 @@
-use crate::common::encrypt::encrypt;
 use crate::common::once::HOME_CONFIG_DIR;
 use crate::config::proxy_client::ProxyClient;
 use crate::config::redis_config::RedisConfig;
@@ -144,9 +143,9 @@ impl Config {
         Ok(config)
     }
 
-    pub fn enc_secret(&self) -> Result<String> {
-        Ok(encrypt(self.secret.as_bytes(), &self.secret)?)
-    }
+    // pub fn enc_secret(&self) -> Result<String> {
+    //     Ok(encrypt(self.secret.as_bytes(), &self.secret)?)
+    // }
 
     pub fn create_url_builder(&self, client: ProxyClient) -> Result<UrlBuilder> {
         let sub_url = self.subscription.sub_url.clone();
@@ -154,8 +153,7 @@ impl Config {
         let strict = self.subscription.strict;
         let server = self.server.clone();
         let secret = self.secret.clone();
-        let enc_secret = encrypt(secret.as_bytes(), &secret)?;
-        let url_builder = UrlBuilder::new(secret, client, server, sub_url, interval, strict)?.set_enc_secret(enc_secret);
+        let url_builder = UrlBuilder::new(secret, client, server, sub_url, interval, strict)?;
         Ok(url_builder)
     }
 }

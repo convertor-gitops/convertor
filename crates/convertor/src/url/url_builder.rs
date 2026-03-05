@@ -1,4 +1,4 @@
-use crate::common::encrypt::encrypt;
+use crate::common::encrypt::Encryptor;
 use crate::config::proxy_client::ProxyClient;
 use crate::core::profile::policy::Policy;
 use crate::core::profile::surge_header::SurgeHeader;
@@ -18,6 +18,7 @@ pub struct UrlBuilder {
     pub enc_sub_url: String,
     pub interval: u64,
     pub strict: bool,
+    encryptor: Encryptor,
 }
 
 impl UrlBuilder {
@@ -30,8 +31,9 @@ impl UrlBuilder {
         strict: bool,
     ) -> Result<Self, UrlBuilderError> {
         let secret = secret.as_ref().to_string();
-        let enc_secret = encrypt(secret.as_bytes(), secret.as_str())?;
-        let enc_sub_url = encrypt(secret.as_bytes(), sub_url.as_str())?;
+        let encryptor = Encryptor::new_random(&secret);
+        let enc_secret = encryptor.encrypt(secret.as_str())?;
+        let enc_sub_url = encryptor.encrypt(sub_url.as_str())?;
 
         let builder = Self {
             secret,
@@ -42,6 +44,7 @@ impl UrlBuilder {
             enc_sub_url,
             interval,
             strict,
+            encryptor,
         };
         Ok(builder)
     }
