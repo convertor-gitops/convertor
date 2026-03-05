@@ -1,5 +1,5 @@
 use crate::core::profile::policy::Policy;
-use crate::error::ParseError;
+use crate::error::{ConvertError, ParseError};
 use serde::{Deserialize, Deserializer};
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
@@ -63,14 +63,14 @@ pub struct ProviderRule {
 }
 
 impl TryFrom<Rule> for ProviderRule {
-    type Error = ParseError;
+    type Error = ConvertError;
 
     #[instrument(skip_all)]
     fn try_from(rule: Rule) -> Result<Self, Self::Error> {
         Ok(ProviderRule {
             rule_type: rule.rule_type.clone(),
             comment: rule.comment.clone(),
-            value: rule.value.clone().ok_or(ParseError::IntoProviderRule(rule))?,
+            value: rule.value.clone().ok_or(ConvertError::IntoProviderRule(rule))?,
         })
     }
 }
@@ -176,10 +176,7 @@ impl<'de> Deserialize<'de> for Rule {
                 let rule_type = RuleType::from_str(rule_parts[0]).map_err(E::custom)?;
 
                 let (value, policy) = if rule_parts.len() == 2 {
-                    (
-                        None,
-                        Policy::deserialize(serde::de::value::StrDeserializer::new(rule_parts[1]))?,
-                    )
+                    (None, Policy::deserialize(serde::de::value::StrDeserializer::new(rule_parts[1]))?)
                 } else {
                     (
                         Some(rule_parts[1].to_string()),

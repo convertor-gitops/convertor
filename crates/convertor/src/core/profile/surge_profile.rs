@@ -7,13 +7,12 @@ use crate::core::profile::proxy_group::ProxyGroup;
 use crate::core::profile::rule::{ProviderRule, Rule};
 use crate::core::renderer::Renderer;
 use crate::core::renderer::surge_renderer::SurgeRenderer;
-use crate::error::ParseError;
+use crate::error::{ConvertError, ParseError};
 use crate::url::conv_url::UrlType;
 use crate::url::url_builder::UrlBuilder;
 use std::collections::HashMap;
 use tracing::instrument;
-
-type Result<T> = core::result::Result<T, ParseError>;
+use url::Url;
 
 #[derive(Debug, Clone)]
 pub struct SurgeProfile {
@@ -76,12 +75,12 @@ impl Profile for SurgeProfile {
     }
 
     #[instrument(skip_all)]
-    fn parse(content: String) -> Result<Self::PROFILE> {
+    fn parse(content: String) -> Result<Self::PROFILE, ParseError> {
         SurgeParser::parse_profile(content)
     }
 
     #[instrument(skip_all)]
-    fn convert(&mut self, url_builder: &UrlBuilder) -> Result<()> {
+    fn convert(&mut self, url_builder: &UrlBuilder) -> Result<(), ConvertError> {
         self.replace_header(url_builder)?;
         self.optimize_proxies()?;
         self.optimize_rules(url_builder)?;
@@ -89,9 +88,9 @@ impl Profile for SurgeProfile {
     }
 
     #[instrument(skip_all)]
-    fn append_rule_provider(&mut self, url_builder: &UrlBuilder, policy: Policy) -> Result<()> {
+    fn append_rule_provider(&mut self, url_builder: &UrlBuilder, policy: Policy) -> Result<(), ConvertError> {
         let name = SurgeRenderer::render_provider_name_for_policy(&policy);
-        let url = url_builder.build_rule_provider_url(&policy)?;
+        let url = Url::try_from(url_builder.build_rule_provider_url(&policy))?;
         let rule = Rule::surge_rule_provider(&policy, name, url);
         self.rules.push(rule);
         self.sorted_policy_list_mut().push(policy);
@@ -101,7 +100,7 @@ impl Profile for SurgeProfile {
 
 impl SurgeProfile {
     #[instrument(skip_all)]
-    fn replace_header(&mut self, url_builder: &UrlBuilder) -> Result<()> {
+    fn replace_header(&mut self, url_builder: &UrlBuilder) -> Result<(), ConvertError> {
         self.header = url_builder.build_surge_header(UrlType::Profile)?.to_string();
         Ok(())
     }

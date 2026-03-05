@@ -4,8 +4,8 @@ use crate::core::profile::proxy::Proxy;
 use crate::core::profile::proxy_group::{ProxyGroup, ProxyGroupType};
 use crate::core::profile::rule::{ProviderRule, Rule};
 use crate::core::region::Region;
-use crate::error::ParseError;
-use crate::url::url_builder::{HostPort, UrlBuilder};
+use crate::error::{ConvertError, ParseError};
+use crate::url::url_builder::UrlBuilder;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 use tracing::{instrument, span, warn};
@@ -18,8 +18,6 @@ pub mod rule;
 pub mod rule_provider;
 pub mod surge_header;
 pub mod surge_profile;
-
-type Result<T> = core::result::Result<T, ParseError>;
 
 pub(super) fn group_by_region(proxies: &[Proxy]) -> (Vec<(&'static Region, Vec<&Proxy>)>, Vec<&Proxy>) {
     let match_number = Regex::new(r"^\d+$").unwrap();
@@ -67,12 +65,7 @@ pub fn extract_policies_for_rule_provider(rules: &[Rule], sub_host: impl AsRef<s
     let mut policies = rules
         .iter()
         .map(|rule| {
-            if rule
-                .value
-                .as_ref()
-                .map(|v| v.contains(sub_host.as_ref()))
-                .unwrap_or(false)
-            {
+            if rule.value.as_ref().map(|v| v.contains(sub_host.as_ref())).unwrap_or(false) {
                 Policy::subscription_policy()
             } else {
                 rule.policy.clone()
@@ -110,12 +103,12 @@ pub trait Profile {
 
     fn sorted_policy_list_mut(&mut self) -> &mut Vec<Policy>;
 
-    fn parse(content: String) -> Result<Self::PROFILE>;
+    fn parse(content: String) -> Result<Self::PROFILE, ParseError>;
 
-    fn convert(&mut self, url_builder: &UrlBuilder) -> Result<()>;
+    fn convert(&mut self, url_builder: &UrlBuilder) -> Result<(), ConvertError>;
 
     #[instrument(skip_all)]
-    fn optimize_proxies(&mut self) -> Result<()> {
+    fn optimize_proxies(&mut self) -> Result<(), ConvertError> {
         if self.proxies().is_empty() {
             return Ok(());
         };
@@ -158,8 +151,8 @@ pub trait Profile {
     }
 
     #[instrument(skip_all)]
-    fn optimize_rules(&mut self, url_builder: &UrlBuilder) -> Result<()> {
-        let sub_host = url_builder.sub_url.host_port().ok_or(ParseError::SubHost)?;
+    fn optimize_rules(&mut self, url_builder: &UrlBuilder) -> Result<(), ConvertError> {
+        let sub_host = url_builder.host_port()?;
         let inner_span = span!(tracing::Level::INFO, "拆分内置规则和其他规则");
         let _guard = inner_span.entered();
         let (built_in_rules, other_rules): (Vec<Rule>, Vec<Rule>) = self
@@ -221,7 +214,7 @@ pub trait Profile {
         Ok(())
     }
 
-    fn append_rule_provider(&mut self, url_builder: &UrlBuilder, policy: Policy) -> Result<()>;
+    fn append_rule_provider(&mut self, url_builder: &UrlBuilder, policy: Policy) -> Result<(), ConvertError>;
 
     #[instrument(skip_all)]
     fn get_provider_rules_with_policy(&self, policy: &Policy) -> Option<&Vec<ProviderRule>> {

@@ -59,12 +59,14 @@ axum-prometheus = { version = "0.9.0", default-features = false }
 metrics = { version = "0.24.2", default-features = false }
 
 # 加密/哈希/编码
-rand_chacha = { version = "0.9.0", default-features = false }
-rand_core = { version = "0.9.3", default-features = false }
+rand_chacha = { version = "0.10.0", default-features = false }
+rand_core = { version = "0.10.0", default-features = false }
 chacha20poly1305 = { version = "0.10.1", default-features = false }
 base64 = { version = "0.22.1", default-features = false }
 percent-encoding = { version = "2.3.2", default-features = false }
 uuid = { version = "1.18.1", default-features = false }
+getrandom = { version = "0.4.2", default-features = false }
+blake3 = { version = "1.8.3", default-features = false }
 
 # 缓存/存储/数据库
 redis = { version = "0.32.5", default-features = false }

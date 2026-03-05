@@ -17,8 +17,7 @@ pub async fn raw_profile(
     header_map: HeaderMap,
 ) -> Result<String, ApiError> {
     let query = query.check_for_profile().map_err(ApiError::bad_request)?;
-    let url_builder =
-        UrlBuilder::from_convertor_query(query, &state.config.secret, client).map_err(ApiError::bad_request)?;
+    let url_builder = UrlBuilder::from_conv_query(query, &state.config.secret, client).map_err(ApiError::bad_request)?;
     let sub_url = url_builder.build_raw_url();
     let headers = Headers::from_header_map(header_map).patch(&state.config.subscription.headers);
     let raw_profile = state
@@ -35,9 +34,9 @@ pub async fn raw_profile(
                 .map_err(ApiError::internal_server_error)?;
             Ok(raw_profile)
         }
-        ProxyClient::Clash => Err(ApiError::bad_request(AppError::RequestError(
-            RequestError::UnsupportedClient(client),
-        ))),
+        ProxyClient::Clash => Err(ApiError::bad_request(AppError::RequestError(RequestError::UnsupportedClient(
+            client,
+        )))),
     }
 }
 
@@ -49,8 +48,7 @@ pub async fn profile(
     header_map: HeaderMap,
 ) -> Result<String, ApiError> {
     let query = query.check_for_profile().map_err(ApiError::bad_request)?;
-    let url_builder =
-        UrlBuilder::from_convertor_query(query, &state.config.secret, client).map_err(ApiError::bad_request)?;
+    let url_builder = UrlBuilder::from_conv_query(query, &state.config.secret, client).map_err(ApiError::bad_request)?;
     let sub_url = url_builder.build_raw_url();
     let headers = Headers::from_header_map(header_map).patch(&state.config.subscription.headers);
     let raw_profile = state
@@ -74,8 +72,7 @@ pub async fn rule_provider(
     header_map: HeaderMap,
 ) -> Result<String, ApiError> {
     let (query, policy) = query.check_for_rule_provider().map_err(ApiError::bad_request)?;
-    let url_builder =
-        UrlBuilder::from_convertor_query(query, &state.config.secret, client).map_err(ApiError::bad_request)?;
+    let url_builder = UrlBuilder::from_conv_query(query, &state.config.secret, client).map_err(ApiError::bad_request)?;
     let sub_url = url_builder.build_raw_url();
     let headers = Headers::from_header_map(header_map).patch(&state.config.subscription.headers);
     let raw_profile = state
@@ -84,18 +81,8 @@ pub async fn rule_provider(
         .await
         .map_err(ApiError::internal_server_error)?;
     let rules = match client {
-        ProxyClient::Surge => {
-            state
-                .surge_service
-                .rule_provider(url_builder, raw_profile, policy)
-                .await
-        }
-        ProxyClient::Clash => {
-            state
-                .clash_service
-                .rule_provider(url_builder, raw_profile, policy)
-                .await
-        }
+        ProxyClient::Surge => state.surge_service.rule_provider(url_builder, raw_profile, policy).await,
+        ProxyClient::Clash => state.clash_service.rule_provider(url_builder, raw_profile, policy).await,
     }
     .map_err(ApiError::internal_server_error)?;
     Ok(rules)

@@ -43,7 +43,7 @@ pub mod subscription {
         header_map: HeaderMap,
     ) -> Result<ApiResponse<UrlResult>, ApiError> {
         let query = query.check_for_subscription().map_err(ApiError::bad_request)?;
-        let url_builder = UrlBuilder::from_convertor_query(query, &state.config.secret, client).map_err(ApiError::bad_request)?;
+        let url_builder = UrlBuilder::from_conv_query(query, &state.config.secret, client).map_err(ApiError::bad_request)?;
         let sub_url = url_builder.build_raw_url();
         let headers = Headers::from_header_map(header_map).patch(&state.config.subscription.headers);
         let raw_profile = state

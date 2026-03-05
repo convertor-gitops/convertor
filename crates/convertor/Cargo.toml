@@ -13,18 +13,19 @@ toml = { workspace = true, features = ["parse", "display", "serde"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 serde_yaml = { workspace = true }
-serde_qs = { workspace = true }
+serde_qs = { workspace = true, features = ["default_to_form_encoding"] }
 
 # HTTP 客户端 / 网络
 reqwest = { workspace = true, features = ["http2", "json", "stream", "rustls-tls"] }
 headers = { workspace = true }
-httpmock = { workspace = true, features = ["colored"], optional = true }
 
 # URL / 编码 / 工具
 percent-encoding = { workspace = true }
 url = { workspace = true, features = ["serde"] }
 regex = { workspace = true, features = ["unicode-perl"] }
-uuid = "1.18.1"
+uuid = { workspace = true }
+getrandom = { workspace = true, features = ["std"] }
+blake3 = { workspace = true, features = [] }
 
 # 异步运行时 / 并发
 futures-util = { workspace = true }
@@ -43,7 +44,7 @@ opentelemetry-otlp = { workspace = true, features = ["trace", "grpc-tonic"] }
 # 加密 / 哈希 / 编码
 base64 = { workspace = true }
 chacha20poly1305 = { workspace = true, features = ["getrandom", "alloc"] }
-rand_core = { workspace = true, features = ["std", "os_rng"] }
+rand_core = { workspace = true, default-features = true }
 rand_chacha = { workspace = true, features = ["default"] }
 
 # 缓存 / 存储 / 数据库
@@ -55,30 +56,11 @@ clap = { workspace = true, features = ["std", "derive"] }
 config = { workspace = true, features = ["async", "yaml", "toml"] }
 
 # 错误 / 诊断
-color-eyre = { workspace = true, optional = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]
 # 测试工具
 insta = { workspace = true, features = ["filters"] }
+httpmock = { workspace = true, features = ["colored"] }
 serde_json = { workspace = true }
-
-[features]
-default = []
-testkit = ["httpmock", "color-eyre"]
-#otel = [
-#    "opentelemetry",
-#    "opentelemetry_sdk",
-#    "opentelemetry-otlp",
-#    "tracing-opentelemetry",
-#]
-
-[[test]]
-name = "encrypt_test"
-path = "tests/encrypt_test.rs"
-required-features = ["testkit"]
-
-[[test]]
-name = "url_builder_test"
-path = "tests/url_builder_test.rs"
-required-features = ["testkit"]
+color-eyre = { workspace = true }

@@ -18,8 +18,9 @@ include = [
 convertor = { workspace = true }
 
 # 序列化 / 解析
-serde_json = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+serde_qs = { workspace = true, features = ["default_to_form_encoding", "axum"] }
 
 # 日志 / 追踪
 tracing = { workspace = true, features = ["attributes"] }
@@ -59,7 +60,7 @@ color-eyre = { workspace = true }
 [dev-dependencies]
 # 测试 / 开发工具
 http-body-util = { workspace = true }
-convertor = { workspace = true, features = ["testkit"] }
+#convertor = { workspace = true }
 insta = { workspace = true, features = ["json", "default"] }
 tower = { workspace = true }
 serde_json = { workspace = true }

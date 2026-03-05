@@ -52,5 +52,5 @@ pub enum EncodeUrlError {
     NoRawSubHost(String),
 
     #[error(transparent)]
-    UrlParseError(#[from] url::ParseError),
+    SerializeError(#[from] serde_qs::Error),
 }

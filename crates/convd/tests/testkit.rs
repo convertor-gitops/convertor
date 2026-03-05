@@ -19,7 +19,6 @@ macro_rules! init_test {
             }
         });
         $crate::common::once::init_log(None, None);
-        $crate::common::encrypt::nonce_rng_use_seed([0u8; 32]);
         base_dir
     }};
 }
@@ -41,8 +40,7 @@ impl MockServerExt for SubscriptionConfig {
         let subscribe_url_path = "/subscription";
         let token = "bppleman";
 
-        self.sub_url =
-            Url::parse(&mock_server.url(format!("{subscribe_url_path}?token={token}"))).expect("不合法的订阅地址");
+        self.sub_url = Url::parse(&mock_server.url(format!("{subscribe_url_path}?token={token}"))).expect("不合法的订阅地址");
 
         // hook mock server 的 /subscription 路径，返回相应的 mock 数据
         let sub_host = self.sub_url.host_port().ok_or_eyre("无法从 sub_url 中提取 host port")?;
@@ -54,9 +52,7 @@ impl MockServerExt for SubscriptionConfig {
                         .query_param("flag", client.as_str())
                         .query_param("token", token);
                     let body = mock_profile(*client, &sub_host);
-                    then.status(200)
-                        .body(body)
-                        .header("Content-Type", "text/plain; charset=utf-8");
+                    then.status(200).body(body).header("Content-Type", "text/plain; charset=utf-8");
                 })
                 .await;
         }
@@ -71,9 +67,7 @@ impl MockServerExt for SubscriptionConfig {
                         .query_param("flag", client.as_str())
                         .query_param("token", format!("reset_{token}"));
                     let body = mock_profile(*client, &sub_host);
-                    then.status(200)
-                        .body(body)
-                        .header("Content-Type", "text/plain; charset=utf-8");
+                    then.status(200).body(body).header("Content-Type", "text/plain; charset=utf-8");
                 })
                 .await;
         }
@@ -84,14 +78,8 @@ impl MockServerExt for SubscriptionConfig {
 
 pub fn mock_profile(client: ProxyClient, sub_host: impl AsRef<str>) -> String {
     match client {
-        ProxyClient::Surge => include_str!(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/test-assets/surge/mock_profile.conf"
-        )),
-        ProxyClient::Clash => include_str!(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/test-assets/clash/mock_profile.yaml"
-        )),
+        ProxyClient::Surge => include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/test-assets/surge/mock_profile.conf")),
+        ProxyClient::Clash => include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/test-assets/clash/mock_profile.yaml")),
     }
     .replace("{sub_host}", sub_host.as_ref())
 }

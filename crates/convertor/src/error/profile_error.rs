@@ -1,5 +1,5 @@
 use crate::core::profile::rule::Rule;
-use crate::error::UrlBuilderError;
+use crate::error::{EncodeUrlError, UrlBuilderError};
 use thiserror::Error;
 
 /// 所有解析失败场景的统一错误
@@ -32,11 +32,8 @@ pub enum ParseError {
     #[error("缺少必要配置段: {0}")]
     SectionMissing(&'static str),
 
-    #[error("无法将: {0} 转换为 ProviderRule")]
-    IntoProviderRule(Rule),
-
     #[error(transparent)]
-    ConvertorUrlError(#[from] UrlBuilderError),
+    UrlBuilderError(#[from] UrlBuilderError),
 
     #[error(transparent)]
     IOError(#[from] std::io::Error),
@@ -46,4 +43,16 @@ pub enum ParseError {
 
     #[error(transparent)]
     YamlError(#[from] serde_yaml::Error),
+}
+
+#[derive(Debug, Error)]
+pub enum ConvertError {
+    #[error("无法将: {0} 转换为 ProviderRule")]
+    IntoProviderRule(Rule),
+
+    #[error(transparent)]
+    UrlBuilderError(#[from] UrlBuilderError),
+
+    #[error(transparent)]
+    EncodeUrlError(#[from] EncodeUrlError),
 }

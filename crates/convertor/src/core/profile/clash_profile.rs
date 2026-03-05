@@ -8,13 +8,12 @@ use crate::core::profile::rule::{ProviderRule, Rule};
 use crate::core::profile::rule_provider::RuleProvider;
 use crate::core::renderer::Renderer;
 use crate::core::renderer::clash_renderer::ClashRenderer;
-use crate::error::ParseError;
+use crate::error::{ConvertError, ParseError};
 use crate::url::url_builder::UrlBuilder;
 use serde::Deserialize;
 use std::collections::HashMap;
 use tracing::instrument;
-
-type Result<T> = core::result::Result<T, ParseError>;
+use url::Url;
 
 const TEMPLATE_STR: &str = include_str!("../../../assets/profile/clash/template.yaml");
 
@@ -88,16 +87,6 @@ impl Profile for ClashProfile {
         &mut self.policy_of_rules
     }
 
-    fn parse(content: String) -> Result<Self::PROFILE> {
-        ClashParser::parse(content)
-    }
-
-    fn convert(&mut self, url_builder: &UrlBuilder) -> Result<()> {
-        self.optimize_proxies()?;
-        self.optimize_rules(url_builder)?;
-        Ok(())
-    }
-
     fn sorted_policy_list(&self) -> &[Policy] {
         &self.sorted_policy_list
     }
@@ -106,9 +95,19 @@ impl Profile for ClashProfile {
         &mut self.sorted_policy_list
     }
 
-    fn append_rule_provider(&mut self, url_builder: &UrlBuilder, policy: Policy) -> Result<()> {
+    fn parse(content: String) -> Result<Self::PROFILE, ParseError> {
+        ClashParser::parse(content)
+    }
+
+    fn convert(&mut self, url_builder: &UrlBuilder) -> Result<(), ConvertError> {
+        self.optimize_proxies()?;
+        self.optimize_rules(url_builder)?;
+        Ok(())
+    }
+
+    fn append_rule_provider(&mut self, url_builder: &UrlBuilder, policy: Policy) -> Result<(), ConvertError> {
         let name = ClashRenderer::render_provider_name_for_policy(&policy);
-        let rule_provider_url = url_builder.build_rule_provider_url(&policy)?;
+        let rule_provider_url = Url::try_from(url_builder.build_rule_provider_url(&policy))?;
         let rule_provider = RuleProvider::new(rule_provider_url, name.clone(), url_builder.interval);
         self.rule_providers.push((name.clone(), rule_provider));
         let rule = Rule::clash_rule_provider(&policy, name);
@@ -120,19 +119,18 @@ impl Profile for ClashProfile {
 
 impl ClashProfile {
     #[instrument(skip_all)]
-    pub fn parse(content: String) -> Result<Self> {
+    pub fn parse(content: String) -> Result<Self, ParseError> {
         ClashParser::parse(content)
     }
 
     #[instrument(skip_all)]
-    pub fn template() -> Result<Self> {
+    pub fn template() -> Result<Self, ParseError> {
         ClashParser::parse(TEMPLATE_STR)
     }
 
-    pub fn patch(&mut self, profile: ClashProfile) -> Result<()> {
+    pub fn patch(&mut self, profile: ClashProfile) {
         self.proxies = profile.proxies;
         self.proxy_groups = profile.proxy_groups;
         self.rules = profile.rules;
-        Ok(())
     }
 }

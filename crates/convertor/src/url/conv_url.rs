@@ -1,7 +1,5 @@
-use crate::config::proxy_client::ProxyClient;
-use crate::core::profile::policy::Policy;
-use crate::core::renderer::Renderer;
-use crate::core::renderer::surge_renderer::SurgeRenderer;
+use crate::error::EncodeUrlError;
+use crate::url::conv_query::ConvQuery;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use url::Url;
@@ -9,33 +7,19 @@ use url::Url;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConvUrl {
     pub r#type: UrlType,
-    pub desc: String,
     pub server: Url,
-    pub path: Option<String>,
-    pub query: Option<String>,
+    pub query: Option<ConvQuery>,
 }
 
 impl ConvUrl {
-    pub fn new(r#type: UrlType, server: Url, path: impl Into<String>, query: impl Into<String>, desc: impl Into<String>) -> Self {
-        let path = Some(path.into());
-        let query = Some(query.into());
-        let desc = desc.into();
-
-        Self {
-            r#type,
-            desc,
-            server,
-            path,
-            query,
-        }
+    pub fn new(r#type: UrlType, server: Url, query: Option<ConvQuery>) -> Self {
+        Self { r#type, server, query }
     }
 
     pub fn empty() -> Self {
         Self {
             r#type: UrlType::Raw,
-            desc: UrlType::Raw.label(),
             server: Url::parse("http://example.com").unwrap(),
-            path: None,
             query: None,
         }
     }
@@ -43,18 +27,16 @@ impl ConvUrl {
     pub fn raw(url: Url) -> Self {
         Self {
             r#type: UrlType::Raw,
-            desc: UrlType::Raw.label(),
             server: url,
-            path: None,
             query: None,
         }
     }
 
-    pub fn create(r#type: UrlType, server: Url, client: ProxyClient, query: impl Into<String>) -> Self {
-        let desc = r#type.label();
-        let path = r#type.path(client);
-        Self::new(r#type, server, path, query, desc)
-    }
+    // pub fn create(r#type: UrlType, server: Url, client: ProxyClient, query: impl Into<String>) -> Self {
+    //     let desc = r#type.label();
+    //     let path = r#type.path(client);
+    //     Self::new(r#type, server, path, query, desc)
+    // }
 
     // pub fn raw_profile(url: Url, path: impl Into<String>, query: impl Into<String>) -> Self {
     //     Self::new(UrlType::RawProfile, url, path, query, UrlType::RawProfile.label())
@@ -71,28 +53,32 @@ impl ConvUrl {
     // }
 }
 
-impl From<&ConvUrl> for Url {
-    fn from(value: &ConvUrl) -> Self {
+impl TryFrom<&ConvUrl> for Url {
+    type Error = EncodeUrlError;
+
+    fn try_from(value: &ConvUrl) -> Result<Self, Self::Error> {
         let mut url = value.server.clone();
-        if let Some(path) = &value.path {
-            url.set_path(path);
-        }
-        if let Some(query) = &value.query {
-            url.set_query(Some(query));
-        }
-        url
+        url.set_path(value.r#type.path());
+        let query = value.query.as_ref().map(serde_qs::to_string).transpose()?;
+        url.set_query(query.as_ref().map(|s| s.as_str()));
+        Ok(url)
     }
 }
 
-impl From<ConvUrl> for Url {
-    fn from(value: ConvUrl) -> Self {
-        Url::from(&value)
+impl TryFrom<ConvUrl> for Url {
+    type Error = EncodeUrlError;
+
+    fn try_from(value: ConvUrl) -> Result<Self, Self::Error> {
+        Url::try_from(&value)
     }
 }
 
 impl Display for ConvUrl {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", Url::from(self))
+        match Url::try_from(self) {
+            Ok(url) => write!(f, "{}", url),
+            Err(error) => write!(f, "error: {}", error),
+        }
     }
 }
 
@@ -103,7 +89,7 @@ pub enum UrlType {
     RawProfile,
     Profile,
     ProxyProvider,
-    RuleProvider(Policy),
+    RuleProvider,
 }
 
 impl UrlType {
@@ -113,19 +99,17 @@ impl UrlType {
             UrlType::RawProfile => "转换前订阅配置".to_string(),
             UrlType::Profile => "转换后订阅配置".to_string(),
             UrlType::ProxyProvider => "代理提供者".to_string(),
-            UrlType::RuleProvider(policy) => {
-                format!("规则集: {}", SurgeRenderer::render_provider_name_for_policy(policy))
-            }
+            UrlType::RuleProvider => "规则提供者".to_string(),
         }
     }
 
-    pub fn path(&self, client: ProxyClient) -> String {
+    pub fn path(&self) -> &'static str {
         match self {
-            UrlType::Raw => format!("/raw/{}", client.as_str()),
-            UrlType::RawProfile => format!("/raw-profile/{}", client.as_str()),
-            UrlType::Profile => format!("/profile/{}", client.as_str()),
-            UrlType::ProxyProvider => format!("/proxy-provider/{}", client.as_str()),
-            UrlType::RuleProvider(_) => format!("/rule-provider/{}", client.as_str()),
+            UrlType::Raw => "/raw",
+            UrlType::RawProfile => "/raw-profile",
+            UrlType::Profile => "/profile",
+            UrlType::ProxyProvider => "/proxy-provider",
+            UrlType::RuleProvider => "/rule-provider",
         }
     }
 }
@@ -143,7 +127,7 @@ impl Display for UrlType {
             UrlType::RawProfile => write!(f, "raw_profile"),
             UrlType::Profile => write!(f, "profile"),
             UrlType::ProxyProvider => write!(f, "proxy_provider"),
-            UrlType::RuleProvider(_) => write!(f, "rule_provider"),
+            UrlType::RuleProvider => write!(f, "rule_provider"),
         }
     }
 }
