@@ -1,15 +1,10 @@
+#[allow(unused)]
+mod testkit;
+
+use crate::testkit::url_builder;
 use convertor::config::proxy_client::ProxyClient;
 use convertor::url::conv_query::ConvQuery;
-use convertor::url::url_builder::UrlBuilder;
-use url::Url;
-
-fn url_builder(client: ProxyClient) -> color_eyre::Result<UrlBuilder> {
-    let server = Url::parse("http://127.0.0.1:8080")?;
-    let sub_url = Url::parse("https://localhost/subscription?token=bppleman")?;
-    let secret = "bppleman_secret";
-    let url_builder = UrlBuilder::new(secret, client, server.clone(), sub_url.clone(), 86400, true)?;
-    Ok(url_builder)
-}
+use serde::{Deserialize, Serialize};
 
 #[test]
 fn test_serde_qs() -> color_eyre::Result<()> {
@@ -20,5 +15,23 @@ fn test_serde_qs() -> color_eyre::Result<()> {
 
     let query: ConvQuery = serde_qs::from_str(&query_str)?;
     println!("{:#?}", query);
+    Ok(())
+}
+
+#[test]
+fn test_serde_string() -> color_eyre::Result<()> {
+    #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
+    struct Query {
+        pub a: String,
+        pub b: String,
+    }
+    let query = Query {
+        a: "%%%25".to_string(),
+        b: "world".to_string(),
+    };
+    let ser = serde_qs::to_string(&query)?;
+    println!("{}", ser);
+    let des: Query = serde_qs::from_str(&ser)?;
+    assert_eq!(query, des);
     Ok(())
 }
