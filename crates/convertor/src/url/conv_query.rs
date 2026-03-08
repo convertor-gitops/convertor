@@ -1,10 +1,14 @@
+use crate::common::encrypt::Encryptor;
 use crate::config::proxy_client::ProxyClient;
 use crate::core::profile::policy::Policy;
-use crate::error::{EncodeUrlError, QueryError};
-use serde::{Deserialize, Serialize};
+use crate::error::ConvQueryError;
+use serde::ser::SerializeStruct;
+use serde::{Deserialize, Serialize, Serializer};
+use std::fmt::{Display, Formatter};
+use std::str::FromStr;
 use url::Url;
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Deserialize)]
 pub struct ConvQuery {
     // common
     pub server: Url,
@@ -18,10 +22,78 @@ pub struct ConvQuery {
     // rule provider
     #[serde(skip_serializing_if = "Option::is_none")]
     pub policy: Option<Policy>,
+}
 
-    // sub logs
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub secret: Option<String>,
+impl ConvQuery {
+    pub fn encrypt(self, encryptor: &Encryptor) -> Result<Self, ConvQueryError> {
+        let query = ConvQuery {
+            server: self.server,
+            sub_url: encryptor.encrypt(&self.sub_url)?,
+            client: self.client,
+            interval: self.interval,
+            strict: self.strict,
+            policy: self.policy,
+        };
+        Ok(query)
+    }
+
+    pub fn decrypt(self, encryptor: &Encryptor) -> Result<Self, ConvQueryError> {
+        let query = ConvQuery {
+            server: self.server,
+            sub_url: encryptor.decrypt(&self.sub_url)?,
+            client: self.client,
+            interval: self.interval,
+            strict: self.strict,
+            policy: self.policy,
+        };
+        Ok(query)
+    }
+}
+
+impl Serialize for ConvQuery {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let len = 4 + if self.strict.is_some() { 1 } else { 0 } + if self.policy.is_some() { 1 } else { 0 };
+        let mut state = serializer.serialize_struct("ConvQuery", len)?;
+        state.serialize_field("server", &self.server)?;
+        state.serialize_field("client", &self.client)?;
+        state.serialize_field("interval", &self.interval)?;
+        if let Some(strict) = self.strict {
+            state.serialize_field("strict", &strict)?;
+        }
+        if let Some(policy) = &self.policy {
+            state.serialize_field("policy", policy)?;
+        }
+        state.serialize_field("sub_url", &self.sub_url)?;
+        state.end()
+    }
+}
+
+impl FromStr for ConvQuery {
+    type Err = ConvQueryError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        serde_qs::from_str(s).map_err(|e| ConvQueryError::Parse(s.to_string(), e))
+    }
+}
+
+impl TryInto<String> for &ConvQuery {
+    type Error = ConvQueryError;
+
+    fn try_into(self) -> Result<String, Self::Error> {
+        serde_qs::to_string(self).map_err(|e| ConvQueryError::Encode(self.clone(), e))
+    }
+}
+
+impl Display for ConvQuery {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match serde_qs::to_string(self) {
+            Ok(query) => write!(f, "{}", query),
+            Err(error) => write!(f, "error: {}", error),
+        }
+    }
 }
 
 // impl ConvQuery {
@@ -161,37 +233,22 @@ pub struct ConvQuery {
 //     }
 // }
 
-impl ConvQuery {
-    pub fn check_for_profile(self) -> Result<Self, QueryError> {
-        if self.strict.is_none() {
-            return Err(QueryError::Encode(EncodeUrlError::NotFoundParam("profile", "strict")));
-        }
-        Ok(self)
-    }
-
-    pub fn check_for_rule_provider(self) -> Result<(Self, Policy), QueryError> {
-        let Some(policy) = self.policy.clone() else {
-            return Err(QueryError::Encode(EncodeUrlError::NotFoundParam("rule provider", "policy")));
-        };
-        Ok((self, policy))
-    }
-
-    pub fn check_for_sub_logs(self, secret: impl AsRef<str>) -> Result<Self, QueryError> {
-        self.validate_secret(secret)
-    }
-
-    pub fn check_for_subscription(self) -> Result<Self, QueryError> {
-        self.check_for_profile()
-    }
-
-    fn validate_secret(self, secret: impl AsRef<str>) -> Result<Self, QueryError> {
-        let secret = secret.as_ref();
-        if self.secret.is_none() {
-            return Err(QueryError::Encode(EncodeUrlError::NotFoundParam("validate secret", "secret")));
-        }
-        if self.secret.as_deref() != Some(secret) {
-            return Err(QueryError::Unauthorized("无效的密钥".to_string()));
-        }
-        Ok(self)
-    }
-}
+// impl ConvQuery {
+//     pub fn check_for_profile(self) -> Result<Self, QueryError> {
+//         if self.strict.is_none() {
+//             return Err(QueryError::Encode(EncodeUrlError::NotFoundParam("profile", "strict")));
+//         }
+//         Ok(self)
+//     }
+//
+//     pub fn check_for_rule_provider(self) -> Result<(Self, Policy), QueryError> {
+//         let Some(policy) = self.policy.clone() else {
+//             return Err(QueryError::Encode(EncodeUrlError::NotFoundParam("rule provider", "policy")));
+//         };
+//         Ok((self, policy))
+//     }
+//
+//     pub fn check_for_subscription(self) -> Result<Self, QueryError> {
+//         self.check_for_profile()
+//     }
+// }

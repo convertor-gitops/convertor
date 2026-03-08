@@ -1,5 +1,5 @@
 use crate::core::profile::rule::Rule;
-use crate::error::{EncodeUrlError, UrlBuilderError};
+use crate::error::{ConvUrlError, UrlBuilderError};
 use thiserror::Error;
 
 /// 所有解析失败场景的统一错误
@@ -42,7 +42,7 @@ pub enum ParseError {
     FmtError(#[from] std::fmt::Error),
 
     #[error(transparent)]
-    YamlError(#[from] serde_yaml::Error),
+    YamlError(#[from] serde_yml::Error),
 }
 
 #[derive(Debug, Error)]
@@ -54,5 +54,5 @@ pub enum ConvertError {
     UrlBuilderError(#[from] UrlBuilderError),
 
     #[error(transparent)]
-    EncodeUrlError(#[from] EncodeUrlError),
+    ConvUrlError(#[from] ConvUrlError),
 }

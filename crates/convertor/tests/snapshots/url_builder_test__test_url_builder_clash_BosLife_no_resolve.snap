@@ -1,5 +1,0 @@
----
-source: crates/convertor/tests/url_builder_test.rs
-expression: rule_provider_url.to_string()
----
-http://127.0.0.1:8080/rule-provider/clash?interval=86400&policy[name]=BosLife&policy[option]=no-resolve&policy[is_subscription]=false&sub_url=qDbvzIt3DcfaQVl8UVdIjXck4D-42Eo3c6g0ZR2cc7lpxUFnkUEWW0fTRfMAmY3yU3f-ESJYD93o5YDKtEzSe1ATkzfrq9RxPdh7fMif0IOZXScDcg

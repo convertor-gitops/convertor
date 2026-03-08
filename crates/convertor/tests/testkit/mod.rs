@@ -17,11 +17,23 @@ pub(super) fn init_test() -> PathBuf {
     base_dir
 }
 
-pub(super) fn url_builder(client: ProxyClient) -> color_eyre::Result<UrlBuilder> {
-    let server = Url::parse("http://127.0.0.1:8080")?;
-    let sub_url = Url::parse("https://localhost/subscription?token=bppleman")?;
+pub(super) fn encryptor(label: impl AsRef<str>) -> Encryptor {
     let secret = "bppleman_secret";
-    let encryptor = Encryptor::new_with_label(secret.as_bytes(), "url_builder");
+    Encryptor::new_with_label(secret, label)
+}
+
+pub(super) fn server_url() -> color_eyre::Result<Url> {
+    Ok(Url::parse("http://127.0.0.1:8080")?)
+}
+
+pub(super) fn subscription_url() -> color_eyre::Result<Url> {
+    Ok(Url::parse("https://convertor.bppleman.com/subscription?token=bppleman")?)
+}
+
+pub(super) fn url_builder(client: ProxyClient, enc_label: impl AsRef<str>) -> color_eyre::Result<UrlBuilder> {
+    let server = server_url()?;
+    let sub_url = subscription_url()?;
+    let encryptor = encryptor(enc_label);
     let url_builder = UrlBuilder::new(encryptor, client, server.clone(), sub_url.clone(), 86400, true)?;
     Ok(url_builder)
 }
@@ -32,8 +44,11 @@ pub(super) fn policies() -> [Policy; 7] {
         Policy::new("BosLife", None, false),
         Policy::new("BosLife", Some("no-resolve"), false),
         Policy::new("BosLife", Some("force-remote-dns"), false),
-        Policy::direct_policy(None),
-        Policy::direct_policy(Some("no-resolve")),
-        Policy::direct_policy(Some("force-remote-dns")),
+        Policy::direct_policy(),
+        Policy::direct_policy_with_option("no-resolve"),
+        Policy::direct_policy_with_option("force-remote-dns"),
     ]
 }
+
+pub(super) const SURGE_PROFILE: &str = include_str!("../../test-assets/surge/mock_profile.conf");
+pub(super) const CLASH_PROFILE: &str = include_str!("../../test-assets/clash/mock_profile.yaml");

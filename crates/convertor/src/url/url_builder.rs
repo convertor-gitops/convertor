@@ -44,7 +44,12 @@ impl UrlBuilder {
         Ok(builder)
     }
 
-    pub fn from_conv_query(encryptor: Encryptor, query: ConvQuery) -> Result<Self, UrlBuilderError> {
+    pub fn from_conv_url(encryptor: Encryptor, url: ConvUrl) -> Result<Self, UrlBuilderError> {
+        let query = url
+            .decrypt(&encryptor)
+            .map_err(UrlBuilderError::ConUrlError)?
+            .take_query()
+            .ok_or(UrlBuilderError::ConvUrlNoQuery)?;
         let ConvQuery {
             server,
             sub_url,
@@ -52,44 +57,70 @@ impl UrlBuilder {
             interval,
             strict,
             policy: _,
-            secret: _,
         } = query;
         let strict = strict.unwrap_or(true);
-        let sub_url = sub_url.parse::<Url>().map_err(UrlBuilderError::ParseUrlError)?;
+        let sub_url = sub_url.parse::<Url>().map_err(UrlBuilderError::UrlError)?;
         let url_builder = Self::new(encryptor, client, server, sub_url, interval, strict)?;
         Ok(url_builder)
     }
 
-    pub fn build_raw_url(&self) -> ConvUrl {
+    pub fn build_original_url(&self) -> Result<ConvUrl, UrlBuilderError> {
         let mut url = self.sub_url.clone();
         url.query_pairs_mut().append_pair("flag", self.client.as_str());
-        ConvUrl::raw(url)
+        ConvUrl::original(url)
+            .encrypt(&self.encryptor)
+            .map_err(UrlBuilderError::ConUrlError)
     }
 
-    pub fn build_raw_profile_url(&self) -> ConvUrl {
+    pub fn build_raw_url(&self) -> Result<ConvUrl, UrlBuilderError> {
         let query = self.as_profile_query();
-        ConvUrl::new(UrlType::RawProfile, self.server.clone(), Some(query))
+        ConvUrl::new(UrlType::Raw, self.server.clone(), Some(query))
+            .encrypt(&self.encryptor)
+            .map_err(UrlBuilderError::ConUrlError)
     }
 
-    pub fn build_profile_url(&self) -> ConvUrl {
+    pub fn build_profile_url(&self) -> Result<ConvUrl, UrlBuilderError> {
         let query = self.as_profile_query();
         ConvUrl::new(UrlType::Profile, self.server.clone(), Some(query))
+            .encrypt(&self.encryptor)
+            .map_err(UrlBuilderError::ConUrlError)
     }
 
-    pub fn build_rule_provider_url(&self, policy: &Policy) -> ConvUrl {
+    pub fn build_proxy_provider_url(&self) -> Result<ConvUrl, UrlBuilderError> {
+        let query = self.as_proxy_provider_query();
+        ConvUrl::new(UrlType::ProxyProvider, self.server.clone(), Some(query))
+            .encrypt(&self.encryptor)
+            .map_err(UrlBuilderError::ConUrlError)
+    }
+
+    pub fn build_rule_provider_url(&self, policy: &Policy) -> Result<ConvUrl, UrlBuilderError> {
         let query = self.as_rule_provider_query(policy);
         ConvUrl::new(UrlType::RuleProvider, self.server.clone(), Some(query))
+            .encrypt(&self.encryptor)
+            .map_err(UrlBuilderError::ConUrlError)
     }
 
     // 构造专属 Surge 的订阅头
     pub fn build_surge_header(&self, r#type: UrlType) -> Result<SurgeHeader, UrlBuilderError> {
         let url = match r#type {
+            UrlType::Original => self.build_original_url(),
             UrlType::Raw => self.build_raw_url(),
-            UrlType::RawProfile => self.build_raw_profile_url(),
             UrlType::Profile => self.build_profile_url(),
-            _ => return Err(UrlBuilderError::UnsupportedUrlType(r#type)),
-        };
+            _ => return Err(UrlBuilderError::CannotBuildSurgeHeader(r#type)),
+        }?;
         Ok(SurgeHeader::new(url, self.interval, self.strict))
+    }
+
+    pub fn build_download_url(&self, url: impl ToString) -> Result<Url, UrlBuilderError> {
+        let mut download_url = self.server.clone();
+        download_url.set_path("/download");
+        let query = [("url", url.to_string())];
+        download_url.set_query(Some(
+            serde_qs::to_string(&query)
+                .map_err(|e| UrlBuilderError::DownloadUrlError(url.to_string(), e))?
+                .as_str(),
+        ));
+        Ok(download_url)
     }
 }
 
@@ -102,8 +133,11 @@ impl UrlBuilder {
             interval: self.interval,
             strict: Some(self.strict),
             policy: None,
-            secret: None,
         }
+    }
+
+    pub fn as_proxy_provider_query(&self) -> ConvQuery {
+        self.as_profile_query()
     }
 
     pub fn as_rule_provider_query(&self, policy: &Policy) -> ConvQuery {

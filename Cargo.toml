@@ -39,7 +39,7 @@ headers = { version = "0.4.1", default-features = false }
 # 序列化/反序列化/配置
 serde = { version = "1.0.228", default-features = false }
 serde_json = { version = "1.0.145", default-features = false }
-serde_yaml = { version = "0.9.33", default-features = false }
+serde_yml = { version = "0.0.12", default-features = false }
 serde_qs = { version = "1.0.0", default-features = false }
 #serde_qs_ext = { version = "0.12.0", default-features = false }
 toml = { version = "0.9.8", default-features = false }

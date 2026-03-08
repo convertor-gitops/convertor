@@ -1,0 +1,13 @@
+---
+source: crates/convertor/tests/profile_test.rs
+expression: payload
+---
+DOMAIN-KEYWORD,beetalk,BosLife,force-remote-dns
+DOMAIN-KEYWORD,blogspot,BosLife,force-remote-dns
+DOMAIN-KEYWORD,dropbox,BosLife,force-remote-dns
+DOMAIN-KEYWORD,facebook,BosLife,force-remote-dns
+DOMAIN-SUFFIX,openai.com,BosLife,force-remote-dns
+DOMAIN-SUFFIX,gemini.google.com,BosLife,force-remote-dns
+DOMAIN-SUFFIX,proactivebackend-pa.googleapis.com,BosLife,force-remote-dns
+DOMAIN-SUFFIX,aisandbox-pa.googleapis.com,BosLife,force-remote-dns
+DOMAIN-SUFFIX,robinfrontend-pa.googleapis.com,BosLife,force-remote-dns

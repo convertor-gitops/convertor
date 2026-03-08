@@ -4,7 +4,7 @@ use crate::core::profile::proxy_group::{ProxyGroup, ProxyGroupType};
 use crate::core::profile::rule::{Rule, RuleType};
 use crate::core::profile::surge_profile::SurgeProfile;
 use crate::error::ParseError;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::fmt::Write;
 use std::str::FromStr;
 use tracing::{instrument, trace};
@@ -53,6 +53,7 @@ impl SurgeParser {
             .into_iter()
             .map(|(k, v)| (k.to_owned(), v.into_iter().map(str::to_owned).collect()))
             .collect();
+        let rule_providers = BTreeMap::new();
 
         Ok(SurgeProfile {
             header,
@@ -62,8 +63,7 @@ impl SurgeParser {
             rules,
             url_rewrite,
             misc,
-            policy_of_rules: HashMap::new(),
-            sorted_policy_list: Vec::new(),
+            rule_providers,
         })
     }
 
@@ -131,13 +131,10 @@ impl SurgeParser {
             line: 0,
             reason: format!("Proxy 缺失 server: {line}"),
         })?;
-        let port = fields
-            .next()
-            .and_then(|p| p.parse::<u16>().ok())
-            .ok_or_else(|| ParseError::Proxy {
-                line: 0,
-                reason: format!("Proxy 缺失 port 或格式错误: {line}"),
-            })?;
+        let port = fields.next().and_then(|p| p.parse::<u16>().ok()).ok_or_else(|| ParseError::Proxy {
+            line: 0,
+            reason: format!("Proxy 缺失 port 或格式错误: {line}"),
+        })?;
 
         // 避免 HashMap，直接解构
         let mut password = None;
@@ -198,22 +195,18 @@ impl SurgeParser {
             });
         };
         let mut fields = value.split(',');
-        let Some(r#type) = fields
-            .next()
-            .map(str::trim)
-            .and_then(|t| t.parse::<ProxyGroupType>().ok())
-        else {
+        let Some(r#type) = fields.next().map(str::trim).and_then(|t| t.parse::<ProxyGroupType>().ok()) else {
             return Err(ParseError::ProxyGroup {
                 line: 0,
                 reason: format!("Proxy Group 缺失 type 或格式错误: {line}"),
             });
         };
-        let proxies = fields.map(str::trim).map(str::to_string).collect::<Vec<_>>();
+        let proxies = Some(fields.map(str::trim).map(str::to_string).collect::<Vec<_>>());
         let proxy_group = ProxyGroup {
             name: name.trim().to_string(),
             r#type,
             proxies,
-            comment: None,
+            ..Default::default()
         };
         Ok(proxy_group)
     }
@@ -240,7 +233,7 @@ impl SurgeParser {
                     option: None,
                     is_subscription: false,
                 };
-                (None, policy)
+                (None, Some(policy))
             }
             _ => {
                 let value = fields[1].trim().to_string();
@@ -249,27 +242,24 @@ impl SurgeParser {
                     option: fields.get(3).map(|o| o.to_string()),
                     is_subscription: false,
                 };
-                (Some(value), policy)
+                (Some(value), Some(policy))
             }
         };
 
         let rule_type = RuleType::from_str(fields[0].trim())?;
+        let comment = None;
 
         let rule = Rule {
             rule_type,
             value,
             policy,
-            comment: None,
+            comment,
         };
         Ok(rule)
     }
 
     #[instrument(skip_all)]
-    fn parse_comment<R, F, C>(
-        contents: impl IntoIterator<Item = impl AsRef<str>>,
-        parse: F,
-        set_comment: C,
-    ) -> Result<Vec<R>>
+    fn parse_comment<R, F, C>(contents: impl IntoIterator<Item = impl AsRef<str>>, parse: F, set_comment: C) -> Result<Vec<R>>
     where
         F: Fn(&str) -> Result<R>,
         C: Fn(&mut R, Option<String>),
@@ -318,7 +308,7 @@ impl SurgeParser {
                         Ok(Rule {
                             rule_type,
                             value: Some(value),
-                            policy: Policy::default(),
+                            policy: Some(Policy::default()),
                             comment: None,
                         })
                     }

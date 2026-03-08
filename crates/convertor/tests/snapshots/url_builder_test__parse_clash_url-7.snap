@@ -1,0 +1,60 @@
+---
+source: crates/convertor/tests/url_builder_test.rs
+expression: rule_provider_url
+---
+ConvUrl {
+    type: RuleProvider,
+    server: Url {
+        scheme: "http",
+        cannot_be_a_base: false,
+        username: "",
+        password: None,
+        host: Some(
+            Ipv4(
+                127.0.0.1,
+            ),
+        ),
+        port: Some(
+            8080,
+        ),
+        path: "/",
+        query: None,
+        fragment: None,
+    },
+    query: Some(
+        ConvQuery {
+            server: Url {
+                scheme: "http",
+                cannot_be_a_base: false,
+                username: "",
+                password: None,
+                host: Some(
+                    Ipv4(
+                        127.0.0.1,
+                    ),
+                ),
+                port: Some(
+                    8080,
+                ),
+                path: "/",
+                query: None,
+                fragment: None,
+            },
+            sub_url: "jJQlxJxbOh0wpLsxb-z7FqX_F1wcs5bPmR2n2nvMMfj24WABbZzFgZhnpZg9Tz9t-nlcU-oI5W_BA-RWEIomanpYJbar5_HN_WZwzVYR_IjBh9qfIxKtp5VmvLjunrOG42E",
+            client: Clash,
+            interval: 86400,
+            strict: Some(
+                true,
+            ),
+            policy: Some(
+                Policy {
+                    name: "BosLife",
+                    option: Some(
+                        "force-remote-dns",
+                    ),
+                    is_subscription: false,
+                },
+            ),
+        },
+    ),
+}

@@ -1,0 +1,1040 @@
+port: 7890
+socks-port: 7891
+redir-port: 7892
+allow-lan: true
+mode: Rule
+log-level: info
+external-controller: '0.0.0.0:9090'
+external-ui: ''
+secret: ''
+geo-auto-update: true
+geo-update-interval: 24
+geox-url:
+  geoip: http://127.0.0.1:8080/download?0%5B0%5D=url&0%5B1%5D=https%3A%2F%2Ftestingcf.jsdelivr.net%2Fgh%2FMetaCubeX%2Fmeta-rules-dat%40release%2Fgeoip.dat
+  geosite: http://127.0.0.1:8080/download?0%5B0%5D=url&0%5B1%5D=https%3A%2F%2Ftestingcf.jsdelivr.net%2Fgh%2FMetaCubeX%2Fmeta-rules-dat%40release%2Fgeosite.dat
+  mmdb: http://127.0.0.1:8080/download?0%5B0%5D=url&0%5B1%5D=https%3A%2F%2Ftestingcf.jsdelivr.net%2Fgh%2FMetaCubeX%2Fmeta-rules-dat%40release%2Fcountry.mmdb
+  asn: http://127.0.0.1:8080/download?0%5B0%5D=url&0%5B1%5D=https%3A%2F%2Fgithub.com%2Fxishang0128%2Fgeoip%2Freleases%2Fdownload%2Flatest%2FGeoLite2-ASN.mmdb
+proxies: [ ]
+proxy-providers:
+  convertor:
+    type: http
+    url: http://127.0.0.1:8080/proxy-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&sub_url=cWfEQlE7MX2XMGqWoHSXLzmn6tLjFEMgdjVnTmCXB-H2xYxNOM_E5eMl9JdIIb1K0gtfJ-8eiwH_ZL38iWasRLQZMEoN28ocBQxOZlNpZqTUYgMBXmPrKWeESR7OiI0c86U
+    path: './proxy_providers/convertor.yaml'
+    interval: 86400
+    proxy: DIRECT
+    size-limit: 0
+    proxies:
+      - name: 剩余流量：43.9 GB
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60010
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 距离下次重置剩余：15 天
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60010
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 套餐到期：2026-04-22
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60010
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇭🇰 香港 01
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60010
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇭🇰 香港 02
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60011
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇭🇰 香港 03
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60012
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇭🇰 香港 04
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60013
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇭🇰 香港 05
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60014
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇭🇰 香港 06
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60015
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇭🇰 香港 07
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60016
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇭🇰 香港 08
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60017
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇭🇰 香港 09
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60018
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇭🇰 香港 10
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60019
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇸🇬 新加坡 01
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60030
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇸🇬 新加坡 02
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60031
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇸🇬 新加坡 03
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60032
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇸🇬 新加坡 04
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60033
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇸🇬 新加坡 05
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60034
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇸🇬 新加坡 06
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60035
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🏳️‍🌈 台湾 01
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60040
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🏳️‍🌈 台湾 02
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60041
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🏳️‍🌈 台湾 03
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60042
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🏳️‍🌈 台湾 04
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60043
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇯🇵 日本 01
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60050
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇯🇵 日本 02
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60051
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇯🇵 日本 03
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60052
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇯🇵 日本 04
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60053
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇺🇸 美国 01
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60060
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇺🇸 美国 02
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60061
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇺🇸 美国 03
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60062
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇺🇸 美国 04
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60063
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇺🇸 美国 05
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60064
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇺🇸 美国 06
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60065
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇺🇸 美国 07 - OnlyAI
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60066
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇨🇦 加拿大 01
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60099
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇰🇷 韩国 01
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60101
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇬🇧 英国 01
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60082
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇫🇷 法国 01
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60138
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+      - name: 🇩🇪 德国 01
+        type: trojan
+        server: convertor.bppleman.cn
+        port: 60125
+        password: bppleman_secret
+        udp: true
+        tfo: null
+        cipher: null
+        sni: g.alicdn.com
+        skip-cert-verify: true
+proxy-groups:
+  - name: BosLife
+    type: select
+    proxies:
+      - 🇭🇰 香港
+      - 🇸🇬 新加坡
+      - 🇨🇳🏳️‍🌈 台湾
+      - 🇯🇵 日本
+      - 🇺🇸 美国
+      - 🇨🇦 加拿大
+      - 🇰🇷 韩国
+      - 🇬🇧 英国
+      - 🇫🇷 法国
+      - 🇩🇪 德国
+  - name: Subscription Info
+    type: select
+    use:
+      - convertor
+    filter: (?i)(剩余流量：43.9 GB|距离下次重置剩余：15 天|套餐到期：2026-04-22)
+  - name: 🇭🇰 香港
+    type: url-test
+    use:
+      - convertor
+    filter: (?i)🇭🇰 香港
+  - name: 🇸🇬 新加坡
+    type: url-test
+    use:
+      - convertor
+    filter: (?i)🇸🇬 新加坡
+  - name: 🇨🇳🏳️‍🌈 台湾
+    type: url-test
+    use:
+      - convertor
+    filter: (?i)🏳️‍🌈 台湾
+  - name: 🇯🇵 日本
+    type: url-test
+    use:
+      - convertor
+    filter: (?i)🇯🇵 日本
+  - name: 🇺🇸 美国
+    type: url-test
+    use:
+      - convertor
+    filter: (?i)🇺🇸 美国
+  - name: 🇨🇦 加拿大
+    type: url-test
+    use:
+      - convertor
+    filter: (?i)🇨🇦 加拿大 01
+  - name: 🇰🇷 韩国
+    type: url-test
+    use:
+      - convertor
+    filter: (?i)🇰🇷 韩国 01
+  - name: 🇬🇧 英国
+    type: url-test
+    use:
+      - convertor
+    filter: (?i)🇬🇧 英国 01
+  - name: 🇫🇷 法国
+    type: url-test
+    use:
+      - convertor
+    filter: (?i)🇫🇷 法国 01
+  - name: 🇩🇪 德国
+    type: url-test
+    use:
+      - convertor
+    filter: (?i)🇩🇪 德国 01
+rule-providers:
+  ? name: DIRECT
+    option: null
+    is_subscription: true
+    :
+    type: http
+    url: http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D&policy%5Bis_subscription%5D=true&sub_url=NS-q46AsavtH9tx_SmdYHDEqLnL-cRQmhM86S92FG_DY5XKQzuV1pwtaJKajy4NdNLWyVzMJ6fLT__0C8N2nW7CgJ2qyKw7zefdAbpfCvOVPaf5bcf-Gv93AR1YQtqlUgME
+    path: './rule_providers/Subscription_policy.yaml'
+    interval: 86400
+    proxy:
+      name: DIRECT
+      option: null
+      is_subscription: false
+    size-limit: 0
+    format: yaml
+    behavior: classical
+    rules:
+      - rule_type: DOMAIN
+        value: '1.convertor.bppleman.com'
+        policy:
+          name: DIRECT
+          option: null
+          is_subscription: true
+        comment: null
+      - rule_type: DOMAIN
+        value: '2.convertor.bppleman.com'
+        policy:
+          name: DIRECT
+          option: null
+          is_subscription: true
+        comment: null
+      - rule_type: DOMAIN
+        value: '3.convertor.bppleman.com'
+        policy:
+          name: DIRECT
+          option: null
+          is_subscription: true
+        comment: null
+      - rule_type: DOMAIN
+        value: '4.convertor.bppleman.com'
+        policy:
+          name: DIRECT
+          option: null
+          is_subscription: true
+        comment: null
+      - rule_type: DOMAIN
+        value: '5.convertor.bppleman.com'
+        policy:
+          name: DIRECT
+          option: null
+          is_subscription: true
+        comment: null
+  ? name: BosLife
+    option: null
+    is_subscription: false
+    :
+    type: http
+    url: http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=BosLife&policy%5Boption%5D&policy%5Bis_subscription%5D=false&sub_url=DGOYlBqQQF4GfAA_4q6BjgS6Gi2Oki8UftXR8a4qEXSu5Ap9KAy2X26S3KKaqqLSXY8frfzIJxsPDoOdLwvd42EPiXHBKvxgstJ5gAtUep4_VNgMkDgiGGFEiUSCWCn1RdA
+    path: './rule_providers/BosLife_policy.yaml'
+    interval: 86400
+    proxy:
+      name: DIRECT
+      option: null
+      is_subscription: false
+    size-limit: 0
+    format: yaml
+    behavior: classical
+    rules:
+      - rule_type: PROCESS-NAME
+        value: Backup and Sync
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: PROCESS-NAME
+        value: Google Chrome
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: PROCESS-NAME
+        value: Arc
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: PROCESS-NAME
+        value: Brave Browser
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: PROCESS-NAME
+        value: ChatGPT
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: USER-AGENT
+        value: '%E7%BA%BD%E7%BA%A6%E6%97%B6%E6%8A%A5*'
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: USER-AGENT
+        value: Argo*
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: USER-AGENT
+        value: ChatGPT*
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: USER-AGENT
+        value: Colab*
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: USER-AGENT
+        value: Deepmind*
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN
+        value: openaicom-api-bdcpf8c6d2e9atf6.z01.azurefd.net
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN
+        value: openaicomproductionae4b.blob.core.windows.net
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN
+        value: production-openaicom-storage.azureedge.net
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN
+        value: static.cloudflareinsights.com
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN
+        value: v2.docs.google.com
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-KEYWORD
+        value: microsoft
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-SUFFIX
+        value: boslife.io
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-SUFFIX
+        value: boslife.net
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-SUFFIX
+        value: wikibos.com
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-SUFFIX
+        value: boswiki.net
+        policy:
+          name: BosLife
+          option: null
+          is_subscription: false
+        comment: null
+  ? name: BosLife
+    option: no-resolve
+    is_subscription: false
+    :
+    type: http
+    url: http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=BosLife&policy%5Boption%5D=no-resolve&policy%5Bis_subscription%5D=false&sub_url=PYEV3VjNO2uNHx_mNqhgTiEdU8pOapX9bgh2ctXqLZZCBTdbhqzDbNUvHYzP10bR2_fk4InYH4usAiEuDncOlk9I_yFDTvwGJs2k3XJ4k-saOHrJsffqMgRQu-7wKJOm-wA
+    path: './rule_providers/BosLife_no_resolve.yaml'
+    interval: 86400
+    proxy:
+      name: DIRECT
+      option: null
+      is_subscription: false
+    size-limit: 0
+    format: yaml
+    behavior: classical
+    rules:
+      - rule_type: IP-CIDR
+        value: '8.41.4.0/24'
+        policy:
+          name: BosLife
+          option: no-resolve
+          is_subscription: false
+        comment: null
+      - rule_type: IP-CIDR
+        value: '23.246.0.0/18'
+        policy:
+          name: BosLife
+          option: no-resolve
+          is_subscription: false
+        comment: null
+      - rule_type: IP-CIDR
+        value: '34.210.42.111/32'
+        policy:
+          name: BosLife
+          option: no-resolve
+          is_subscription: false
+        comment: null
+      - rule_type: IP-CIDR
+        value: '37.77.184.0/21'
+        policy:
+          name: BosLife
+          option: no-resolve
+          is_subscription: false
+        comment: null
+      - rule_type: IP-CIDR
+        value: '38.72.126.0/24'
+        policy:
+          name: BosLife
+          option: no-resolve
+          is_subscription: false
+        comment: null
+  ? name: BosLife
+    option: force-remote-dns
+    is_subscription: false
+    :
+    type: http
+    url: http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=BosLife&policy%5Boption%5D=force-remote-dns&policy%5Bis_subscription%5D=false&sub_url=KAzxVp4af1bIF1zUg4oQfub8mFu_EnJWirMGr3cODDZhB6XgbZSxj_gCq1OGXxEKGXEIXTmQkk7ktSsvCzl3hw5G6ik4TTTaqwaCGoXTTmDvHWYdnbCqeSc0VwXUgi-6oYA
+    path: './rule_providers/BosLife_force_remote_dns.yaml'
+    interval: 86400
+    proxy:
+      name: DIRECT
+      option: null
+      is_subscription: false
+    size-limit: 0
+    format: yaml
+    behavior: classical
+    rules:
+      - rule_type: DOMAIN-KEYWORD
+        value: beetalk
+        policy:
+          name: BosLife
+          option: force-remote-dns
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-KEYWORD
+        value: blogspot
+        policy:
+          name: BosLife
+          option: force-remote-dns
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-KEYWORD
+        value: dropbox
+        policy:
+          name: BosLife
+          option: force-remote-dns
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-KEYWORD
+        value: facebook
+        policy:
+          name: BosLife
+          option: force-remote-dns
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-SUFFIX
+        value: openai.com
+        policy:
+          name: BosLife
+          option: force-remote-dns
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-SUFFIX
+        value: gemini.google.com
+        policy:
+          name: BosLife
+          option: force-remote-dns
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-SUFFIX
+        value: proactivebackend-pa.googleapis.com
+        policy:
+          name: BosLife
+          option: force-remote-dns
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-SUFFIX
+        value: aisandbox-pa.googleapis.com
+        policy:
+          name: BosLife
+          option: force-remote-dns
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-SUFFIX
+        value: robinfrontend-pa.googleapis.com
+        policy:
+          name: BosLife
+          option: force-remote-dns
+          is_subscription: false
+        comment: null
+  ? name: DIRECT
+    option: null
+    is_subscription: false
+    :
+    type: http
+    url: http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D&policy%5Bis_subscription%5D=false&sub_url=m-B9eg-8TZeWNK0yVg1TuMBywfsLBfzg4whJ3scOpW2SxF3hdhESXiH85AihrnkLnyul1bPEMQZlR95TB4Wlv3TVuGgODtwUmCJacfH46jFh-fzXIsZYXc7IaHRkwXt8nBc
+    path: './rule_providers/DIRECT_policy.yaml'
+    interval: 86400
+    proxy:
+      name: DIRECT
+      option: null
+      is_subscription: false
+    size-limit: 0
+    format: yaml
+    behavior: classical
+    rules:
+      - rule_type: DOMAIN-SUFFIX
+        value: baidu.com
+        policy:
+          name: DIRECT
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-SUFFIX
+        value: qq.com
+        policy:
+          name: DIRECT
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-SUFFIX
+        value: taobao.com
+        policy:
+          name: DIRECT
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-SUFFIX
+        value: tencent.com
+        policy:
+          name: DIRECT
+          option: null
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-SUFFIX
+        value: alibaba.com
+        policy:
+          name: DIRECT
+          option: null
+          is_subscription: false
+        comment: null
+  ? name: DIRECT
+    option: no-resolve
+    is_subscription: false
+    :
+    type: http
+    url: http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D=no-resolve&policy%5Bis_subscription%5D=false&sub_url=vFqgSkzZjavl1vi0y0AsCO6NVcjcO7Gby5osThgtg-k2nwZKJyRkUrYwYgwloCw59snyYOBNjNASssplEtMALiofZ9Fn7KGP3slnXpWqWJL6-NDZfRZwZWbL81gMPbAz3Vw
+    path: './rule_providers/DIRECT_no_resolve.yaml'
+    interval: 86400
+    proxy:
+      name: DIRECT
+      option: null
+      is_subscription: false
+    size-limit: 0
+    format: yaml
+    behavior: classical
+    rules:
+      - rule_type: IP-CIDR
+        value: '127.0.0.0/8'
+        policy:
+          name: DIRECT
+          option: no-resolve
+          is_subscription: false
+        comment: null
+      - rule_type: IP-CIDR
+        value: '192.168.0.0/16'
+        policy:
+          name: DIRECT
+          option: no-resolve
+          is_subscription: false
+        comment: null
+      - rule_type: IP-CIDR
+        value: '172.16.0.0/12'
+        policy:
+          name: DIRECT
+          option: no-resolve
+          is_subscription: false
+        comment: null
+      - rule_type: IP-CIDR
+        value: '100.64.0.0/10'
+        policy:
+          name: DIRECT
+          option: no-resolve
+          is_subscription: false
+        comment: null
+      - rule_type: IP-CIDR
+        value: '10.0.0.0/8'
+        policy:
+          name: DIRECT
+          option: no-resolve
+          is_subscription: false
+        comment: null
+  ? name: DIRECT
+    option: force-remote-dns
+    is_subscription: false
+    :
+    type: http
+    url: http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D=force-remote-dns&policy%5Bis_subscription%5D=false&sub_url=1FYNuEuqWPakcQu-1GdglBrxgydGyIPpL7CEzDtzZiQlDUCvDMsy_OoBtHeLKFmTltWjSs9fwNlw37oqwJ1pqIOVQp-YzIqpEvO3kpUu-WORCLFeN0zRtFOoR-vSQgUVGLs
+    path: './rule_providers/DIRECT_force_remote_dns.yaml'
+    interval: 86400
+    proxy:
+      name: DIRECT
+      option: null
+      is_subscription: false
+    size-limit: 0
+    format: yaml
+    behavior: classical
+    rules:
+      - rule_type: DOMAIN-SUFFIX
+        value: apple.com
+        policy:
+          name: DIRECT
+          option: force-remote-dns
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-SUFFIX
+        value: icloud.com
+        policy:
+          name: DIRECT
+          option: force-remote-dns
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-SUFFIX
+        value: crashlytics.com
+        policy:
+          name: DIRECT
+          option: force-remote-dns
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-SUFFIX
+        value: bing.com
+        policy:
+          name: DIRECT
+          option: force-remote-dns
+          is_subscription: false
+        comment: null
+      - rule_type: DOMAIN-SUFFIX
+        value: msn.com
+        policy:
+          name: DIRECT
+          option: force-remote-dns
+          is_subscription: false
+        comment: null
+rules:
+  - rule_type: RULE-SET
+    value: Subscription_policy
+    policy:
+      name: DIRECT
+      option: null
+      is_subscription: true
+    comment: null
+  - rule_type: RULE-SET
+    value: BosLife_policy
+    policy:
+      name: BosLife
+      option: null
+      is_subscription: false
+    comment: null
+  - rule_type: RULE-SET
+    value: BosLife_no_resolve
+    policy:
+      name: BosLife
+      option: no-resolve
+      is_subscription: false
+    comment: null
+  - rule_type: RULE-SET
+    value: BosLife_force_remote_dns
+    policy:
+      name: BosLife
+      option: force-remote-dns
+      is_subscription: false
+    comment: null
+  - rule_type: RULE-SET
+    value: DIRECT_policy
+    policy:
+      name: DIRECT
+      option: null
+      is_subscription: false
+    comment: null
+  - rule_type: RULE-SET
+    value: DIRECT_no_resolve
+    policy:
+      name: DIRECT
+      option: no-resolve
+      is_subscription: false
+    comment: null
+  - rule_type: RULE-SET
+    value: DIRECT_force_remote_dns
+    policy:
+      name: DIRECT
+      option: force-remote-dns
+      is_subscription: false
+    comment: null
+  - rule_type: GEOIP
+    value: CN
+    policy:
+      name: DIRECT
+      option: null
+      is_subscription: false
+    comment: null
+  - rule_type: MATCH
+    value: null
+    policy:
+      name: DIRECT
+      option: null
+      is_subscription: false
+    comment: null

@@ -1,0 +1,11 @@
+---
+source: crates/convertor/tests/url_builder_test.rs
+expression: rule_provider_urls
+---
+http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D&policy%5Bis_subscription%5D=true&sub_url=ZZFe1s_FmzIa_Ln_lyiOwYVCIra-oWDR4GMUY11oD9GNMRKvWnUjPS7Lwcs6YgtKn_K8EiURyarU_9kHT3l6uXq2zLWWtSqy-kRv2X8UZNCxHLkK1A
+http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=BosLife&policy%5Boption%5D&policy%5Bis_subscription%5D=false&sub_url=0wkAzJuHLv6aGnTet5z2AWc6WLXAdIMUzvingmEP_sR7WAf_p8mbyCYyVrpyOE4pd7T5xVkSUynvrFoAEgEl7klUJboOK5n128g3ymix8ZWH7V4BJA
+http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=BosLife&policy%5Boption%5D=no-resolve&policy%5Bis_subscription%5D=false&sub_url=IF6WZJ2jE72L0E0_FY78SLsBcvHUw0Hv_AySVpr8oVAHxtmzGdBgVv0e6V7yaCESS6GP8KYgz6PMAOWbDWKxyuCEQaYT1EzoYqJXTaGJpWwYmBW1MQ
+http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=BosLife&policy%5Boption%5D=force-remote-dns&policy%5Bis_subscription%5D=false&sub_url=nlpn_VXDiklVfFAlZyuD16-aYEiTOfPUwUWK_KZn-6Nvt03QH13Ra09pF4AgyxvxJipWeEGX3wloqO2XPFxdgUziPiFWConVPgyKrvIs6Eq-NKwxeQ
+http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D&policy%5Bis_subscription%5D=false&sub_url=Z1HDp9edx4WSvFxMNUMWAQjf4scEaU__U55xA-UjzykHQqoCD6cmV9-nLUuB2vNPxghI7xFIytkcFbSztSdT3sgxtyHjMI3fVKiJO0J1Zf_yMcQoxQ
+http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D=no-resolve&policy%5Bis_subscription%5D=false&sub_url=Q-DVn0iPSOgm0KKSUIHi2vxbeASRM_HuoX7HWK1-elrx0WO-wptJgjpVlJFBDPd0s_6CZfcN8ky52E4VfMd4c6trUo7Ait13U7XPUA7drt6muP7LCg
+http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D=force-remote-dns&policy%5Bis_subscription%5D=false&sub_url=P7kfkNcBbQRjU5dl02kTB86v6vOPbrWi7m_v_dLWdV07hy5s58vZmSEdWNBAEabWR5u851cMwrqDEe_KCN74ALWIkf7jwFyQdoNf0pijnlLXlvl1FA

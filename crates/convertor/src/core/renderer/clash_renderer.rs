@@ -1,12 +1,13 @@
 use crate::config::proxy_client::ProxyClient;
-use crate::core::profile::clash_profile::ClashProfile;
+use crate::core::profile::clash_profile::{ClashProfile, ProxyProvider, RuleProvider};
 use crate::core::profile::policy::Policy;
 use crate::core::profile::proxy::Proxy;
 use crate::core::profile::proxy_group::ProxyGroup;
-use crate::core::profile::rule::{ProviderRule, Rule};
-use crate::core::profile::rule_provider::RuleProvider;
-use crate::core::renderer::{INDENT, Renderer};
+use crate::core::profile::rule::Rule;
+use crate::core::renderer::Renderer;
+use crate::core::util::{indent_line, indent_lines};
 use crate::error::RenderError;
+use std::collections::BTreeMap;
 use std::fmt::Write;
 use tracing::instrument;
 
@@ -26,19 +27,30 @@ impl Renderer for ClashRenderer {
         let mut output = String::new();
         writeln!(output, "{}", Self::render_general(profile)?)?;
 
-        let proxies = Self::render_proxies(&profile.proxies)?;
-        writeln!(output, "proxies:")?;
-        writeln!(output, "{proxies}")?;
+        if profile.proxy_providers.is_empty() {
+            let proxies = Self::render_proxies(&profile.proxies)?;
+            writeln!(output)?;
+            writeln!(output, "proxies:")?;
+            writeln!(output, "{proxies}")?;
+        } else {
+            let proxy_providers = Self::render_proxy_providers(&profile.proxy_providers)?;
+            writeln!(output)?;
+            writeln!(output, "proxy-providers:")?;
+            writeln!(output, "{proxy_providers}")?;
+        }
 
         let proxy_groups = Self::render_proxy_groups(&profile.proxy_groups)?;
+        writeln!(output)?;
         writeln!(output, "proxy-groups:")?;
         writeln!(output, "{proxy_groups}")?;
 
         let rule_providers = Self::render_rule_providers(&profile.rule_providers)?;
+        writeln!(output)?;
         writeln!(output, "rule-providers:")?;
         writeln!(output, "{rule_providers}")?;
 
         let rules = Self::render_rules(&profile.rules)?;
+        writeln!(output)?;
         writeln!(output, "rules:")?;
         writeln!(output, "{rules}")?;
 
@@ -59,6 +71,14 @@ impl Renderer for ClashRenderer {
         if let Some(secret) = &profile.secret {
             writeln!(output, r#"secret: "{secret}""#)?;
         }
+        writeln!(output)?;
+        writeln!(output, "geo-auto-update: {}", profile.geo_auto_update)?;
+        writeln!(output, "geo-update-interval: {}", profile.geo_update_interval)?;
+        writeln!(output, "geox-url:")?;
+        writeln!(output, "{}", indent_line(format!(r#"geoip: "{}""#, profile.geox_url.geoip)))?;
+        writeln!(output, "{}", indent_line(format!(r#"geosite: "{}""#, profile.geox_url.geosite)))?;
+        writeln!(output, "{}", indent_line(format!(r#"mmdb: "{}""#, profile.geox_url.mmdb)))?;
+        writeln!(output, "{}", indent_line(format!(r#"asn: "{}""#, profile.geox_url.asn)))?;
         Ok(output)
     }
 
@@ -94,7 +114,27 @@ impl Renderer for ClashRenderer {
         write!(output, "{{ ")?;
         write!(output, r#"name: "{}""#, proxy_group.name)?;
         write!(output, r#", type: "{}""#, proxy_group.r#type.as_str())?;
-        write!(output, r#", proxies: [ {} ]"#, proxy_group.proxies.join(", "))?;
+        if let Some(proxies) = proxy_group.proxies.as_ref()
+            && !proxies.is_empty()
+        {
+            write!(output, r#", proxies: [ {} ]"#, proxies.join(", "))?;
+        }
+        if let Some(uses) = proxy_group.uses.as_ref()
+            && !uses.is_empty()
+        {
+            write!(output, r#", uses: [ {} ]"#, uses.join(", "))?;
+        }
+        if let Some(filter) = proxy_group.filter.as_ref()
+            && !filter.is_empty()
+        {
+            write!(output, r#", filter: "{}""#, filter)?;
+        }
+
+        if let Some(exclude_filter) = proxy_group.exclude_filter.as_ref()
+            && !exclude_filter.is_empty()
+        {
+            write!(output, r#", exclude-filter: "{}""#, exclude_filter)?;
+        }
         write!(output, " }}")?;
         Ok(output)
     }
@@ -102,62 +142,62 @@ impl Renderer for ClashRenderer {
     fn render_rule(rule: &Rule) -> Result<String> {
         let mut output = String::new();
         write!(output, "{}", rule.rule_type.as_str())?;
-        if let Some(value) = &rule.value {
-            write!(output, ",{value}")?;
+        if let Some(value) = rule.value.as_ref() {
+            write!(output, ",{}", value)?;
         }
-        write!(output, ",{}", Self::render_policy(&rule.policy)?)?;
+        if let Some(policy) = rule.policy.as_ref() {
+            write!(output, ",{}", Self::render_policy(policy)?)?;
+        }
         Ok(output)
     }
 
-    fn render_rule_for_provider(rule: &Rule) -> Result<String> {
-        Self::render_rule(rule)
+    fn render_provider_name_for_policy(policy: &Policy) -> String {
+        policy.snake_case_name()
     }
+}
 
-    fn render_provider_rule(rule: &ProviderRule) -> Result<String> {
-        Ok(format!("{},{}", rule.rule_type.as_str(), rule.value))
-    }
-
+impl ClashRenderer {
     #[instrument(skip_all)]
-    fn render_rule_providers(rule_providers: &[(String, RuleProvider)]) -> Result<String> {
-        let output = rule_providers
+    fn render_proxy_providers(proxy_providers: &BTreeMap<String, ProxyProvider>) -> Result<String> {
+        let output = proxy_providers
             .iter()
-            .map(Self::render_rule_provider)
-            .map(|line| line.map(|line| format!("{:indent$}{}", "", line, indent = INDENT)))
+            .map(Self::render_proxy_provider)
+            .map(|lines| lines.map(indent_lines))
             .collect::<Result<Vec<_>>>()?
             .join("\n");
         Ok(output)
     }
 
-    fn render_rule_provider(rule_provider: &(String, RuleProvider)) -> Result<String> {
-        let (name, rule_provider) = rule_provider;
-        Ok(format!(
-            r#"{}: {{ type: "{}", url: "{}", path: "{}", interval: {}, size-limit: {}, format: "{}", behavior: "{}" }}"#,
-            name,
-            rule_provider.r#type,
-            rule_provider.url,
-            rule_provider.path,
-            rule_provider.interval,
-            rule_provider.size_limit,
-            rule_provider.format,
-            rule_provider.behavior
-        ))
+    #[instrument(skip_all)]
+    fn render_proxy_provider((name, proxy_provider): (&String, &ProxyProvider)) -> Result<String> {
+        let fields = serde_yml::to_string(&proxy_provider)?
+            .lines()
+            .map(indent_line)
+            .collect::<Vec<_>>()
+            .join("\n");
+        Ok(format!("{}:\n{}", name, fields))
     }
 
-    fn render_provider_name_for_policy(policy: &Policy) -> String {
-        let mut output = if policy.is_subscription {
-            "Subscription".to_string()
-        } else {
-            policy.name.clone()
-        };
-        match &policy.option {
-            Some(option) => {
-                output.push('_');
-                output.push_str(option.replace('-', "_").as_str());
-            }
-            None => {
-                output.push_str("_policy");
-            }
-        }
-        output
+    #[instrument(skip_all)]
+    fn render_rule_providers(rule_providers: &BTreeMap<Policy, RuleProvider>) -> Result<String> {
+        let output = rule_providers
+            .iter()
+            .map(Self::render_rule_provider)
+            .map(|line| line.map(indent_line))
+            .collect::<Result<Vec<_>>>()?
+            .join("\n");
+        Ok(output)
+    }
+
+    fn render_rule_provider((policy, rule_provider): (&Policy, &RuleProvider)) -> Result<String> {
+        Ok(format!("{}: {}", policy.snake_case_name(), rule_provider.serialize()))
+    }
+
+    #[instrument(skip_all)]
+    pub fn render_proxy_provider_payload(proxies: &[Proxy]) -> Result<String> {
+        let mut output = String::new();
+        writeln!(output, "payload:")?;
+        writeln!(output, "{}", Self::render_lines(proxies, Self::render_proxy)?)?;
+        Ok(output)
     }
 }

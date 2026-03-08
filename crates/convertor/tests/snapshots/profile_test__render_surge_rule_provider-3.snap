@@ -1,0 +1,10 @@
+---
+source: crates/convertor/tests/profile_test.rs
+expression: payload
+---
+// BosLife,no-resolve
+IP-CIDR,8.41.4.0/24,BosLife,no-resolve
+IP-CIDR,23.246.0.0/18,BosLife,no-resolve
+IP-CIDR,34.210.42.111/32,BosLife,no-resolve
+IP-CIDR,37.77.184.0/21,BosLife,no-resolve
+IP-CIDR,38.72.126.0/24,BosLife,no-resolve

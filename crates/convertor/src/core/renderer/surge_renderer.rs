@@ -2,8 +2,7 @@ use crate::config::proxy_client::ProxyClient;
 use crate::core::profile::policy::Policy;
 use crate::core::profile::proxy::Proxy;
 use crate::core::profile::proxy_group::ProxyGroup;
-use crate::core::profile::rule::{ProviderRule, Rule};
-use crate::core::profile::rule_provider::RuleProvider;
+use crate::core::profile::rule::Rule;
 use crate::core::profile::surge_profile::SurgeProfile;
 use crate::core::renderer::Renderer;
 use crate::error::RenderError;
@@ -102,62 +101,31 @@ impl Renderer for SurgeRenderer {
             writeln!(output, "{comment}")?;
         }
         write!(output, "{}={}", proxy_group.name, proxy_group.r#type.as_str())?;
-        if !proxy_group.proxies.is_empty() {
-            write!(output, ",{}", proxy_group.proxies.join(","))?;
+        if let Some(proxies) = &proxy_group.proxies
+            && !proxies.is_empty()
+        {
+            write!(output, ",{}", proxies.join(","))?;
         }
         Ok(output)
     }
 
     fn render_rule(rule: &Rule) -> Result<String> {
         let mut output = String::new();
-        if let Some(comment) = &rule.comment {
+        if let Some(comment) = rule.comment.as_ref() {
             writeln!(output, "{comment}")?;
         }
         write!(output, "{}", rule.rule_type.as_str())?;
-        if let Some(value) = &rule.value {
+        if let Some(value) = rule.value.as_ref() {
             write!(output, ",{value}")?;
         }
-        write!(output, ",{}", Self::render_policy(&rule.policy)?)?;
-        Ok(output)
-    }
-
-    fn render_rule_for_provider(rule: &Rule) -> Result<String> {
-        Ok(format!(
-            "{},{},{}",
-            rule.rule_type.as_str(),
-            rule.value.as_ref().expect("规则集中的规则必须有 value"),
-            Self::render_policy(&rule.policy)?,
-        ))
-    }
-
-    fn render_provider_rule(rule: &ProviderRule) -> Result<String> {
-        let mut output = String::new();
-        if let Some(comment) = &rule.comment {
-            writeln!(output, "{comment}")?;
+        if let Some(policy) = rule.policy.as_ref() {
+            write!(output, ",{}", Self::render_policy(policy)?)?;
         }
-        write!(output, "{},{}", rule.rule_type.as_str(), rule.value)?;
         Ok(output)
-    }
-
-    fn render_rule_providers(_: &[(String, RuleProvider)]) -> Result<String> {
-        todo!("SurgeRenderer 不会渲染 [RuleProvider]");
-    }
-
-    fn render_rule_provider(_: &(String, RuleProvider)) -> Result<String> {
-        todo!("SurgeRenderer 不会渲染 RuleProvider");
     }
 
     fn render_provider_name_for_policy(policy: &Policy) -> String {
-        let mut output = if policy.is_subscription {
-            "[Subscription".to_string()
-        } else {
-            format!("[{}", policy.name)
-        };
-        if let Some(option) = policy.option.as_ref() {
-            output += format!(": {option}").as_str();
-        }
-        output.push(']');
-        output
+        policy.bracket_name()
     }
 }
 

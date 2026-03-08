@@ -1,0 +1,33 @@
+---
+source: crates/convertor/tests/profile_test.rs
+expression: payload
+---
+// PROCESS-NAME
+PROCESS-NAME,Backup and Sync,BosLife
+PROCESS-NAME,Google Chrome,BosLife
+PROCESS-NAME,Arc,BosLife
+PROCESS-NAME,Brave Browser,BosLife
+PROCESS-NAME,ChatGPT,BosLife
+
+// USER-AGENT
+USER-AGENT,%E7%BA%BD%E7%BA%A6%E6%97%B6%E6%8A%A5*,BosLife
+USER-AGENT,Argo*,BosLife
+USER-AGENT,ChatGPT*,BosLife
+USER-AGENT,Colab*,BosLife
+USER-AGENT,Deepmind*,BosLife
+
+# DOMAIN
+DOMAIN,openaicom-api-bdcpf8c6d2e9atf6.z01.azurefd.net,BosLife
+DOMAIN,openaicomproductionae4b.blob.core.windows.net,BosLife
+DOMAIN,production-openaicom-storage.azureedge.net,BosLife
+DOMAIN,static.cloudflareinsights.com,BosLife
+DOMAIN,v2.docs.google.com,BosLife
+
+// DOMAIN-KEYWORD
+DOMAIN-KEYWORD,microsoft,BosLife
+
+// BosLife
+DOMAIN-SUFFIX,boslife.io,BosLife
+DOMAIN-SUFFIX,boslife.net,BosLife
+DOMAIN-SUFFIX,wikibos.com,BosLife
+DOMAIN-SUFFIX,boswiki.net,BosLife

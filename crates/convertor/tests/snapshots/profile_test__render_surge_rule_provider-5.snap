@@ -1,0 +1,17 @@
+---
+source: crates/convertor/tests/profile_test.rs
+expression: payload
+---
+// Comment
+#RULE-SET,https://cdn.jsdelivr.net/gh/Loyalsoldier/surge-rules@release/ruleset/proxy.txt,BosLife,force-remote-dns
+#DOMAIN,browser-intake-datadoghq.com,BosLife
+#DOMAIN,chat.openai.com.cdn.cloudflare.net,BosLife
+#DOMAIN,gemini.google.com,BosLife
+#DOMAIN,openai-api.arkoselabs.com,BosLife
+
+# DIRECT
+DOMAIN-SUFFIX,baidu.com,DIRECT
+DOMAIN-SUFFIX,qq.com,DIRECT
+DOMAIN-SUFFIX,taobao.com,DIRECT
+DOMAIN-SUFFIX,tencent.com,DIRECT
+DOMAIN-SUFFIX,alibaba.com,DIRECT
