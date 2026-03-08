@@ -1,0 +1,9 @@
+---
+source: crates/convertor/tests/profile_test.rs
+expression: payload
+---
+DOMAIN-SUFFIX,apple.com,DIRECT,force-remote-dns
+DOMAIN-SUFFIX,icloud.com,DIRECT,force-remote-dns
+DOMAIN-SUFFIX,crashlytics.com,DIRECT,force-remote-dns
+DOMAIN-SUFFIX,bing.com,DIRECT,force-remote-dns
+DOMAIN-SUFFIX,msn.com,DIRECT,force-remote-dns

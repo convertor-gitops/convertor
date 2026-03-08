@@ -5,8 +5,8 @@ use crate::core::profile::Profile;
 use crate::core::profile::policy::Policy;
 use crate::core::profile::proxy::Proxy;
 use crate::core::profile::proxy_group::ProxyGroup;
-use crate::core::profile::rule::{ProviderRule, Rule};
-use crate::core::profile::rule_provider::RuleProvider;
+use crate::core::profile::rule::Rule;
+use crate::core::util::indent_line;
 use crate::error::RenderError;
 use std::fmt::Write;
 use tracing::instrument;
@@ -48,38 +48,14 @@ pub trait Renderer {
 
     fn render_rule(rule: &Rule) -> Result<String>;
 
-    /// 适用于渲染规则集类型的规则，不包含注释
-    fn render_rule_for_provider(rule: &Rule) -> Result<String>;
-
-    #[instrument(skip_all)]
-    fn render_provider_rules(rules: &[ProviderRule]) -> Result<String> {
-        let mut output = String::new();
-        match Self::client() {
-            ProxyClient::Surge => {
-                writeln!(output, "{}", Self::render_lines(rules, Self::render_provider_rule)?)?;
-            }
-            ProxyClient::Clash => {
-                writeln!(output, "payload:")?;
-                writeln!(output, "{}", Self::render_lines(rules, Self::render_provider_rule)?)?;
-            }
-        }
-        Ok(output)
-    }
-
-    fn render_provider_rule(rule: &ProviderRule) -> Result<String>;
-
     fn render_policy(policy: &Policy) -> Result<String> {
         let mut output = String::new();
         write!(output, "{}", policy.name)?;
         if let Some(option) = &policy.option {
-            write!(output, ",{option}")?;
+            write!(output, ",{}", option)?;
         }
         Ok(output)
     }
-
-    fn render_rule_providers(rule_providers: &[(String, RuleProvider)]) -> Result<String>;
-
-    fn render_rule_provider(rule_provider: &(String, RuleProvider)) -> Result<String>;
 
     fn render_provider_name_for_policy(policy: &Policy) -> String;
 
@@ -92,10 +68,25 @@ pub trait Renderer {
             .map(map)
             .map(|line| match Self::client() {
                 ProxyClient::Surge => line,
-                ProxyClient::Clash => line.map(Self::indent_line),
+                ProxyClient::Clash => line.map(indent_line),
             })
             .collect::<Result<Vec<_>>>()?
             .join("\n");
+        Ok(output)
+    }
+
+    #[instrument(skip_all)]
+    fn render_rule_provider_payload(rules: &[Rule]) -> Result<String> {
+        let mut output = String::new();
+        match Self::client() {
+            ProxyClient::Surge => {
+                writeln!(output, "{}", Self::render_lines(rules, Self::render_rule)?)?;
+            }
+            ProxyClient::Clash => {
+                writeln!(output, "payload:")?;
+                writeln!(output, "{}", Self::render_lines(rules, Self::render_rule)?)?;
+            }
+        }
         Ok(output)
     }
 

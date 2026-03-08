@@ -1,0 +1,44 @@
+---
+source: crates/convertor/tests/profile_test.rs
+expression: payload
+---
+payload:
+    { name: "剩余流量：43.9 GB", type: "trojan", server: "convertor.bppleman.cn", port: 60010, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "距离下次重置剩余：15 天", type: "trojan", server: "convertor.bppleman.cn", port: 60010, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "套餐到期：2026-04-22", type: "trojan", server: "convertor.bppleman.cn", port: 60010, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇭🇰 香港 01", type: "trojan", server: "convertor.bppleman.cn", port: 60010, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇭🇰 香港 02", type: "trojan", server: "convertor.bppleman.cn", port: 60011, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇭🇰 香港 03", type: "trojan", server: "convertor.bppleman.cn", port: 60012, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇭🇰 香港 04", type: "trojan", server: "convertor.bppleman.cn", port: 60013, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇭🇰 香港 05", type: "trojan", server: "convertor.bppleman.cn", port: 60014, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇭🇰 香港 06", type: "trojan", server: "convertor.bppleman.cn", port: 60015, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇭🇰 香港 07", type: "trojan", server: "convertor.bppleman.cn", port: 60016, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇭🇰 香港 08", type: "trojan", server: "convertor.bppleman.cn", port: 60017, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇭🇰 香港 09", type: "trojan", server: "convertor.bppleman.cn", port: 60018, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇭🇰 香港 10", type: "trojan", server: "convertor.bppleman.cn", port: 60019, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇸🇬 新加坡 01", type: "trojan", server: "convertor.bppleman.cn", port: 60030, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇸🇬 新加坡 02", type: "trojan", server: "convertor.bppleman.cn", port: 60031, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇸🇬 新加坡 03", type: "trojan", server: "convertor.bppleman.cn", port: 60032, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇸🇬 新加坡 04", type: "trojan", server: "convertor.bppleman.cn", port: 60033, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇸🇬 新加坡 05", type: "trojan", server: "convertor.bppleman.cn", port: 60034, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇸🇬 新加坡 06", type: "trojan", server: "convertor.bppleman.cn", port: 60035, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🏳️‍🌈 台湾 01", type: "trojan", server: "convertor.bppleman.cn", port: 60040, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🏳️‍🌈 台湾 02", type: "trojan", server: "convertor.bppleman.cn", port: 60041, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🏳️‍🌈 台湾 03", type: "trojan", server: "convertor.bppleman.cn", port: 60042, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🏳️‍🌈 台湾 04", type: "trojan", server: "convertor.bppleman.cn", port: 60043, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇯🇵 日本 01", type: "trojan", server: "convertor.bppleman.cn", port: 60050, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇯🇵 日本 02", type: "trojan", server: "convertor.bppleman.cn", port: 60051, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇯🇵 日本 03", type: "trojan", server: "convertor.bppleman.cn", port: 60052, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇯🇵 日本 04", type: "trojan", server: "convertor.bppleman.cn", port: 60053, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇺🇸 美国 01", type: "trojan", server: "convertor.bppleman.cn", port: 60060, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇺🇸 美国 02", type: "trojan", server: "convertor.bppleman.cn", port: 60061, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇺🇸 美国 03", type: "trojan", server: "convertor.bppleman.cn", port: 60062, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇺🇸 美国 04", type: "trojan", server: "convertor.bppleman.cn", port: 60063, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇺🇸 美国 05", type: "trojan", server: "convertor.bppleman.cn", port: 60064, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇺🇸 美国 06", type: "trojan", server: "convertor.bppleman.cn", port: 60065, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇺🇸 美国 07 - OnlyAI", type: "trojan", server: "convertor.bppleman.cn", port: 60066, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇨🇦 加拿大 01", type: "trojan", server: "convertor.bppleman.cn", port: 60099, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇰🇷 韩国 01", type: "trojan", server: "convertor.bppleman.cn", port: 60101, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇬🇧 英国 01", type: "trojan", server: "convertor.bppleman.cn", port: 60082, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇫🇷 法国 01", type: "trojan", server: "convertor.bppleman.cn", port: 60138, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }
+    { name: "🇩🇪 德国 01", type: "trojan", server: "convertor.bppleman.cn", port: 60125, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }

@@ -1,16 +1,15 @@
 use crate::core::profile::policy::Policy;
-use crate::error::{ConvertError, ParseError};
-use serde::{Deserialize, Deserializer};
+use crate::error::ParseError;
+use serde::{Deserialize, Deserializer, Serialize};
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
-use tracing::instrument;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Rule {
     pub rule_type: RuleType,
     /// 对于 FINAL 和 MATCH 类型的规则，value 是 None
     pub value: Option<String>,
-    pub policy: Policy,
+    pub policy: Option<Policy>,
     pub comment: Option<String>,
 }
 
@@ -19,20 +18,39 @@ impl Rule {
         matches!(self.rule_type, RuleType::GeoIP | RuleType::Final | RuleType::Match)
     }
 
-    pub fn surge_rule_provider(policy: &Policy, name: impl AsRef<str>, url: impl ToString) -> Self {
+    pub fn is_subscription(&self, sub_host: impl AsRef<str>) -> bool {
+        self.value.as_ref().map(|v| v.contains(sub_host.as_ref())).unwrap_or(false)
+    }
+
+    pub fn organize(&mut self, sub_host: impl AsRef<str>) {
+        let is_subscription = self.is_subscription(sub_host);
+        if let Some(policy) = self.policy.as_mut() {
+            policy.is_subscription = is_subscription;
+        }
+    }
+
+    // pub fn gen_policy(&self, sub_host: impl AsRef<str>) -> Option<Policy> {
+    //     self.policy.as_ref().map(|policy| {
+    //         let mut policy = policy.clone();
+    //         policy.is_subscription = self.is_subscription(sub_host);
+    //         policy
+    //     })
+    // }
+
+    pub fn surge_rule_set(policy: &Policy, name: impl AsRef<str>, url: impl ToString) -> Self {
         Self {
             rule_type: RuleType::RuleSet,
             value: Some(url.to_string()),
-            policy: policy.clone(),
+            policy: Some(policy.clone()),
             comment: Some(format!("// {}", name.as_ref())),
         }
     }
 
-    pub fn clash_rule_provider(policy: &Policy, name: impl AsRef<str>) -> Self {
+    pub fn clash_rule_set(policy: &Policy, name: impl AsRef<str>) -> Self {
         Self {
             rule_type: RuleType::RuleSet,
             value: Some(name.as_ref().to_string()),
-            policy: policy.clone(),
+            policy: Some(policy.clone()),
             comment: None,
         }
     }
@@ -45,37 +63,20 @@ impl Rule {
 impl Display for Rule {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         if let Some(comment) = &self.comment {
-            writeln!(f, "{comment}")?;
+            writeln!(f, "{}", comment)?;
         }
-        write!(f, "{},{}", self.rule_type, self.policy.name)?;
+        write!(f, "{}", self.rule_type)?;
+        if let Some(policy) = &self.policy {
+            write!(f, ",{}", policy.name)?;
+        }
         if let Some(value) = &self.value {
-            write!(f, ",{value}")?;
+            write!(f, ",{}", value)?;
         }
         Ok(())
     }
 }
 
-#[derive(Debug, Clone, Deserialize)]
-pub struct ProviderRule {
-    pub rule_type: RuleType,
-    pub value: String,
-    pub comment: Option<String>,
-}
-
-impl TryFrom<Rule> for ProviderRule {
-    type Error = ConvertError;
-
-    #[instrument(skip_all)]
-    fn try_from(rule: Rule) -> Result<Self, Self::Error> {
-        Ok(ProviderRule {
-            rule_type: rule.rule_type.clone(),
-            comment: rule.comment.clone(),
-            value: rule.value.clone().ok_or(ConvertError::IntoProviderRule(rule))?,
-        })
-    }
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum RuleType {
     #[serde(rename = "DOMAIN")]
     Domain,
@@ -183,12 +184,14 @@ impl<'de> Deserialize<'de> for Rule {
                         Policy::deserialize(serde::de::value::StrDeserializer::new(rule_parts[2]))?,
                     )
                 };
+                let policy = Some(policy);
+                let comment = None;
 
                 Ok(Rule {
                     rule_type,
                     value,
                     policy,
-                    comment: None,
+                    comment,
                 })
             }
         }

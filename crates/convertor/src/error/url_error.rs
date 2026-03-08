@@ -1,4 +1,5 @@
-use crate::error::{EncryptError, QueryError};
+use crate::error::EncryptError;
+use crate::url::conv_query::ConvQuery;
 use crate::url::conv_url::UrlType;
 use std::str::Utf8Error;
 use thiserror::Error;
@@ -6,51 +7,54 @@ use url::Url;
 
 #[derive(Debug, Error)]
 pub enum UrlBuilderError {
-    #[error("无法获取 sub_host: {0}")]
+    #[error("[UrlBuilder] 无法获取 sub_host: {0}")]
     NoSubHost(Url),
 
-    #[error("从 URL 中解析失败, 没有 query 参数: {0}")]
-    ParseFromUrlNoQuery(Url),
+    #[error("[UrlBuilder] 不支持构造为 SurgeHeader 的 UrlType: {0}")]
+    CannotBuildSurgeHeader(UrlType),
+
+    #[error("[UrlBuilder] ConvUrl 中没有找到 ConvQuery")]
+    ConvUrlNoQuery,
+
+    #[error("[UrlBuilder] 从 URL string 中解析 sub_url 失败")]
+    UrlError(#[source] url::ParseError),
+
+    #[error("[UrlBuilder] 无法创建 DownloadUrl: {0}")]
+    DownloadUrlError(String, #[source] serde_qs::Error),
 
     #[error(transparent)]
-    ParseUrlError(#[from] url::ParseError),
-
-    #[error("不支持将 {0} 构造为 SurgeHeader")]
-    UnsupportedUrlType(UrlType),
-
-    #[error("无法加密/解密 raw_sub_url: {0}")]
-    EncryptError(#[from] EncryptError),
-
-    #[error(transparent)]
-    QueryError(#[from] QueryError),
+    ConUrlError(#[from] ConvUrlError),
 }
 
 #[derive(Debug, Error)]
-pub enum ParseUrlError {
-    #[error("无法从 URL 中解析 ConvertorUrl: 缺少查询参数: {0}")]
-    NotFoundParam(&'static str),
+pub enum ConvUrlError {
+    #[error("[ConvUrl] 从 URL string 中解析失败")]
+    UrlError(#[source] url::ParseError),
 
-    #[error("无法从 URL 中解析 ConvertorUrl: 没有查询字符串")]
-    UrlNoQuery(String),
-
-    #[error(transparent)]
-    ParseNumError(#[from] std::num::ParseIntError),
-
-    #[error(transparent)]
-    ParseBoolError(#[from] std::str::ParseBoolError),
+    #[error("[ConvUrl] 无法从 URL string 中解析路径: {0}")]
+    NoPathError(String),
 
     #[error(transparent)]
     Utf8Error(#[from] Utf8Error),
+
+    #[error("[ConvUrl] 无法从 ConvQuery 序列化为字符串")]
+    SerialQueryError(#[source] ConvQueryError),
+
+    #[error("[ConvUrl] 无法从字符串解析为 ConvQuery")]
+    DeSerialQueryError(#[source] ConvQueryError),
+
+    #[error("[ConvUrl] 无法加密/解密 ConvQuery")]
+    EncryptError(#[source] ConvQueryError),
 }
 
 #[derive(Debug, Error)]
-pub enum EncodeUrlError {
-    #[error("构造 ${0} query 失败: 缺少必要参数 {1}")]
-    NotFoundParam(&'static str, &'static str),
+pub enum ConvQueryError {
+    #[error("无法加密/解密")]
+    EncryptError(#[from] EncryptError),
 
-    #[error("无法提取 raw_sub_url 的主机和端口信息: {0}")]
-    NoRawSubHost(String),
+    #[error("[ConvQuery] 无法从字符串中反序列化: {0}")]
+    Parse(String, #[source] serde_qs::Error),
 
-    #[error(transparent)]
-    SerializeError(#[from] serde_qs::Error),
+    #[error("[ConvQuery] 无法序列化为字符串: {0:#?}")]
+    Encode(ConvQuery, #[source] serde_qs::Error),
 }

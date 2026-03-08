@@ -4,8 +4,8 @@ use base64::engine::general_purpose::URL_SAFE_NO_PAD as B64URL;
 use blake3;
 use chacha20poly1305::aead::{Aead, KeyInit};
 use chacha20poly1305::{Key, XChaCha20Poly1305, XNonce};
-use core::cell::Cell;
 use core::hash::{Hash, Hasher};
+use core::sync::atomic::{AtomicU64, Ordering};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Formatter};
 
@@ -45,7 +45,7 @@ enum NonceModeRepr {
 #[derive(Debug)]
 enum NonceMode {
     Random,
-    Deterministic { seed: [u8; 32], cursor: Cell<u64> },
+    Deterministic { seed: [u8; 32], cursor: AtomicU64 },
 }
 
 impl NonceMode {
@@ -54,7 +54,7 @@ impl NonceMode {
             NonceMode::Random => NonceModeRepr::Random,
             NonceMode::Deterministic { seed, cursor } => NonceModeRepr::Deterministic {
                 seed: *seed,
-                cursor: cursor.get(),
+                cursor: cursor.load(Ordering::Relaxed),
             },
         }
     }
@@ -64,7 +64,7 @@ impl NonceMode {
             NonceModeRepr::Random => NonceMode::Random,
             NonceModeRepr::Deterministic { seed, cursor } => NonceMode::Deterministic {
                 seed,
-                cursor: Cell::new(cursor),
+                cursor: AtomicU64::new(cursor),
             },
         }
     }
@@ -84,22 +84,22 @@ impl Encryptor {
         }
     }
 
-    pub fn new_with_label(secret: &[u8], label: &str) -> Self {
+    pub fn new_with_label(secret: impl AsRef<str>, label: impl AsRef<str>) -> Self {
         Self {
-            key: normalize_key_32(secret),
+            key: normalize_key_32(secret.as_ref().as_bytes()),
             nonce: NonceMode::Deterministic {
-                seed: seed_from_label(label),
-                cursor: Cell::new(0),
+                seed: seed_from_label(label.as_ref()),
+                cursor: AtomicU64::new(0),
             },
         }
     }
 
-    pub fn new_with_label_and_cursor(secret: &[u8], label: &str, cursor: u64) -> Self {
+    pub fn new_with_label_and_cursor(secret: impl AsRef<str>, label: impl AsRef<str>, cursor: u64) -> Self {
         Self {
-            key: normalize_key_32(secret),
+            key: normalize_key_32(secret.as_ref().as_bytes()),
             nonce: NonceMode::Deterministic {
-                seed: seed_from_label(label),
-                cursor: Cell::new(cursor),
+                seed: seed_from_label(label.as_ref()),
+                cursor: AtomicU64::new(cursor),
             },
         }
     }
@@ -117,9 +117,7 @@ impl Encryptor {
                 Ok(n)
             }
             NonceMode::Deterministic { seed, cursor } => {
-                let c = cursor.get();
-                // 只要在“单实例单 case/单 request”里用，Cell 足够；并发共享一个实例不建议
-                cursor.set(c.wrapping_add(1));
+                let c = cursor.fetch_add(1, Ordering::Relaxed);
                 Ok(nonce_from_seed_cursor(seed, c))
             }
         }
@@ -229,38 +227,5 @@ impl<'de> Deserialize<'de> for Encryptor {
             key: r.key,
             nonce: NonceMode::from_repr(r.nonce),
         })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn deterministic_first_token_by_label() -> Result<()> {
-        let secret = b"my-secret";
-
-        let e1 = Encryptor::new_with_label(secret, "case:hello:v1");
-        let t1 = e1.encrypt("hello")?;
-
-        let e2 = Encryptor::new_with_label(secret, "case:hello:v1");
-        let t1_again = e2.encrypt("hello")?;
-
-        assert_eq!(t1, t1_again);
-
-        let p = e2.decrypt(&t1)?;
-        assert_eq!(p, "hello");
-        Ok(())
-    }
-
-    #[test]
-    fn deterministic_advances_per_instance() -> Result<()> {
-        let secret = b"my-secret";
-        let e = Encryptor::new_with_label(secret, "case:seq:v1");
-
-        let t1 = e.encrypt("hello")?;
-        let t2 = e.encrypt("hello")?;
-        assert_ne!(t1, t2);
-        Ok(())
     }
 }

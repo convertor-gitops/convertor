@@ -1,24 +1,62 @@
 use crate::error::ParseError;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
-#[derive(Default, Debug, Clone, Deserialize)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct ProxyGroup {
     pub name: String,
+
     #[serde(rename = "type")]
     pub r#type: ProxyGroupType,
-    pub proxies: Vec<String>,
+
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub proxies: Option<Vec<String>>,
+
+    #[serde(rename = "use", default, skip_serializing_if = "Option::is_none")]
+    pub uses: Option<Vec<String>>,
+
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub filter: Option<String>,
+
+    #[serde(rename = "exclude-filter", default, skip_serializing_if = "Option::is_none")]
+    pub exclude_filter: Option<String>,
+
     #[serde(skip)]
     pub comment: Option<String>,
 }
 
 impl ProxyGroup {
-    pub fn new(name: String, r#type: ProxyGroupType, proxies: Vec<String>) -> Self {
+    pub fn use_proxies(name: String, r#type: ProxyGroupType, proxies: Vec<String>) -> Self {
+        let proxies = Some(proxies);
         Self {
             name,
             r#type,
             proxies,
-            comment: None,
+            ..Default::default()
+        }
+    }
+
+    pub fn use_provider(name: String, r#type: ProxyGroupType, uses: Vec<String>, filter: String) -> Self {
+        let uses = Some(uses);
+        let filter = Some(filter);
+        Self {
+            name,
+            r#type,
+            uses,
+            filter,
+            ..Default::default()
+        }
+    }
+
+    pub fn use_provider_with_exclude(name: String, r#type: ProxyGroupType, uses: Vec<String>, filter: String) -> Self {
+        let uses = Some(uses);
+        let exclude_filter = Some(filter);
+        Self {
+            name,
+            r#type,
+            uses,
+            exclude_filter,
+            ..Default::default()
         }
     }
 
@@ -27,7 +65,7 @@ impl ProxyGroup {
     }
 }
 
-#[derive(Default, Debug, Clone, Deserialize)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub enum ProxyGroupType {
     #[serde(rename = "select")]
     Select,

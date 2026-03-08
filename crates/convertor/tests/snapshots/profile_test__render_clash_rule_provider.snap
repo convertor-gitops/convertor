@@ -1,0 +1,9 @@
+---
+source: crates/convertor/tests/profile_test.rs
+expression: payload
+---
+DOMAIN,1.convertor.bppleman.com,DIRECT
+DOMAIN,2.convertor.bppleman.com,DIRECT
+DOMAIN,3.convertor.bppleman.com,DIRECT
+DOMAIN,4.convertor.bppleman.com,DIRECT
+DOMAIN,5.convertor.bppleman.com,DIRECT

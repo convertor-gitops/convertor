@@ -7,4 +7,7 @@ pub enum RenderError {
 
     #[error(transparent)]
     FmtError(#[from] std::fmt::Error),
+
+    #[error(transparent)]
+    YamlError(#[from] serde_yml::Error),
 }
