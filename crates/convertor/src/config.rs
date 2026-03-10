@@ -139,7 +139,7 @@ impl Config {
         if !path.is_file() {
             return Err(ConfigError::NotFile(path.to_path_buf()));
         }
-        let content = std::fs::read_to_string(path).map_err(ConfigError::ReadError)?;
+        let content = std::fs::read_to_string(path).map_err(ConfigError::Read)?;
         let config: Config = toml::from_str(&content)?;
         Ok(config)
     }
@@ -150,7 +150,7 @@ impl Config {
         let strict = self.subscription.strict;
         let server = self.server.clone();
         let encryptor = Encryptor::new_random(&self.secret);
-        let url_builder = UrlBuilder::new(encryptor, client, server, sub_url, interval, strict)?;
+        let url_builder = UrlBuilder::new(encryptor, client, server, sub_url, interval, strict);
         Ok(url_builder)
     }
 }

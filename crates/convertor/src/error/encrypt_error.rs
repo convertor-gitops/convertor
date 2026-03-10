@@ -3,7 +3,7 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum EncryptError {
     #[error("无法分离 nonce 与密文")]
-    SplitError,
+    Split,
 
     // 你现在 decrypt() 里用它表示 token 太短/nonce 长度不对
     #[error("nonce 长度不合法")]

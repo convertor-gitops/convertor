@@ -38,10 +38,7 @@ async fn subscription(server_context: &ServerContext, client: ProxyClient) -> co
         .replace(&enc_secret, &secret)
         .replace(&enc_sub_url, sub_url.as_str())
         .replace(
-            sub_url
-                .host_port()
-                .ok_or_eyre("无法从 sub_url 中提取 host port")?
-                .as_str(),
+            sub_url.host_port().ok_or_eyre("无法从 sub_url 中提取 host port")?.as_str(),
             "mock_host_port",
         );
 

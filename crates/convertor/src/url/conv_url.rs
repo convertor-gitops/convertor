@@ -40,19 +40,13 @@ impl ConvUrl {
 
     pub fn encrypt(self, encryptor: &Encryptor) -> Result<Self, ConvUrlError> {
         let Self { r#type, server, query } = self;
-        let query = query
-            .map(|q| q.encrypt(encryptor))
-            .transpose()
-            .map_err(ConvUrlError::EncryptError)?;
+        let query = query.map(|q| q.encrypt(encryptor)).transpose().map_err(ConvUrlError::Encrypt)?;
         Ok(Self { r#type, server, query })
     }
 
     pub fn decrypt(self, encryptor: &Encryptor) -> Result<Self, ConvUrlError> {
         let Self { r#type, server, query } = self;
-        let query = query
-            .map(|q| q.decrypt(encryptor))
-            .transpose()
-            .map_err(ConvUrlError::EncryptError)?;
+        let query = query.map(|q| q.decrypt(encryptor)).transpose().map_err(ConvUrlError::Encrypt)?;
         Ok(Self { r#type, server, query })
     }
 }
@@ -71,7 +65,7 @@ impl TryFrom<&ConvUrl> for Url {
             .as_ref()
             .map(|q| q.try_into())
             .transpose()
-            .map_err(ConvUrlError::SerialQueryError)?;
+            .map_err(ConvUrlError::SerialQuery)?;
         url.set_query(query.as_deref());
         Ok(url)
     }
@@ -105,12 +99,12 @@ impl FromStr for ConvUrl {
     type Err = ConvUrlError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut server = s.parse::<Url>().map_err(ConvUrlError::UrlError)?;
+        let mut server = s.parse::<Url>().map_err(ConvUrlError::Url)?;
         let r#type = UrlType::from_path(server.path());
         let query = if !matches!(r#type, UrlType::Original) {
             let query = server
                 .query()
-                .map(|query| query.parse::<ConvQuery>().map_err(ConvUrlError::DeSerialQueryError))
+                .map(|query| query.parse::<ConvQuery>().map_err(ConvUrlError::DeSerialQuery))
                 .transpose()?;
             server.set_path("");
             server.set_query(None);
@@ -158,11 +152,11 @@ impl UrlType {
 
     pub fn path(&self) -> &'static str {
         match self {
-            UrlType::Original => "/original",
-            UrlType::Raw => "/raw",
-            UrlType::Profile => "/profile",
-            UrlType::ProxyProvider => "/proxy-provider",
-            UrlType::RuleProvider => "/rule-provider",
+            UrlType::Original => "/api/original",
+            UrlType::Raw => "/api/raw",
+            UrlType::Profile => "/api/profile",
+            UrlType::ProxyProvider => "/api/proxy-provider",
+            UrlType::RuleProvider => "/api/rule-provider",
         }
     }
 

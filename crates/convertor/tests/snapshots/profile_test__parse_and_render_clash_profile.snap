@@ -22,7 +22,7 @@ proxies: []
 proxy-providers:
   convertor:
     type: http
-    url: "http://127.0.0.1:8080/proxy-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&sub_url=cWfEQlE7MX2XMGqWoHSXLzmn6tLjFEMgdjVnTmCXB-H2xYxNOM_E5eMl9JdIIb1K0gtfJ-8eiwH_ZL38iWasRLQZMEoN28ocBQxOZlNpZqTUYgMBXmPrKWeESR7OiI0c86U"
+    url: "http://127.0.0.1:8080/api/proxy-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&sub_url=cWfEQlE7MX2XMGqWoHSXLzmn6tLjFEMgdjVnTmCXB-H2xYxNOM_E5eMl9JdIIb1K0gtfJ-8eiwH_ZL38iWasRLQZMEoN28ocBQxOZlNpZqTUYgMBXmPrKWeESR7OiI0c86U"
     path: "./proxy_providers/convertor.yaml"
     interval: 86400
     proxy: DIRECT
@@ -492,7 +492,7 @@ rule-providers:
     option: ~
     is_subscription: true
   : type: http
-    url: "http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D&policy%5Bis_subscription%5D=true&sub_url=NS-q46AsavtH9tx_SmdYHDEqLnL-cRQmhM86S92FG_DY5XKQzuV1pwtaJKajy4NdNLWyVzMJ6fLT__0C8N2nW7CgJ2qyKw7zefdAbpfCvOVPaf5bcf-Gv93AR1YQtqlUgME"
+    url: "http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D&policy%5Bis_subscription%5D=true&sub_url=NS-q46AsavtH9tx_SmdYHDEqLnL-cRQmhM86S92FG_DY5XKQzuV1pwtaJKajy4NdNLWyVzMJ6fLT__0C8N2nW7CgJ2qyKw7zefdAbpfCvOVPaf5bcf-Gv93AR1YQtqlUgME"
     path: "./rule_providers/Subscription_policy.yaml"
     interval: 86400
     proxy:
@@ -542,7 +542,7 @@ rule-providers:
     option: ~
     is_subscription: false
   : type: http
-    url: "http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=BosLife&policy%5Boption%5D&policy%5Bis_subscription%5D=false&sub_url=DGOYlBqQQF4GfAA_4q6BjgS6Gi2Oki8UftXR8a4qEXSu5Ap9KAy2X26S3KKaqqLSXY8frfzIJxsPDoOdLwvd42EPiXHBKvxgstJ5gAtUep4_VNgMkDgiGGFEiUSCWCn1RdA"
+    url: "http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=BosLife&policy%5Boption%5D&policy%5Bis_subscription%5D=false&sub_url=DGOYlBqQQF4GfAA_4q6BjgS6Gi2Oki8UftXR8a4qEXSu5Ap9KAy2X26S3KKaqqLSXY8frfzIJxsPDoOdLwvd42EPiXHBKvxgstJ5gAtUep4_VNgMkDgiGGFEiUSCWCn1RdA"
     path: "./rule_providers/BosLife_policy.yaml"
     interval: 86400
     proxy:
@@ -697,7 +697,7 @@ rule-providers:
     option: no-resolve
     is_subscription: false
   : type: http
-    url: "http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=BosLife&policy%5Boption%5D=no-resolve&policy%5Bis_subscription%5D=false&sub_url=PYEV3VjNO2uNHx_mNqhgTiEdU8pOapX9bgh2ctXqLZZCBTdbhqzDbNUvHYzP10bR2_fk4InYH4usAiEuDncOlk9I_yFDTvwGJs2k3XJ4k-saOHrJsffqMgRQu-7wKJOm-wA"
+    url: "http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=BosLife&policy%5Boption%5D=no-resolve&policy%5Bis_subscription%5D=false&sub_url=PYEV3VjNO2uNHx_mNqhgTiEdU8pOapX9bgh2ctXqLZZCBTdbhqzDbNUvHYzP10bR2_fk4InYH4usAiEuDncOlk9I_yFDTvwGJs2k3XJ4k-saOHrJsffqMgRQu-7wKJOm-wA"
     path: "./rule_providers/BosLife_no_resolve.yaml"
     interval: 86400
     proxy:
@@ -747,7 +747,7 @@ rule-providers:
     option: force-remote-dns
     is_subscription: false
   : type: http
-    url: "http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=BosLife&policy%5Boption%5D=force-remote-dns&policy%5Bis_subscription%5D=false&sub_url=KAzxVp4af1bIF1zUg4oQfub8mFu_EnJWirMGr3cODDZhB6XgbZSxj_gCq1OGXxEKGXEIXTmQkk7ktSsvCzl3hw5G6ik4TTTaqwaCGoXTTmDvHWYdnbCqeSc0VwXUgi-6oYA"
+    url: "http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=BosLife&policy%5Boption%5D=force-remote-dns&policy%5Bis_subscription%5D=false&sub_url=KAzxVp4af1bIF1zUg4oQfub8mFu_EnJWirMGr3cODDZhB6XgbZSxj_gCq1OGXxEKGXEIXTmQkk7ktSsvCzl3hw5G6ik4TTTaqwaCGoXTTmDvHWYdnbCqeSc0VwXUgi-6oYA"
     path: "./rule_providers/BosLife_force_remote_dns.yaml"
     interval: 86400
     proxy:
@@ -825,7 +825,7 @@ rule-providers:
     option: ~
     is_subscription: false
   : type: http
-    url: "http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D&policy%5Bis_subscription%5D=false&sub_url=m-B9eg-8TZeWNK0yVg1TuMBywfsLBfzg4whJ3scOpW2SxF3hdhESXiH85AihrnkLnyul1bPEMQZlR95TB4Wlv3TVuGgODtwUmCJacfH46jFh-fzXIsZYXc7IaHRkwXt8nBc"
+    url: "http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D&policy%5Bis_subscription%5D=false&sub_url=m-B9eg-8TZeWNK0yVg1TuMBywfsLBfzg4whJ3scOpW2SxF3hdhESXiH85AihrnkLnyul1bPEMQZlR95TB4Wlv3TVuGgODtwUmCJacfH46jFh-fzXIsZYXc7IaHRkwXt8nBc"
     path: "./rule_providers/DIRECT_policy.yaml"
     interval: 86400
     proxy:
@@ -875,7 +875,7 @@ rule-providers:
     option: no-resolve
     is_subscription: false
   : type: http
-    url: "http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D=no-resolve&policy%5Bis_subscription%5D=false&sub_url=vFqgSkzZjavl1vi0y0AsCO6NVcjcO7Gby5osThgtg-k2nwZKJyRkUrYwYgwloCw59snyYOBNjNASssplEtMALiofZ9Fn7KGP3slnXpWqWJL6-NDZfRZwZWbL81gMPbAz3Vw"
+    url: "http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D=no-resolve&policy%5Bis_subscription%5D=false&sub_url=vFqgSkzZjavl1vi0y0AsCO6NVcjcO7Gby5osThgtg-k2nwZKJyRkUrYwYgwloCw59snyYOBNjNASssplEtMALiofZ9Fn7KGP3slnXpWqWJL6-NDZfRZwZWbL81gMPbAz3Vw"
     path: "./rule_providers/DIRECT_no_resolve.yaml"
     interval: 86400
     proxy:
@@ -925,7 +925,7 @@ rule-providers:
     option: force-remote-dns
     is_subscription: false
   : type: http
-    url: "http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D=force-remote-dns&policy%5Bis_subscription%5D=false&sub_url=1FYNuEuqWPakcQu-1GdglBrxgydGyIPpL7CEzDtzZiQlDUCvDMsy_OoBtHeLKFmTltWjSs9fwNlw37oqwJ1pqIOVQp-YzIqpEvO3kpUu-WORCLFeN0zRtFOoR-vSQgUVGLs"
+    url: "http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D=force-remote-dns&policy%5Bis_subscription%5D=false&sub_url=1FYNuEuqWPakcQu-1GdglBrxgydGyIPpL7CEzDtzZiQlDUCvDMsy_OoBtHeLKFmTltWjSs9fwNlw37oqwJ1pqIOVQp-YzIqpEvO3kpUu-WORCLFeN0zRtFOoR-vSQgUVGLs"
     path: "./rule_providers/DIRECT_force_remote_dns.yaml"
     interval: 86400
     proxy:

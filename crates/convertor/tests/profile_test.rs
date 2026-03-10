@@ -1,6 +1,6 @@
 use crate::testkit::{CLASH_PROFILE, SURGE_PROFILE, init_test, url_builder};
 use convertor::config::proxy_client::ProxyClient;
-use convertor::core::profile::Profile;
+use convertor::core::profile::ProfileTrait;
 use convertor::core::profile::clash_profile::{ClashProfile, ProxyProvider, RuleProvider};
 use convertor::core::profile::surge_profile::SurgeProfile;
 use convertor::core::renderer::Renderer;

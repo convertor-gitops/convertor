@@ -19,6 +19,10 @@ pub struct ConvQuery {
     // profile
     pub strict: Option<bool>,
 
+    // proxy provider
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub proxy_provider_name: Option<String>,
+
     // rule provider
     #[serde(skip_serializing_if = "Option::is_none")]
     pub policy: Option<Policy>,
@@ -32,6 +36,7 @@ impl ConvQuery {
             client: self.client,
             interval: self.interval,
             strict: self.strict,
+            proxy_provider_name: self.proxy_provider_name,
             policy: self.policy,
         };
         Ok(query)
@@ -44,6 +49,7 @@ impl ConvQuery {
             client: self.client,
             interval: self.interval,
             strict: self.strict,
+            proxy_provider_name: self.proxy_provider_name,
             policy: self.policy,
         };
         Ok(query)

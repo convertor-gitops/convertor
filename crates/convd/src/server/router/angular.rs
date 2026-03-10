@@ -82,10 +82,7 @@ fn respond_file(path: &str, bytes: &'static [u8]) -> Response {
 /// 专门给 index.html：固定 text/html + no-cache
 fn respond_index(bytes: &'static [u8]) -> Response {
     let mut headers = HeaderMap::with_capacity(2);
-    headers.insert(
-        header::CONTENT_TYPE,
-        HeaderValue::from_static("text/html; charset=utf-8"),
-    );
+    headers.insert(header::CONTENT_TYPE, HeaderValue::from_static("text/html; charset=utf-8"));
     headers.insert(
         header::CACHE_CONTROL,
         HeaderValue::from_static("no-cache, no-store, must-revalidate"),

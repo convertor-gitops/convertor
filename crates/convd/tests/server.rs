@@ -20,7 +20,7 @@ pub async fn start_server() -> color_eyre::Result<ServerContext> {
         .route("/raw-profile/{client}", get(profile::raw_profile))
         .route("/profile/{client}", get(profile::profile))
         .route("/rule-provider/{client}", get(profile::rule_provider))
-        .route("/api/subscription/{client}", get(api::subscription::subscription))
+        .route("/api/subscription/{client}", get(api::url_builder::build_url))
         .with_state(app_state.clone());
 
     Ok(ServerContext { app, app_state })

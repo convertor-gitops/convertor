@@ -1,22 +1,28 @@
-import { RequestSnapshot } from "./request";
+import { RequestBody } from "./request";
 
-export class ApiResponse<T = void> {
+export class ResponseBody<T = void> {
     constructor(
         public status: string,
         public messages: string[],
-        public request: RequestSnapshot | null,
-        public data?: T,
+        public request: RequestBody | null,
+        public data: T | null,
     ) {
     }
 
-    public static deserialize<T>(json: ApiResponse<T> | any, ctor?: {
+    public static deserialize<T>(json: ResponseBody<T> | any, ctor?: {
         new(...args: any[]): T;
         deserialize(json: T): T;
-    }): ApiResponse<T> {
-        return new ApiResponse<T>(
+    }): ResponseBody<T> | null {
+        if (json == null) {
+            return null;
+        }
+        if (!Object.hasOwn(json, "status") || !Object.hasOwn(json, "messages")) {
+            return null;
+        }
+        return new ResponseBody<T>(
             json.status,
             json.messages,
-            RequestSnapshot.deserialize(json.request),
+            RequestBody.deserialize(json.request),
             ctor?.deserialize(json.data) ?? json.data,
         );
     }

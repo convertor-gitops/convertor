@@ -2,7 +2,7 @@
 source: crates/convertor/tests/profile_test.rs
 expression: profile
 ---
-header: "#!MANAGED-CONFIG http://127.0.0.1:8080/profile?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&sub_url=dr5ZZ3kIx53jr3EijyrxnqgdqUp8hSzLCIwKYXOXz1FmYqmum_NSsDC5PniMdvaVtD3POJBAj4481dTX2mkZBR8I9YknOJHhk0Bz3vFeXo56LyoneMCTPo0Rzidjy-TL3H4 interval=86400 strict=true"
+header: "#!MANAGED-CONFIG http://127.0.0.1:8080/api/profile?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&sub_url=dr5ZZ3kIx53jr3EijyrxnqgdqUp8hSzLCIwKYXOXz1FmYqmum_NSsDC5PniMdvaVtD3POJBAj4481dTX2mkZBR8I9YknOJHhk0Bz3vFeXo56LyoneMCTPo0Rzidjy-TL3H4 interval=86400 strict=true"
 general:
   - "skip-proxy = 192.168.0.0/16, 10.0.0.0/8, 172.16.0.0/12, 100.64.0.0/10, localhost, *.local, seed-sequoia.siri.apple.com, sequoia.apple.com, *.crashlytics.com"
   - loglevel = notify
@@ -496,49 +496,49 @@ proxy_groups:
       - 🇩🇪 德国 01
 rules:
   - rule_type: RULE-SET
-    value: "http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D&policy%5Bis_subscription%5D=true&sub_url=jeKAgWMGqs9JS-PqyGDrfcLIVaLFHheiq_Rw13Z9BuQsdCTLWNPl7zX93qezOERKzxfRyJCluwNw4grYkj_EldR5wSmGMWlc9BcMGjVus-gLO5huL4eyQjHkWqVWfd6c0eE"
+    value: "http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D&policy%5Bis_subscription%5D=true&sub_url=jeKAgWMGqs9JS-PqyGDrfcLIVaLFHheiq_Rw13Z9BuQsdCTLWNPl7zX93qezOERKzxfRyJCluwNw4grYkj_EldR5wSmGMWlc9BcMGjVus-gLO5huL4eyQjHkWqVWfd6c0eE"
     policy:
       name: DIRECT
       option: ~
       is_subscription: true
     comment: "// [Subscription]"
   - rule_type: RULE-SET
-    value: "http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=BosLife&policy%5Boption%5D&policy%5Bis_subscription%5D=false&sub_url=djHI0F8wqtKrRM5O9BdJMlWwjpjZyojOY-WRaKjRI6zXRCGxo-RXtBNaWrEXtCuAqOBOGOVu3gyYuzZwYZw8DgR8lA_jEZTqv4H0BRz5HESKmHnLcGVNU6BFj-n8zlqW3uY"
+    value: "http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=BosLife&policy%5Boption%5D&policy%5Bis_subscription%5D=false&sub_url=djHI0F8wqtKrRM5O9BdJMlWwjpjZyojOY-WRaKjRI6zXRCGxo-RXtBNaWrEXtCuAqOBOGOVu3gyYuzZwYZw8DgR8lA_jEZTqv4H0BRz5HESKmHnLcGVNU6BFj-n8zlqW3uY"
     policy:
       name: BosLife
       option: ~
       is_subscription: false
     comment: "// [BosLife]"
   - rule_type: RULE-SET
-    value: "http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=BosLife&policy%5Boption%5D=no-resolve&policy%5Bis_subscription%5D=false&sub_url=SnSGhNZKt1bz11AjjS6lPQSwdgs7IAuDokpqULhnNGc5aPfBnzY2DWR2oj9DgKhpX1p_7Bt1goKxUJ2Dl7_brsi8sa4uWuIiqKyodWP2gafzdMU9Zy-vBt2hvB86soyQ4bE"
+    value: "http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=BosLife&policy%5Boption%5D=no-resolve&policy%5Bis_subscription%5D=false&sub_url=SnSGhNZKt1bz11AjjS6lPQSwdgs7IAuDokpqULhnNGc5aPfBnzY2DWR2oj9DgKhpX1p_7Bt1goKxUJ2Dl7_brsi8sa4uWuIiqKyodWP2gafzdMU9Zy-vBt2hvB86soyQ4bE"
     policy:
       name: BosLife
       option: no-resolve
       is_subscription: false
     comment: "// [BosLife: no-resolve]"
   - rule_type: RULE-SET
-    value: "http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=BosLife&policy%5Boption%5D=force-remote-dns&policy%5Bis_subscription%5D=false&sub_url=gKhqruu-A_HZb9dnwk1IKG6nA6GN3u1sy8IZ2NMisZrmmLNkDB7r5IIgPBtwJd4Vidb7kvBMO5Z58dzB5_HkgzPql-uHNHvFqFLfihaKYfaUHMrycYeUPFV2syfnNh4Yod0"
+    value: "http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=BosLife&policy%5Boption%5D=force-remote-dns&policy%5Bis_subscription%5D=false&sub_url=gKhqruu-A_HZb9dnwk1IKG6nA6GN3u1sy8IZ2NMisZrmmLNkDB7r5IIgPBtwJd4Vidb7kvBMO5Z58dzB5_HkgzPql-uHNHvFqFLfihaKYfaUHMrycYeUPFV2syfnNh4Yod0"
     policy:
       name: BosLife
       option: force-remote-dns
       is_subscription: false
     comment: "// [BosLife: force-remote-dns]"
   - rule_type: RULE-SET
-    value: "http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D&policy%5Bis_subscription%5D=false&sub_url=UkljifIdWgOBWZVAIsA8XxmUapz2hXzXYHKX5qtQOvQaBk3mCNYUNuK8D1tIpNyUEHKOU4cAxO58WrObMn5Jk4K_ULbaRnjb15EwOR9hGO6z7q_HOJM1W18ZUd3vyEaq2Ng"
+    value: "http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D&policy%5Bis_subscription%5D=false&sub_url=UkljifIdWgOBWZVAIsA8XxmUapz2hXzXYHKX5qtQOvQaBk3mCNYUNuK8D1tIpNyUEHKOU4cAxO58WrObMn5Jk4K_ULbaRnjb15EwOR9hGO6z7q_HOJM1W18ZUd3vyEaq2Ng"
     policy:
       name: DIRECT
       option: ~
       is_subscription: false
     comment: "// [DIRECT]"
   - rule_type: RULE-SET
-    value: "http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D=no-resolve&policy%5Bis_subscription%5D=false&sub_url=Onq0_W8KGQYFMx1YTAC6qJRH_epY1MEII-x3l17tE2IYdgvPt_JHWANxfC4fg37LFbg7cZZcFMR1ikm0PD9op5s-XZ4wraDmiMofrjHEUXxZvL0jXpHoBAgnqMw75QQcspc"
+    value: "http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D=no-resolve&policy%5Bis_subscription%5D=false&sub_url=Onq0_W8KGQYFMx1YTAC6qJRH_epY1MEII-x3l17tE2IYdgvPt_JHWANxfC4fg37LFbg7cZZcFMR1ikm0PD9op5s-XZ4wraDmiMofrjHEUXxZvL0jXpHoBAgnqMw75QQcspc"
     policy:
       name: DIRECT
       option: no-resolve
       is_subscription: false
     comment: "// [DIRECT: no-resolve]"
   - rule_type: RULE-SET
-    value: "http://127.0.0.1:8080/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D=force-remote-dns&policy%5Bis_subscription%5D=false&sub_url=ewESSHcwF912H2mCdqX14SlM9gUtkCvIgbo9v4euOfI8SdL8MSV-AfjbsUm6ohaT2mGiJicMm1gZkynYDeIAl9b7NYlRIhaZE6GHExhBAGNyPYRyzIEIwQyXV39ZWz-xzu0"
+    value: "http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D=force-remote-dns&policy%5Bis_subscription%5D=false&sub_url=ewESSHcwF912H2mCdqX14SlM9gUtkCvIgbo9v4euOfI8SdL8MSV-AfjbsUm6ohaT2mGiJicMm1gZkynYDeIAl9b7NYlRIhaZE6GHExhBAGNyPYRyzIEIwQyXV39ZWz-xzu0"
     policy:
       name: DIRECT
       option: force-remote-dns

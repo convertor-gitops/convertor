@@ -1,6 +1,6 @@
 use crate::config::ClientConfig;
 use crate::file_provider::FileProvider;
-use convertor::core::profile::Profile;
+use convertor::core::profile::ProfileTrait;
 use convertor::core::profile::clash_profile::ClashProfile;
 use convertor::core::profile::policy::Policy;
 use convertor::core::profile::rule::Rule;
@@ -27,13 +27,13 @@ impl ClientConfig {
         file_provider.write(self.main_profile_path(), main_profile)?;
 
         if let Some(path) = self.raw_path() {
-            let raw = Self::update_surge_conf(file_provider.read(&path)?, url_builder.build_surge_header(UrlType::Raw)?)?;
+            let raw = Self::update_surge_conf(file_provider.read(&path)?, url_builder.build_surge_header(UrlType::Original)?)?;
             file_provider.write(path, raw)?;
         }
 
         // 更新转发原始订阅配置，即由 convertor 生成的原始订阅配置
         if let Some(path) = self.raw_profile_path() {
-            let raw_profile = Self::update_surge_conf(file_provider.read(&path)?, url_builder.build_surge_header(UrlType::RawProfile)?)?;
+            let raw_profile = Self::update_surge_conf(file_provider.read(&path)?, url_builder.build_surge_header(UrlType::Raw)?)?;
             file_provider.write(path, raw_profile)?;
         }
 
@@ -80,7 +80,7 @@ impl ClientConfig {
             .map(|policy| {
                 let name = SurgeRenderer::render_provider_name_for_policy(policy);
                 let url = url_builder.build_rule_provider_url(policy)?;
-                Ok(Rule::surge_rule_provider(policy, name, url))
+                Ok(Rule::surge_rule_set(policy, name, url))
             })
             .collect::<color_eyre::Result<Vec<_>>>()?;
         let mut output = provider_rules

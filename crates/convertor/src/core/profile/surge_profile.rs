@@ -1,6 +1,6 @@
 use crate::config::proxy_client::ProxyClient;
 use crate::core::parser::surge_parser::SurgeParser;
-use crate::core::profile::Profile;
+use crate::core::profile::ProfileTrait;
 use crate::core::profile::policy::Policy;
 use crate::core::profile::proxy::Proxy;
 use crate::core::profile::proxy_group::{ProxyGroup, ProxyGroupType};
@@ -26,10 +26,10 @@ pub struct SurgeProfile {
     pub rule_providers: BTreeMap<Policy, Vec<Rule>>,
 }
 
-impl Profile for SurgeProfile {
+impl ProfileTrait for SurgeProfile {
     type PROFILE = SurgeProfile;
 
-    fn client() -> ProxyClient {
+    fn client(&self) -> ProxyClient {
         ProxyClient::Surge
     }
 
@@ -55,11 +55,6 @@ impl Profile for SurgeProfile {
 
     fn rules_mut(&mut self) -> &mut Vec<Rule> {
         &mut self.rules
-    }
-
-    #[instrument(skip_all)]
-    fn parse(content: String) -> Result<Self::PROFILE, ParseError> {
-        SurgeParser::parse_profile(content)
     }
 
     #[instrument(skip_all)]
@@ -106,10 +101,7 @@ impl Profile for SurgeProfile {
             .into_iter()
             .map(|(region, proxies)| {
                 let name = format!("{} {}", region.icon, region.cn);
-                let proxy_group_type = match Self::client() {
-                    ProxyClient::Surge => ProxyGroupType::Smart,
-                    ProxyClient::Clash => ProxyGroupType::UrlTest,
-                };
+                let proxy_group_type = ProxyGroupType::Smart;
                 let proxies = proxies.into_iter().map(|p| p.name.to_string()).collect::<Vec<_>>();
                 ProxyGroup::use_proxies(name, proxy_group_type, proxies)
             })
@@ -145,13 +137,14 @@ impl Profile for SurgeProfile {
         }
         Ok(())
     }
-
-    fn policy_name(policy: &Policy) -> String {
-        policy.bracket_name()
-    }
 }
 
 impl SurgeProfile {
+    #[instrument(skip_all)]
+    pub fn parse(content: String) -> Result<SurgeProfile, ParseError> {
+        SurgeParser::parse_profile(content)
+    }
+
     #[instrument(skip_all)]
     fn replace_header(&mut self, url_builder: &UrlBuilder) -> Result<(), ConvertError> {
         self.header = url_builder.build_surge_header(UrlType::Profile)?.to_string();

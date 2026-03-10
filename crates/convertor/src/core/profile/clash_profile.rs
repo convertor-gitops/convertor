@@ -5,7 +5,7 @@ mod rule_provider;
 
 use crate::config::proxy_client::ProxyClient;
 use crate::core::parser::clash_parser::ClashParser;
-use crate::core::profile::Profile;
+use crate::core::profile::ProfileTrait;
 use crate::core::profile::policy::Policy;
 use crate::core::profile::proxy::Proxy;
 use crate::core::profile::proxy_group::{ProxyGroup, ProxyGroupType};
@@ -61,10 +61,10 @@ pub struct ClashProfile {
     pub rules: Vec<Rule>,
 }
 
-impl Profile for ClashProfile {
+impl ProfileTrait for ClashProfile {
     type PROFILE = ClashProfile;
 
-    fn client() -> ProxyClient {
+    fn client(&self) -> ProxyClient {
         ProxyClient::Clash
     }
 
@@ -92,10 +92,6 @@ impl Profile for ClashProfile {
         &mut self.rules
     }
 
-    fn parse(content: String) -> Result<Self::PROFILE, ParseError> {
-        ClashParser::parse(content)
-    }
-
     fn convert(&mut self, url_builder: &UrlBuilder) -> Result<(), ConvertError> {
         self.geox_url.convert(url_builder)?;
         self.organize_proxies(url_builder)?;
@@ -113,7 +109,7 @@ impl Profile for ClashProfile {
 
         // 创建一个 proxy-provider, 包含所有的代理
         let proxy_provider_name = "convertor";
-        let proxy_provider_url = url_builder.build_proxy_provider_url()?;
+        let proxy_provider_url = url_builder.build_proxy_provider_url(proxy_provider_name)?;
         let mut proxy_provider = ProxyProvider::new(proxy_provider_url, proxy_provider_name, url_builder.interval);
         proxy_provider.proxies = std::mem::take(&mut self.proxies);
         self.proxy_providers.insert(proxy_provider_name.to_string(), proxy_provider);
@@ -150,10 +146,7 @@ impl Profile for ClashProfile {
             .into_iter()
             .filter_map(|(region, proxies)| {
                 let name = format!("{} {}", region.icon, region.cn);
-                let proxy_group_type = match Self::client() {
-                    ProxyClient::Surge => ProxyGroupType::Smart,
-                    ProxyClient::Clash => ProxyGroupType::UrlTest,
-                };
+                let proxy_group_type = ProxyGroupType::UrlTest;
                 let proxies = proxies.into_iter().map(|p| p.name.to_string()).collect::<Vec<_>>();
                 let filter = best_filter_from_proxy_names(proxies.iter().map(|p| p.as_str()));
                 if let Some(filter) = filter {
@@ -183,7 +176,7 @@ impl Profile for ClashProfile {
             self.organize_other_rule(url_builder, rule)?;
         }
         for policy in self.rule_providers.keys() {
-            let name = Self::policy_name(policy);
+            let name = policy.snake_case_name();
             let rule = Rule::clash_rule_set(policy, name);
             self.rules.push(rule);
         }
@@ -208,10 +201,6 @@ impl Profile for ClashProfile {
             }
         }
         Ok(())
-    }
-
-    fn policy_name(policy: &Policy) -> String {
-        policy.snake_case_name()
     }
 }
 

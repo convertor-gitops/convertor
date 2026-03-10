@@ -33,16 +33,16 @@ pub enum ParseError {
     SectionMissing(&'static str),
 
     #[error(transparent)]
-    UrlBuilderError(#[from] UrlBuilderError),
+    UrlBuilder(#[from] UrlBuilderError),
 
     #[error(transparent)]
-    IOError(#[from] std::io::Error),
+    Io(#[from] std::io::Error),
 
     #[error(transparent)]
-    FmtError(#[from] std::fmt::Error),
+    Fmt(#[from] std::fmt::Error),
 
     #[error(transparent)]
-    YamlError(#[from] serde_yml::Error),
+    Yaml(#[from] serde_yml::Error),
 }
 
 #[derive(Debug, Error)]
@@ -51,8 +51,8 @@ pub enum ConvertError {
     IntoProviderRule(Rule),
 
     #[error(transparent)]
-    UrlBuilderError(#[from] UrlBuilderError),
+    UrlBuilder(#[from] UrlBuilderError),
 
     #[error(transparent)]
-    ConvUrlError(#[from] ConvUrlError),
+    ConvUrl(#[from] ConvUrlError),
 }
