@@ -1,7 +1,7 @@
-use crate::server::error::AppError;
+use crate::server::error::ServiceError;
 use convertor::config::Config;
 use convertor::core::profile::ProfileTrait;
-use convertor::core::profile::clash_profile::{ClashProfile, RuleProvider};
+use convertor::core::profile::clash_profile::ClashProfile;
 use convertor::core::profile::policy::Policy;
 use convertor::core::renderer::Renderer;
 use convertor::core::renderer::clash_renderer::ClashRenderer;
@@ -10,7 +10,7 @@ use moka::future::Cache;
 use std::sync::Arc;
 use tracing::instrument;
 
-type Result<T> = core::result::Result<T, AppError>;
+type Result<T> = core::result::Result<T, ServiceError>;
 
 #[derive(Clone)]
 pub struct ClashService {
@@ -34,10 +34,10 @@ impl ClashService {
     #[instrument(skip_all)]
     pub async fn rule_provider(&self, url_builder: UrlBuilder, raw_profile: String, policy: Policy) -> Result<String> {
         let profile = self.try_get_profile(url_builder, raw_profile).await?;
-        match profile.rule_providers.get(&policy) {
-            None => Ok(String::new()),
-            Some(RuleProvider { rules, .. }) => Ok(ClashRenderer::render_rule_provider_payload(rules)?),
-        }
+        let Some(rule_provider) = profile.rule_providers.get(&policy) else {
+            return Ok(String::new());
+        };
+        Ok(ClashRenderer::render_rule_provider_payload(&rule_provider.rules)?)
     }
 
     #[instrument(skip_all)]
@@ -52,9 +52,9 @@ impl ClashService {
             .try_get_with(url_builder.clone(), async {
                 let mut profile = ClashProfile::parse(raw_profile)?;
                 profile.convert(&url_builder)?;
-                Ok::<_, AppError>(profile)
+                Ok::<_, ServiceError>(profile)
             })
             .await
-            .map_err(AppError::Cache)
+            .map_err(ServiceError::Cache)
     }
 }

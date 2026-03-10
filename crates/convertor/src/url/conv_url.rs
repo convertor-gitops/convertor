@@ -4,29 +4,28 @@ use crate::url::conv_query::ConvQuery;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
-use url::Url;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConvUrl {
     r#type: UrlType,
-    server: Url,
+    server: url::Url,
     query: Option<ConvQuery>,
 }
 
 impl ConvUrl {
-    pub fn new(r#type: UrlType, server: Url, query: Option<ConvQuery>) -> Self {
+    pub fn new(r#type: UrlType, server: url::Url, query: Option<ConvQuery>) -> Self {
         Self { r#type, server, query }
     }
 
     pub fn empty() -> Self {
         Self {
             r#type: UrlType::Original,
-            server: Url::parse("http://example.com").unwrap(),
+            server: url::Url::parse("http://example.com").unwrap(),
             query: None,
         }
     }
 
-    pub fn original(url: Url) -> Self {
+    pub fn original(url: url::Url) -> Self {
         Self {
             r#type: UrlType::Original,
             server: url,
@@ -34,24 +33,30 @@ impl ConvUrl {
         }
     }
 
-    pub fn take_query(mut self) -> Option<ConvQuery> {
-        self.query.take()
+    pub fn take_query(mut self) -> Result<ConvQuery, ConvUrlError> {
+        self.query.take().ok_or(ConvUrlError::MissingConvQuery)
     }
 
     pub fn encrypt(self, encryptor: &Encryptor) -> Result<Self, ConvUrlError> {
         let Self { r#type, server, query } = self;
-        let query = query.map(|q| q.encrypt(encryptor)).transpose().map_err(ConvUrlError::Encrypt)?;
+        let query = query
+            .map(|q| q.encrypt(encryptor))
+            .transpose()
+            .map_err(ConvUrlError::EncryptQuery)?;
         Ok(Self { r#type, server, query })
     }
 
     pub fn decrypt(self, encryptor: &Encryptor) -> Result<Self, ConvUrlError> {
         let Self { r#type, server, query } = self;
-        let query = query.map(|q| q.decrypt(encryptor)).transpose().map_err(ConvUrlError::Encrypt)?;
+        let query = query
+            .map(|q| q.decrypt(encryptor))
+            .transpose()
+            .map_err(ConvUrlError::EncryptQuery)?;
         Ok(Self { r#type, server, query })
     }
 }
 
-impl TryFrom<&ConvUrl> for Url {
+impl TryFrom<&ConvUrl> for url::Url {
     type Error = ConvUrlError;
 
     fn try_from(value: &ConvUrl) -> Result<Self, Self::Error> {
@@ -65,32 +70,32 @@ impl TryFrom<&ConvUrl> for Url {
             .as_ref()
             .map(|q| q.try_into())
             .transpose()
-            .map_err(ConvUrlError::SerialQuery)?;
+            .map_err(ConvUrlError::ConvQuery)?;
         url.set_query(query.as_deref());
         Ok(url)
     }
 }
 
-impl TryFrom<ConvUrl> for Url {
+impl TryFrom<ConvUrl> for url::Url {
     type Error = ConvUrlError;
 
     fn try_from(value: ConvUrl) -> Result<Self, Self::Error> {
-        Url::try_from(&value)
+        url::Url::try_from(&value)
     }
 }
 
-impl TryFrom<&Url> for ConvUrl {
+impl TryFrom<&url::Url> for ConvUrl {
     type Error = ConvUrlError;
 
-    fn try_from(value: &Url) -> Result<Self, Self::Error> {
+    fn try_from(value: &url::Url) -> Result<Self, Self::Error> {
         value.as_str().parse()
     }
 }
 
-impl TryFrom<Url> for ConvUrl {
+impl TryFrom<url::Url> for ConvUrl {
     type Error = ConvUrlError;
 
-    fn try_from(value: Url) -> Result<Self, Self::Error> {
+    fn try_from(value: url::Url) -> Result<Self, Self::Error> {
         ConvUrl::try_from(&value)
     }
 }
@@ -99,12 +104,12 @@ impl FromStr for ConvUrl {
     type Err = ConvUrlError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut server = s.parse::<Url>().map_err(ConvUrlError::Url)?;
+        let mut server = s.parse::<url::Url>().map_err(|e| ConvUrlError::InvalidUrl(e.to_string(), e))?;
         let r#type = UrlType::from_path(server.path());
         let query = if !matches!(r#type, UrlType::Original) {
             let query = server
                 .query()
-                .map(|query| query.parse::<ConvQuery>().map_err(ConvUrlError::DeSerialQuery))
+                .map(|query| query.parse::<ConvQuery>().map_err(ConvUrlError::ParseQuery))
                 .transpose()?;
             server.set_path("");
             server.set_query(None);

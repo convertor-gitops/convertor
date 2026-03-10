@@ -1,5 +1,5 @@
-use crate::server::error::AppError;
-use crate::server::error::RequestError;
+use crate::server::error::UnknownError;
+use crate::server::error::{AppError, RequestError};
 use crate::server::response::RequestBody;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
@@ -17,7 +17,7 @@ pub enum ApiError {
     },
     InternalServer {
         status: StatusCode,
-        error: AppError,
+        error: UnknownError,
         request: RequestBody,
     },
 }
@@ -28,8 +28,15 @@ impl ApiError {
         Self::Request { status, error, request }
     }
 
-    pub fn internal_server(status: StatusCode, error: AppError, request: RequestBody) -> Self {
+    pub fn internal_server(status: StatusCode, error: UnknownError, request: RequestBody) -> Self {
         Self::InternalServer { status, error, request }
+    }
+
+    pub fn from_app_error(app_error: AppError, request_body: RequestBody) -> Self {
+        match app_error {
+            AppError::Request(e) => Self::bad_request(e, request_body),
+            AppError::InternalServer(e) => Self::internal_server(e.status_code(), e, request_body),
+        }
     }
 }
 

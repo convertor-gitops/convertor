@@ -1,6 +1,6 @@
+use crate::error::RedisConfigError;
 use redis::{ConnectionAddr, ConnectionInfo, IntoConnectionInfo, ProtocolVersion, RedisConnectionInfo, RedisResult};
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct RedisConfig {
@@ -26,11 +26,10 @@ pub struct TlsConfig {
 }
 
 impl RedisConfig {
-    pub fn build_redis_client(&self) -> Result<redis::Client, RedisConfigError> {
-        let config = self.validate()?;
-        let redis_client = match config.tls.clone() {
-            None => redis::Client::open(config),
-            Some(tls) => redis::Client::build_with_tls(config, tls.into()),
+    pub fn create_redis_client(self) -> Result<redis::Client, redis::RedisError> {
+        let redis_client = match self.tls.clone() {
+            None => redis::Client::open(self),
+            Some(tls) => redis::Client::build_with_tls(self, tls.into()),
         }?;
         Ok(redis_client)
     }
@@ -47,12 +46,12 @@ impl RedisConfig {
         } = self.clone();
         host = host.trim().to_string();
         if host.is_empty() {
-            return Err(RedisConfigError::EmptyHost);
+            return Err(RedisConfigError::MissingHost(None));
         } else if host.contains(':') {
-            return Err(RedisConfigError::InvalidHost(host));
+            return Err(RedisConfigError::MissingHost(Some(host)));
         }
         if self.port == 0 {
-            return Err(RedisConfigError::ZeroPort);
+            return Err(RedisConfigError::MissingPort);
         }
         username = username.trim().replace("default", "").to_string();
 
@@ -72,9 +71,8 @@ impl RedisConfig {
                 *client_key = client_key.trim().to_string();
             }
             match (client_cert, client_key) {
-                (Some(_), None) => return Err(RedisConfigError::HasClientCertButNoKey),
-                (None, Some(_)) => return Err(RedisConfigError::HasClientKeyButNoCert),
-                _ => {}
+                (Some(_), Some(_)) => {}
+                _ => return Err(RedisConfigError::MissingCertOrKey),
             }
         }
 
@@ -224,24 +222,6 @@ impl From<TlsConfig> for redis::TlsCertificates {
             root_cert: ca_cert.map(|ca_cert| ca_cert.into_bytes()),
         }
     }
-}
-
-#[derive(Debug, Error)]
-pub enum RedisConfigError {
-    #[error("Redis host is empty")]
-    EmptyHost,
-    #[error("Redis host is invalid: {0}")]
-    InvalidHost(String),
-    #[error("Redis port is 0")]
-    ZeroPort,
-    #[error("Redis password is empty")]
-    EmptyPassword,
-    #[error("TLS configuration error: both client_cert and client_key must be provided together")]
-    HasClientCertButNoKey,
-    #[error("TLS configuration error: both client_cert and client_key must be provided together")]
-    HasClientKeyButNoCert,
-    #[error(transparent)]
-    Redis(#[from] redis::RedisError),
 }
 
 pub fn default_prefix() -> String {

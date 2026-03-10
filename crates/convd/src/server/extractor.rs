@@ -4,4 +4,3 @@ mod scheme;
 
 pub use header::*;
 pub use request::*;
-pub use scheme::*;

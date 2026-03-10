@@ -6,7 +6,7 @@ use crate::core::profile::proxy_group::ProxyGroup;
 use crate::core::profile::rule::Rule;
 use crate::core::renderer::Renderer;
 use crate::core::util::{indent_line, indent_lines};
-use crate::error::RenderError;
+use crate::error::{InternalError, RenderError};
 use std::collections::BTreeMap;
 use std::fmt::Write;
 use tracing::instrument;
@@ -170,7 +170,9 @@ impl ClashRenderer {
 
     #[instrument(skip_all)]
     fn render_proxy_provider((name, proxy_provider): (&String, &ProxyProvider)) -> Result<String> {
-        let fields = serde_yml::to_string(&proxy_provider)?
+        let fields = serde_yml::to_string(&proxy_provider)
+            .map_err(InternalError::Yaml)
+            .map_err(Box::new)?
             .lines()
             .map(indent_line)
             .collect::<Vec<_>>()

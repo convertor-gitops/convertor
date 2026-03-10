@@ -3,7 +3,7 @@ use crate::core::profile::proxy::Proxy;
 use crate::core::profile::proxy_group::{ProxyGroup, ProxyGroupType};
 use crate::core::profile::rule::{Rule, RuleType};
 use crate::core::profile::surge_profile::SurgeProfile;
-use crate::error::ParseError;
+use crate::error::{InternalError, ParseError};
 use std::collections::{BTreeMap, HashMap};
 use std::fmt::Write;
 use std::str::FromStr;
@@ -27,23 +27,23 @@ impl SurgeParser {
         let header = sections
             .remove(MANAGED_CONFIG_HEADER)
             .map(Self::parse_header)
-            .ok_or(ParseError::SectionMissing(MANAGED_CONFIG_HEADER))??;
+            .ok_or(ParseError::MissingSection(MANAGED_CONFIG_HEADER))??;
         let general = sections
             .remove(GENERAL_SECTION)
             .map(Self::parse_general)
-            .ok_or(ParseError::SectionMissing(GENERAL_SECTION))??;
+            .ok_or(ParseError::MissingSection(GENERAL_SECTION))??;
         let proxies = sections
             .remove(PROXY_SECTION)
             .map(Self::parse_proxies)
-            .ok_or(ParseError::SectionMissing(PROXY_SECTION))??;
+            .ok_or(ParseError::MissingSection(PROXY_SECTION))??;
         let proxy_groups = sections
             .remove(PROXY_GROUP_SECTION)
             .map(Self::parse_proxy_groups)
-            .ok_or(ParseError::SectionMissing(PROXY_GROUP_SECTION))??;
+            .ok_or(ParseError::MissingSection(PROXY_GROUP_SECTION))??;
         let rules = sections
             .remove(RULE_SECTION)
             .map(Self::parse_rules)
-            .ok_or(ParseError::SectionMissing(RULE_SECTION))??;
+            .ok_or(ParseError::MissingSection(RULE_SECTION))??;
         let url_rewrite = sections
             .remove(URL_REWRITE_SECTION)
             .map(Self::parse_url_rewrite)
@@ -90,7 +90,9 @@ impl SurgeParser {
     pub fn parse_header(section: impl IntoIterator<Item = impl AsRef<str>>) -> Result<String> {
         let mut output = String::new();
         for line in section {
-            writeln!(output, "{}", line.as_ref())?;
+            writeln!(output, "{}", line.as_ref())
+                .map_err(InternalError::Fmt)
+                .map_err(ParseError::Unknown)?;
         }
         Ok(output)
     }
@@ -272,7 +274,9 @@ impl SurgeParser {
                 line if line.is_empty() || line.starts_with('#') || line.starts_with(';') || line.starts_with("//") => {
                     match comment.as_mut() {
                         None => comment = Some(line.to_string()),
-                        Some(comment) => write!(comment, "\n{line}")?,
+                        Some(comment) => write!(comment, "\n{line}")
+                            .map_err(InternalError::Fmt)
+                            .map_err(ParseError::Unknown)?,
                     }
                 }
                 _ => match parse(line) {
@@ -283,7 +287,9 @@ impl SurgeParser {
                     Err(e) => {
                         match comment.as_mut() {
                             None => comment = Some(line.to_string()),
-                            Some(comment) => writeln!(comment, "{line}")?,
+                            Some(comment) => writeln!(comment, "{line}")
+                                .map_err(InternalError::Fmt)
+                                .map_err(ParseError::Unknown)?,
                         }
                         trace!("{e}")
                     }

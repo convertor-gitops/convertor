@@ -1,5 +1,6 @@
 use crate::config::ConflyConfig;
 use crate::file_provider::FileProvider;
+use crate::url::Url;
 use clap::Args;
 use color_eyre::Result;
 use color_eyre::eyre::OptionExt;
@@ -14,7 +15,6 @@ use convertor::error::UrlBuilderError;
 use convertor::provider::SubsProvider;
 use convertor::url::url_builder::{HostPort, UrlBuilder};
 use convertor::url::url_result::UrlResult;
-use url::Url;
 
 #[derive(Default, Debug, Clone, Hash, Args)]
 pub struct SubscriptionCmd {

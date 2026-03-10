@@ -2,7 +2,6 @@
 mod testkit;
 
 use crate::testkit::{encryptor, init_test, policies, subscription_url, url_builder};
-use convertor::common::encrypt::Encryptor;
 use convertor::config::proxy_client::ProxyClient;
 use convertor::core::profile::clash_profile::GeoxUrl;
 use convertor::url::conv_url::ConvUrl;

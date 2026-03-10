@@ -1,4 +1,4 @@
-use crate::error::EncryptError;
+use crate::error::{EncryptError, InternalError};
 use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD as B64URL;
 use blake3;
@@ -35,7 +35,6 @@ fn nonce_from_seed_cursor(seed32: &[u8; 32], cursor: u64) -> [u8; NONCE_LEN] {
     nonce
 }
 
-/// 用于 serde 的“纯数据”表示（不含 Cell）
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 enum NonceModeRepr {
     Random,
@@ -70,7 +69,6 @@ impl NonceMode {
     }
 }
 
-/// 你需要的那个“可 Debug/Clone/Eq/Hash/serde”的 Encryptor
 pub struct Encryptor {
     key: [u8; 32],
     nonce: NonceMode,
@@ -113,7 +111,10 @@ impl Encryptor {
         match &self.nonce {
             NonceMode::Random => {
                 let mut n = [0u8; NONCE_LEN];
-                getrandom::fill(&mut n)?;
+                getrandom::fill(&mut n)
+                    .map_err(InternalError::Rng)
+                    .map_err(Box::new)
+                    .map_err(EncryptError::Unknown)?;
                 Ok(n)
             }
             NonceMode::Deterministic { seed, cursor } => {
@@ -145,24 +146,22 @@ impl Encryptor {
         }
         let (nonce_part, ct_part) = token.split_at(NONCE_B64URL_LEN);
 
-        let nonce_raw = B64URL.decode(nonce_part)?;
+        let nonce_raw = B64URL.decode(nonce_part).map_err(EncryptError::B64Decode)?;
         if nonce_raw.len() != NONCE_LEN {
             return Err(EncryptError::NonceLength);
         }
         let nonce = XNonce::from_slice(&nonce_raw);
 
-        let ciphertext = B64URL.decode(ct_part)?;
+        let ciphertext = B64URL.decode(ct_part).map_err(EncryptError::B64Decode)?;
 
         let plaintext = self
             .cipher()
             .decrypt(nonce, ciphertext.as_ref())
             .map_err(|_| EncryptError::Decrypt)?;
 
-        Ok(String::from_utf8(plaintext)?)
+        String::from_utf8(plaintext).map_err(EncryptError::CipherUtf8)
     }
 }
-
-/* ===== 手动实现你要求的 trait：Debug/Clone/Eq/PartialEq/Hash/Serialize/Deserialize ===== */
 
 impl Debug for Encryptor {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
