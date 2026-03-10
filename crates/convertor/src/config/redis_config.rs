@@ -241,7 +241,7 @@ pub enum RedisConfigError {
     #[error("TLS configuration error: both client_cert and client_key must be provided together")]
     HasClientKeyButNoCert,
     #[error(transparent)]
-    RedisError(#[from] redis::RedisError),
+    Redis(#[from] redis::RedisError),
 }
 
 pub fn default_prefix() -> String {

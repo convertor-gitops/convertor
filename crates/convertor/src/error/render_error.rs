@@ -6,8 +6,8 @@ pub enum RenderError {
     Render(String),
 
     #[error(transparent)]
-    FmtError(#[from] std::fmt::Error),
+    Fmt(#[from] std::fmt::Error),
 
     #[error(transparent)]
-    YamlError(#[from] serde_yml::Error),
+    Yaml(#[from] serde_yml::Error),
 }

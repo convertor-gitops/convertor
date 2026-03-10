@@ -18,6 +18,7 @@ serde_qs = { workspace = true, features = ["default_to_form_encoding"] }
 # HTTP 客户端 / 网络
 reqwest = { workspace = true, features = ["http2", "json", "stream", "rustls-tls"] }
 headers = { workspace = true }
+fetcher = { workspace = true }
 
 # URL / 编码 / 工具
 percent-encoding = { workspace = true }

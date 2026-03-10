@@ -11,11 +11,11 @@ import {
     MatExpansionPanelHeader,
     MatExpansionPanelTitle,
 } from "@angular/material/expansion";
-import { combineLatest, filter, map, Observable, startWith, tap, withLatestFrom } from "rxjs";
+import { combineLatest, filter, map, Observable, shareReplay, startWith, tap, withLatestFrom } from "rxjs";
 import { RequestSnapshot } from "../../../common/response/request";
-import { ApiResponse } from "../../../common/response/response";
 import { DashboardService } from "../../../service/dashboard.service";
 import { DashboardPanel } from "../dashboard-panel/dashboard-panel";
+import { ApiResponse } from "../../../common/response/response";
 
 @Component({
     selector: "app-dashboard-error",
@@ -51,22 +51,22 @@ export class DashboardError {
         map((error) => error?.error),
         filter((error) => !!error),
         map((error) => ApiResponse.deserialize(error)),
+        filter((response) => response != null),
+        shareReplay(1),
     );
 
-    test = combineLatest([]).pipe();
-
     clientRequest$ = this.httpErrorResponse$.pipe(
-        filter((error) => !!(error?.url)),
-        map((error) => <[ HttpErrorResponse, string ]>[ error!, error!.url! ]),
+        filter((errorResponse) => !!(errorResponse?.url)),
+        map((errorResponse) => <[HttpErrorResponse, string]>[errorResponse!, errorResponse!.url!]),
         withLatestFrom(this.dashboardHttpError$.pipe(
             filter((error) => !!(error?.method)),
             map((error) => error!.method!),
         )),
-        map(([ [ error, url ], method ]) => {
+        map(([[errorResponse, url], method]) => {
             const parsedUrl = new URL(url);
             const headers = new Map<string, string>();
-            error.headers.keys().forEach(key => {
-                headers.set(key, error.headers.get(key) ?? "");
+            errorResponse.headers.keys().forEach(key => {
+                headers.set(key, errorResponse.headers.get(key) ?? "");
             });
             return new RequestSnapshot(
                 method,
@@ -84,7 +84,7 @@ export class DashboardError {
         this.clientRequest$.pipe(startWith(null)),
         this.serverRequest$.pipe(startWith(null)),
     ]).pipe(
-        map(([ client, server ]) => {
+        map(([client, server]) => {
             return {
                 "客户端发出请求": client,
                 "服务端收到请求": server,
@@ -107,6 +107,7 @@ export class DashboardError {
 
     // ui
     clientRequestCollapsed = model(false);
+    protected readonly Object = Object;
 
     constructor() {
         effect(() => {
@@ -123,6 +124,4 @@ export class DashboardError {
         console.log("afterExpand");
         this.clientRequestCollapsed.set(false);
     }
-
-    protected readonly Object = Object;
 }

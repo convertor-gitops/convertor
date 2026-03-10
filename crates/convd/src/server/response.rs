@@ -1,9 +1,11 @@
 mod api_error;
 mod api_response;
-mod app_error;
-mod request_snapshot;
+mod error_mapper;
+mod request_body;
+mod response_body;
 
 pub use api_error::*;
 pub use api_response::*;
-pub use app_error::*;
-pub use request_snapshot::*;
+pub use error_mapper::*;
+pub use request_body::*;
+pub use response_body::*;

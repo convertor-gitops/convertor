@@ -40,9 +40,7 @@ async fn main() -> Result<()> {
         ConflyCommand::Subscription(sub_cmd) => {
             let config = ConflyConfig::search(&base_dir, args.config)?;
             let subs_provider = SubsProvider::new(None, config.common.redis.as_ref().map(|r| r.prefix.as_str()));
-            let (_url_builder, url_result) = sub_cmd
-                .execute(&config, &subs_provider, &FileProvider::FileSystem)
-                .await?;
+            let (_url_builder, url_result) = sub_cmd.execute(&config, &subs_provider, &FileProvider::FileSystem).await?;
             println!("{url_result}");
         }
     }

@@ -141,7 +141,7 @@ impl Encryptor {
 
     pub fn decrypt(&self, token: &str) -> Result<String> {
         if token.len() < NONCE_B64URL_LEN {
-            return Err(EncryptError::SplitError);
+            return Err(EncryptError::Split);
         }
         let (nonce_part, ct_part) = token.split_at(NONCE_B64URL_LEN);
 

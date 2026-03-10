@@ -39,11 +39,7 @@ fn run(command: impl AsRef<str>, args: &[&str], cwd: Option<&str>) -> Result<Str
     if output.status.success() {
         Ok(String::from_utf8_lossy(&output.stdout).to_string())
     } else {
-        Err(anyhow!(
-            "ng {} error:\n{}",
-            args.join(" "),
-            String::from_utf8_lossy(&output.stderr)
-        ))
+        Err(anyhow!("ng {} error:\n{}", args.join(" "), String::from_utf8_lossy(&output.stderr)))
     }
 }
 

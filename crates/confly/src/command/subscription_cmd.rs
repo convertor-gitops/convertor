@@ -5,7 +5,7 @@ use color_eyre::Result;
 use color_eyre::eyre::OptionExt;
 use convertor::common::encrypt::encrypt;
 use convertor::config::proxy_client::ProxyClient;
-use convertor::core::profile::Profile;
+use convertor::core::profile::ProfileTrait;
 use convertor::core::profile::clash_profile::ClashProfile;
 use convertor::core::profile::extract_policies_for_rule_provider;
 use convertor::core::profile::policy::Policy;
@@ -45,7 +45,7 @@ impl SubscriptionCmd {
         file_provider: &FileProvider,
     ) -> Result<(UrlBuilder, UrlResult)> {
         let url_builder = self.create_url_builder(config).await?;
-        let raw_url = url_builder.build_raw_url();
+        let raw_url = url_builder.build_original_url();
         let raw_profile_content = subs_provider
             .get_raw_profile(raw_url.into(), [("User-Agent", "Surge Mac/8310")].into())
             .await?;
@@ -65,9 +65,9 @@ impl SubscriptionCmd {
             }
         };
 
-        let raw_url = url_builder.build_raw_url();
+        let raw_url = url_builder.build_original_url();
         let profile_url = url_builder.build_profile_url()?;
-        let raw_profile_url = url_builder.build_raw_profile_url()?;
+        let raw_profile_url = url_builder.build_raw_url()?;
         let rule_provider_urls = policies
             .iter()
             .map(|policy| url_builder.build_rule_provider_url(policy))

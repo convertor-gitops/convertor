@@ -1,6 +1,6 @@
-use crate::server::response::AppError;
+use crate::server::error::AppError;
 use convertor::config::Config;
-use convertor::core::profile::Profile;
+use convertor::core::profile::ProfileTrait;
 use convertor::core::profile::policy::Policy;
 use convertor::core::profile::surge_profile::SurgeProfile;
 use convertor::core::renderer::Renderer;
@@ -33,18 +33,21 @@ impl SurgeService {
     }
 
     #[instrument(skip_all)]
-    pub async fn raw_profile(&self, url_builder: UrlBuilder, raw_profile: String) -> Result<String> {
-        let surge_header = url_builder.build_surge_header(UrlType::RawProfile)?;
-        let parts = raw_profile.split_once('\n');
-        Ok(format!("{surge_header}\n{}", parts.map(|(_, v)| v).unwrap_or("")))
+    pub async fn render_raw_profile(&self, url_builder: UrlBuilder, raw_profile: String) -> Result<String> {
+        let surge_header = url_builder.build_surge_header(UrlType::Raw)?;
+        let raw_profile_content = match raw_profile.split_once('\n') {
+            None => raw_profile,
+            Some((_, lines)) => format!("{}\n{}", surge_header, lines),
+        };
+        Ok(raw_profile_content)
     }
 
     #[instrument(skip_all)]
     pub async fn rule_provider(&self, url_builder: UrlBuilder, raw_profile: String, policy: Policy) -> Result<String> {
         let profile = self.try_get_profile(url_builder, raw_profile).await?;
-        match profile.get_provider_rules_with_policy(&policy) {
+        match profile.rule_providers.get(&policy) {
             None => Ok(String::new()),
-            Some(provider_rules) => Ok(SurgeRenderer::render_provider_rules(provider_rules)?),
+            Some(rules) => Ok(SurgeRenderer::render_rule_provider_payload(rules)?),
         }
     }
 
@@ -57,6 +60,6 @@ impl SurgeService {
                 Ok::<_, AppError>(profile)
             })
             .await
-            .map_err(AppError::CacheError)
+            .map_err(AppError::Cache)
     }
 }

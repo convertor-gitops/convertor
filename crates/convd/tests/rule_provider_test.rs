@@ -15,11 +15,7 @@ use http_body_util::BodyExt;
 use server::{ServerContext, start_server};
 use tower::ServiceExt;
 
-async fn rule_provider(
-    server_context: &ServerContext,
-    client: ProxyClient,
-    policy: Policy,
-) -> color_eyre::Result<String> {
+async fn rule_provider(server_context: &ServerContext, client: ProxyClient, policy: Policy) -> color_eyre::Result<String> {
     let ServerContext { app, app_state, .. } = server_context;
     let url_builder = app_state.config.create_url_builder(client)?;
 
@@ -35,10 +31,7 @@ async fn rule_provider(
     let actual = String::from_utf8_lossy(&response.into_body().collect().await?.to_bytes())
         .to_string()
         .replace(
-            &url_builder
-                .sub_url
-                .host_port()
-                .ok_or_eyre("无法从 sub_url 中提取 host port")?,
+            &url_builder.sub_url.host_port().ok_or_eyre("无法从 sub_url 中提取 host port")?,
             "localhost",
         );
 

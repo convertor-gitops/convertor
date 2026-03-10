@@ -10,13 +10,13 @@ pub enum ConfigError {
     RedisNotFound(String),
 
     #[error("读取配置文件时发生错误: {0}")]
-    ReadError(#[source] std::io::Error),
+    Read(#[source] std::io::Error),
 
     #[error("解析配置文件时发生错误: {0}")]
-    ParseError(#[from] toml::de::Error),
+    Parse(#[from] toml::de::Error),
 
     #[error("序列化配置文件时发生错误: {0}")]
-    SerializeError(#[from] toml::ser::Error),
+    Serialize(#[from] toml::ser::Error),
 
     #[error("搜索配置文件不是一个文件: {}", .0.display())]
     NotFile(std::path::PathBuf),
@@ -25,17 +25,17 @@ pub enum ConfigError {
     NotDirectory(std::path::PathBuf),
 
     #[error("查找配置文件时发生 IO 错误: {0}")]
-    PathError(#[source] std::io::Error),
+    Path(#[source] std::io::Error),
 
     #[error("获取配置时发生 redis 错误: {0}")]
-    RedisError(#[from] redis::RedisError),
+    Redis(#[from] redis::RedisError),
 
     #[error("加密密钥时发生错误: {0}")]
-    EncryptError(#[from] EncryptError),
+    Encrypt(#[from] EncryptError),
 
     #[error("创建 UrlBuilder 时发生错误: {0}")]
-    UrlBuilderError(#[from] UrlBuilderError),
+    UrlBuilder(#[from] UrlBuilderError),
 
     #[error("多段配置合并错误: {0}")]
-    SearchConfigError(#[from] config::ConfigError),
+    SearchConfig(#[from] config::ConfigError),
 }

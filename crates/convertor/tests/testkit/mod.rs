@@ -34,7 +34,7 @@ pub(super) fn url_builder(client: ProxyClient, enc_label: impl AsRef<str>) -> co
     let server = server_url()?;
     let sub_url = subscription_url()?;
     let encryptor = encryptor(enc_label);
-    let url_builder = UrlBuilder::new(encryptor, client, server.clone(), sub_url.clone(), 86400, true)?;
+    let url_builder = UrlBuilder::new(encryptor, client, server.clone(), sub_url.clone(), 86400, true);
     Ok(url_builder)
 }
 

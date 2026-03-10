@@ -25,10 +25,7 @@ async fn profile(server_context: &ServerContext, client: ProxyClient) -> color_e
 
     let actual = String::from_utf8_lossy(&response.into_body().collect().await?.to_bytes())
         .to_string()
-        .replace(
-            &url_builder.enc_sub_url,
-            "http://127.0.0.1:8080/subscription?token=bppleman",
-        );
+        .replace(&url_builder.enc_sub_url, "http://127.0.0.1:8080/subscription?token=bppleman");
     Ok(actual)
 }
 

@@ -1,12 +1,12 @@
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, catchError, finalize, map, Observable, tap } from "rxjs";
-import ConvertorQuery from "../common/model/convertor_query";
-import { DashboardHttpError } from "../common/model/dashboard-http-error";
+import ConvertorQuery from "../common/model/convertor-query";
 import { UrlResult } from "../common/model/url_result";
 import { ApiResponse } from "../common/response/response";
 import { LatencyService } from "./latency/latency-service";
 import { LatencyResult } from "./latency/latency-types";
+import { DashboardHttpError } from "../common/error/dashboard-http.error";
 
 @Injectable()
 export class DashboardService {
@@ -67,15 +67,15 @@ export class DashboardService {
             }),
             // 错误只在 HTTP 内部处理，吞掉，不打断主流
             catchError((err: HttpErrorResponse) => {
-                console.log("DashboardService.getSubscription catchError:");
+                console.log("[DashboardService.getSubscription] catchError: ", err);
                 const httpError = new DashboardHttpError(err, "GET");
-                console.log(httpError);
+                console.log("[DashboardService.getSubscription] httpError:", httpError);
                 this.error.next(httpError);
                 throw httpError;
             }),
             // 结束（成功/失败/取消）：关 loading
             finalize(() => {
-                console.log("DashboardService.getSubscription finalize:");
+                console.log("[DashboardService.getSubscription] finalize");
                 this.loading.next(false);
             }),
         );

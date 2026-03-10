@@ -39,10 +39,13 @@ axum-extra = { workspace = true, features = ["typed-header", "scheme", "tracing"
 tower = { workspace = true, features = [] }
 tower-http = { workspace = true, features = ["trace", "fs", "request-id"] }
 axum-prometheus = { workspace = true, features = ["prometheus"] }
+reqwest = { workspace = true, features = ["http2", "json", "stream", "rustls-tls"] }
+headers = { workspace = true }
 
 # 并发 / 异步 运行时
 tokio = { workspace = true, features = ["fs", "rt-multi-thread", "signal", "macros"] }
 tokio-util = { workspace = true, features = [] }
+futures-util = { workspace = true }
 
 # 缓存 / 存储 / 数据库
 moka = { workspace = true, features = ["future"] }

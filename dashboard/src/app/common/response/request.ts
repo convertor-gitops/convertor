@@ -1,4 +1,4 @@
-export class RequestSnapshot {
+export class RequestBody {
     constructor(
         public method: string,
         public scheme: string,
@@ -8,16 +8,19 @@ export class RequestSnapshot {
     ) {
     }
 
-    public static deserialize(json: RequestSnapshot | any): RequestSnapshot | null {
-        let isRequestSnapshot = Object.hasOwn(json, "method")
+    public static deserialize(json: RequestBody | any): RequestBody | null {
+        if (json == null) {
+            return null;
+        }
+        let isRequestBody = Object.hasOwn(json, "method")
             && Object.hasOwn(json, "scheme")
             && Object.hasOwn(json, "host")
             && Object.hasOwn(json, "uri")
             && Object.hasOwn(json, "headers");
-        if (!isRequestSnapshot) {
+        if (!isRequestBody) {
             return null;
         }
-        return new RequestSnapshot(
+        return new RequestBody(
             json.method,
             json.scheme,
             json.host,

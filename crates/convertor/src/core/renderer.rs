@@ -1,7 +1,7 @@
 #![deny(unused, unused_variables)]
 
 use crate::config::proxy_client::ProxyClient;
-use crate::core::profile::Profile;
+use crate::core::profile::ProfileTrait;
 use crate::core::profile::policy::Policy;
 use crate::core::profile::proxy::Proxy;
 use crate::core::profile::proxy_group::ProxyGroup;
@@ -19,7 +19,7 @@ type Result<T> = core::result::Result<T, RenderError>;
 pub const INDENT: usize = 4;
 
 pub trait Renderer {
-    type PROFILE: Profile;
+    type PROFILE: ProfileTrait;
 
     fn client() -> ProxyClient;
 

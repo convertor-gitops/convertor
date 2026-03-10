@@ -34,10 +34,7 @@ pub fn file_provider(config: &ClientConfig) -> FileProvider {
         test_assets_dir.insert(raw_profile_path, "".to_string());
     }
     if let Some(rules_path) = config.rules_path() {
-        test_assets_dir.insert(
-            rules_path,
-            "# Rule Provider from convertor\n# End of Rule Provider".to_string(),
-        );
+        test_assets_dir.insert(rules_path, "# Rule Provider from convertor\n# End of Rule Provider".to_string());
     }
     FileProvider::Memory(Arc::new(RwLock::new(test_assets_dir)))
 }
@@ -45,10 +42,7 @@ pub fn file_provider(config: &ClientConfig) -> FileProvider {
 async fn test_subscription(client: ProxyClient) -> color_eyre::Result<()> {
     let base_dir = init_test!();
     let mut config = ConflyConfig::search(&base_dir, None::<&str>)?;
-    let client_config = config
-        .clients
-        .get(&client)
-        .ok_or_eyre(format!("没有找到 {client} 客户端配置"))?;
+    let client_config = config.clients.get(&client).ok_or_eyre(format!("没有找到 {client} 客户端配置"))?;
     start_mock_provider_server(&mut config.common).await?;
 
     let subs_provider = SubsProvider::new(None, config.common.redis.as_ref().map(|r| r.prefix.as_str()));
@@ -60,11 +54,7 @@ async fn test_subscription(client: ProxyClient) -> color_eyre::Result<()> {
         let result = result.to_string();
         let result = result
             .replace(
-                &url_builder
-                    .sub_url
-                    .port()
-                    .map(|p| p.to_string())
-                    .unwrap_or("".to_string()),
+                &url_builder.sub_url.port().map(|p| p.to_string()).unwrap_or("".to_string()),
                 "<PORT>",
             )
             .replace(&url_builder.server.to_string(), "<SERVER>")

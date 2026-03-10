@@ -46,6 +46,7 @@ ConvUrl {
             strict: Some(
                 true,
             ),
+            proxy_provider_name: None,
             policy: Some(
                 Policy {
                     name: "BosLife",

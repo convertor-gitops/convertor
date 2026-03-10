@@ -1,7 +1,7 @@
 use convertor::common::once::{init_backtrace, init_base_dir};
 use convertor::config::Config;
 use convertor::config::proxy_client::ProxyClient;
-use convertor::core::profile::Profile;
+use convertor::core::profile::ProfileTrait;
 use convertor::core::profile::surge_profile::SurgeProfile;
 use convertor::core::renderer::Renderer;
 use convertor::core::renderer::surge_renderer::SurgeRenderer;

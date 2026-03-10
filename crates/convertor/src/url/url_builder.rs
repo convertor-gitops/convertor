@@ -25,29 +25,21 @@ impl UrlBuilder {
 }
 
 impl UrlBuilder {
-    pub fn new(
-        encryptor: Encryptor,
-        client: ProxyClient,
-        server: Url,
-        sub_url: Url,
-        interval: u64,
-        strict: bool,
-    ) -> Result<Self, UrlBuilderError> {
-        let builder = Self {
+    pub fn new(encryptor: Encryptor, client: ProxyClient, server: Url, sub_url: Url, interval: u64, strict: bool) -> Self {
+        Self {
             encryptor,
             client,
             server,
             sub_url,
             interval,
             strict,
-        };
-        Ok(builder)
+        }
     }
 
     pub fn from_conv_url(encryptor: Encryptor, url: ConvUrl) -> Result<Self, UrlBuilderError> {
         let query = url
             .decrypt(&encryptor)
-            .map_err(UrlBuilderError::ConUrlError)?
+            .map_err(UrlBuilderError::ConvUrl)?
             .take_query()
             .ok_or(UrlBuilderError::ConvUrlNoQuery)?;
         let ConvQuery {
@@ -56,48 +48,62 @@ impl UrlBuilder {
             client,
             interval,
             strict,
+            proxy_provider_name: _,
             policy: _,
         } = query;
         let strict = strict.unwrap_or(true);
-        let sub_url = sub_url.parse::<Url>().map_err(UrlBuilderError::UrlError)?;
-        let url_builder = Self::new(encryptor, client, server, sub_url, interval, strict)?;
+        let sub_url = sub_url.parse::<Url>().map_err(UrlBuilderError::Url)?;
+        let url_builder = Self::new(encryptor, client, server, sub_url, interval, strict);
         Ok(url_builder)
+    }
+
+    pub fn from_conv_query(encryptor: Encryptor, query: ConvQuery) -> Result<Self, UrlBuilderError> {
+        let ConvQuery {
+            server,
+            sub_url,
+            client,
+            interval,
+            strict,
+            proxy_provider_name: _,
+            policy: _,
+        } = query.decrypt(&encryptor)?;
+        let strict = strict.unwrap_or(true);
+        let sub_url = sub_url.parse::<Url>().expect("ConvQuery 中的 sub_url 无法解析为 Url");
+        Ok(Self::new(encryptor, client, server, sub_url, interval, strict))
     }
 
     pub fn build_original_url(&self) -> Result<ConvUrl, UrlBuilderError> {
         let mut url = self.sub_url.clone();
         url.query_pairs_mut().append_pair("flag", self.client.as_str());
-        ConvUrl::original(url)
-            .encrypt(&self.encryptor)
-            .map_err(UrlBuilderError::ConUrlError)
+        ConvUrl::original(url).encrypt(&self.encryptor).map_err(UrlBuilderError::ConvUrl)
     }
 
     pub fn build_raw_url(&self) -> Result<ConvUrl, UrlBuilderError> {
         let query = self.as_profile_query();
         ConvUrl::new(UrlType::Raw, self.server.clone(), Some(query))
             .encrypt(&self.encryptor)
-            .map_err(UrlBuilderError::ConUrlError)
+            .map_err(UrlBuilderError::ConvUrl)
     }
 
     pub fn build_profile_url(&self) -> Result<ConvUrl, UrlBuilderError> {
         let query = self.as_profile_query();
         ConvUrl::new(UrlType::Profile, self.server.clone(), Some(query))
             .encrypt(&self.encryptor)
-            .map_err(UrlBuilderError::ConUrlError)
+            .map_err(UrlBuilderError::ConvUrl)
     }
 
-    pub fn build_proxy_provider_url(&self) -> Result<ConvUrl, UrlBuilderError> {
-        let query = self.as_proxy_provider_query();
+    pub fn build_proxy_provider_url(&self, name: impl AsRef<str>) -> Result<ConvUrl, UrlBuilderError> {
+        let query = self.as_proxy_provider_query(name);
         ConvUrl::new(UrlType::ProxyProvider, self.server.clone(), Some(query))
             .encrypt(&self.encryptor)
-            .map_err(UrlBuilderError::ConUrlError)
+            .map_err(UrlBuilderError::ConvUrl)
     }
 
     pub fn build_rule_provider_url(&self, policy: &Policy) -> Result<ConvUrl, UrlBuilderError> {
         let query = self.as_rule_provider_query(policy);
         ConvUrl::new(UrlType::RuleProvider, self.server.clone(), Some(query))
             .encrypt(&self.encryptor)
-            .map_err(UrlBuilderError::ConUrlError)
+            .map_err(UrlBuilderError::ConvUrl)
     }
 
     // 构造专属 Surge 的订阅头
@@ -117,7 +123,7 @@ impl UrlBuilder {
         let query = [("url", url.to_string())];
         download_url.set_query(Some(
             serde_qs::to_string(&query)
-                .map_err(|e| UrlBuilderError::DownloadUrlError(url.to_string(), e))?
+                .map_err(|e| UrlBuilderError::DownloadUrl(url.to_string(), e))?
                 .as_str(),
         ));
         Ok(download_url)
@@ -132,12 +138,15 @@ impl UrlBuilder {
             client: self.client,
             interval: self.interval,
             strict: Some(self.strict),
+            proxy_provider_name: None,
             policy: None,
         }
     }
 
-    pub fn as_proxy_provider_query(&self) -> ConvQuery {
-        self.as_profile_query()
+    pub fn as_proxy_provider_query(&self, name: impl AsRef<str>) -> ConvQuery {
+        let mut query = self.as_profile_query();
+        query.proxy_provider_name = Some(name.as_ref().to_string());
+        query
     }
 
     pub fn as_rule_provider_query(&self, policy: &Policy) -> ConvQuery {

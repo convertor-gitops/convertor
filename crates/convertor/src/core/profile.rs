@@ -1,10 +1,10 @@
 use crate::config::proxy_client::ProxyClient;
-use crate::core::profile::policy::Policy;
 use crate::core::profile::proxy::Proxy;
 use crate::core::profile::proxy_group::ProxyGroup;
 use crate::core::profile::rule::Rule;
-use crate::error::{ConvertError, ParseError};
+use crate::error::ConvertError;
 use crate::url::url_builder::UrlBuilder;
+use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
 pub mod clash_profile;
@@ -15,10 +15,97 @@ pub mod rule;
 pub mod surge_header;
 pub mod surge_profile;
 
-pub trait Profile {
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum Profile {
+    Surge(Box<surge_profile::SurgeProfile>),
+    Clash(Box<clash_profile::ClashProfile>),
+}
+
+impl ProfileTrait for Profile {
+    type PROFILE = Profile;
+
+    fn client(&self) -> ProxyClient {
+        match self {
+            Profile::Surge(p) => p.client(),
+            Profile::Clash(p) => p.client(),
+        }
+    }
+
+    fn proxies(&self) -> &[Proxy] {
+        match self {
+            Profile::Surge(p) => p.proxies(),
+            Profile::Clash(p) => p.proxies(),
+        }
+    }
+
+    fn proxies_mut(&mut self) -> &mut Vec<Proxy> {
+        match self {
+            Profile::Surge(p) => p.proxies_mut(),
+            Profile::Clash(p) => p.proxies_mut(),
+        }
+    }
+
+    fn proxy_groups(&self) -> &[ProxyGroup] {
+        match self {
+            Profile::Surge(p) => p.proxy_groups(),
+            Profile::Clash(p) => p.proxy_groups(),
+        }
+    }
+
+    fn proxy_groups_mut(&mut self) -> &mut Vec<ProxyGroup> {
+        match self {
+            Profile::Surge(p) => p.proxy_groups_mut(),
+            Profile::Clash(p) => p.proxy_groups_mut(),
+        }
+    }
+
+    fn rules(&self) -> &[Rule] {
+        match self {
+            Profile::Surge(p) => p.rules(),
+            Profile::Clash(p) => p.rules(),
+        }
+    }
+
+    fn rules_mut(&mut self) -> &mut Vec<Rule> {
+        match self {
+            Profile::Surge(p) => p.rules_mut(),
+            Profile::Clash(p) => p.rules_mut(),
+        }
+    }
+
+    fn convert(&mut self, url_builder: &UrlBuilder) -> Result<(), ConvertError> {
+        match self {
+            Profile::Surge(p) => p.convert(url_builder),
+            Profile::Clash(p) => p.convert(url_builder),
+        }
+    }
+
+    fn organize_proxies(&mut self, url_builder: &UrlBuilder) -> Result<(), ConvertError> {
+        match self {
+            Profile::Surge(p) => p.organize_proxies(url_builder),
+            Profile::Clash(p) => p.organize_proxies(url_builder),
+        }
+    }
+
+    fn organize_other_rules(&mut self, url_builder: &UrlBuilder, other_rules: Vec<Rule>) -> Result<(), ConvertError> {
+        match self {
+            Profile::Surge(p) => p.organize_other_rules(url_builder, other_rules),
+            Profile::Clash(p) => p.organize_other_rules(url_builder, other_rules),
+        }
+    }
+
+    fn organize_other_rule(&mut self, url_builder: &UrlBuilder, rule: Rule) -> Result<(), ConvertError> {
+        match self {
+            Profile::Surge(p) => p.organize_other_rule(url_builder, rule),
+            Profile::Clash(p) => p.organize_other_rule(url_builder, rule),
+        }
+    }
+}
+
+pub trait ProfileTrait {
     type PROFILE;
 
-    fn client() -> ProxyClient;
+    fn client(&self) -> ProxyClient;
 
     fn proxies(&self) -> &[Proxy];
 
@@ -31,8 +118,6 @@ pub trait Profile {
     fn rules(&self) -> &[Rule];
 
     fn rules_mut(&mut self) -> &mut Vec<Rule>;
-
-    fn parse(content: String) -> Result<Self::PROFILE, ParseError>;
 
     fn convert(&mut self, url_builder: &UrlBuilder) -> Result<(), ConvertError>;
 
@@ -63,6 +148,4 @@ pub trait Profile {
     fn organize_other_rules(&mut self, url_builder: &UrlBuilder, other_rules: Vec<Rule>) -> Result<(), ConvertError>;
 
     fn organize_other_rule(&mut self, url_builder: &UrlBuilder, rule: Rule) -> Result<(), ConvertError>;
-
-    fn policy_name(policy: &Policy) -> String;
 }

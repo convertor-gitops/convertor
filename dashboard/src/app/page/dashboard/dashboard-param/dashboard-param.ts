@@ -62,20 +62,20 @@ export class DashboardParam {
 
     subscriptionForm = new FormGroup({
         secret: new FormControl<string | null>(null, {
-            validators: [ Validators.required ],
+            validators: [Validators.required],
             updateOn: "blur",
         }),
         url: new FormControl<string | null>(null, {
-            validators: [ Validators.required ],
+            validators: [Validators.required],
             updateOn: "blur",
         }),
         interval: new FormControl<number>(43200, {
             nonNullable: true,
-            validators: [ Validators.required ],
+            validators: [Validators.required],
             updateOn: "blur",
         }),
-        client: new FormControl<string>(ProxyClient.Surge.toLowerCase(), { nonNullable: true }),
-        strict: new FormControl<boolean>(true, { nonNullable: true }),
+        client: new FormControl<string>(ProxyClient.Surge.toLowerCase(), {nonNullable: true}),
+        strict: new FormControl<boolean>(true, {nonNullable: true}),
     });
 
     // urlResult = new BehaviorSubject<UrlResult | undefined>(undefined);
@@ -102,17 +102,17 @@ export class DashboardParam {
         distinctUntilChanged(this.deepEqual),
         filter(() => this.subscriptionForm.valid),
         map(payload => this.toUrlParams(payload)),
-        shareReplay({ bufferSize: 1, refCount: true }),
+        shareReplay({bufferSize: 1, refCount: true}),
     );
 
     paramRestoreSub = merge(
         this.storage.get("url").pipe(
             map(value => typeof value === "string" ? value : undefined),
-            map((value?: string) => ({ url: value, secret: undefined })),
+            map((value?: string) => ({url: value, secret: undefined})),
         ),
         this.storage.get("secret").pipe(
             map(value => typeof value === "string" ? value : undefined),
-            map((value?: string) => ({ url: undefined, secret: value })),
+            map((value?: string) => ({url: undefined, secret: value})),
         ),
     ).pipe(
         takeUntilDestroyed(this.destroyRef),
@@ -123,7 +123,7 @@ export class DashboardParam {
         if (!value.secret) {
             delete value.secret;
         }
-        this.subscriptionForm.patchValue(value, { emitEvent: false });
+        this.subscriptionForm.patchValue(value, {emitEvent: false});
     });
 
     paramStoreSub = merge(
@@ -173,21 +173,21 @@ export class DashboardParam {
             exhaustMap((urlParams) => {
                 return defer(() => {
                     // 请求开始：锁表单 & 开 loading
-                    this.subscriptionForm.disable({ emitEvent: false });
+                    this.subscriptionForm.disable({emitEvent: false});
 
                     const query = this.urlService.buildSubscriptionQuery(urlParams);
                     return this.dashboardService.getSubscription(query).pipe(
                         // 主动取消当前请求
                         takeUntil(this.cancel),
-                        catchError(() => {
-                            console.log("dashboard-param requestSub catchError:");
+                        catchError((err) => {
+                            console.log("[DashboardParam requestSub] catchError:", err);
                             // 捕获错误，避免流中断
                             return EMPTY;
                         }),
                         // 结束（成功/失败/取消）：解锁
                         finalize(() => {
-                            console.log("dashboard-param requestSub finalize:");
-                            this.subscriptionForm.enable({ emitEvent: false });
+                            console.log("[DashboardParam requestSub] finalize");
+                            this.subscriptionForm.enable({emitEvent: false});
                             return EMPTY;
                         }),
                     );

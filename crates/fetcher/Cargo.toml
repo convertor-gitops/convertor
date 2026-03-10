@@ -1,0 +1,24 @@
+[package]
+name = "fetcher"
+description.workspace = true
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+bytes = { workspace = true }
+futures-util = { workspace = true }
+reqwest = { workspace = true, features = ["stream", "rustls-tls"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true, features = ["alloc"] }
+serde_qs = { workspace = true, features = ["default_to_form_encoding"] }
+thiserror = { workspace = true }
+tracing = { workspace = true, features = ["attributes"] }
+url = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }
+
+[dev-dependencies]
+httpmock = { workspace = true, features = ["colored"] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
