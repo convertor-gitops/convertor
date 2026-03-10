@@ -1,54 +1,52 @@
 use crate::config::proxy_client::ProxyClient;
-use crate::error::EncryptError;
+use crate::error::{EncryptError, InternalError};
 use crate::url::conv_query::ConvQuery;
 use crate::url::conv_url::UrlType;
 use std::str::Utf8Error;
 use thiserror::Error;
-use url::Url;
 
 #[derive(Debug, Error)]
 pub enum UrlBuilderError {
+    #[error("[UrlBuilder] ConvQuery 出错")]
+    ConvQuery(#[from] Box<ConvQueryError>),
+
+    #[error("[UrlBuilder] ConvUrl 出错")]
+    ConvUrl(#[from] Box<ConvUrlError>),
+
     #[error("[UrlBuilder] 无法获取 sub_host: {0}")]
-    NoSubHost(Url),
+    MissingSubHost(String),
 
-    #[error("[UrlBuilder] 不支持构造为 SurgeHeader 的 UrlType: {0}")]
-    CannotBuildSurgeHeader(UrlType),
+    #[error("[UrlBuilder] 无法构建 ConvUrl: {0}")]
+    BuildUrl(UrlType, #[source] Box<ConvUrlError>),
 
-    #[error("[UrlBuilder] ConvUrl 中没有找到 ConvQuery")]
-    ConvUrlNoQuery,
+    #[error("[UrlBuilder] UrlType: {0}, 不支持构造为 SurgeHeader")]
+    BuildSurgeHeader(UrlType),
 
-    #[error("[UrlBuilder] 从 URL string 中解析 sub_url 失败")]
-    Url(#[source] url::ParseError),
-
-    #[error("[UrlBuilder] 无法创建 DownloadUrl: {0}")]
-    DownloadUrl(String, #[source] serde_qs::Error),
-
-    #[error(transparent)]
-    ConvUrl(#[from] ConvUrlError),
-
-    #[error(transparent)]
-    ConvQuery(#[from] ConvQueryError),
+    #[error("[UrlBuilder] 无法对链接创建中转下载链接: {0}")]
+    BuildDownloadUrl(String, #[source] Box<InternalError>),
+    // #[error("[UrlBuilder] 从 URL: `{0}` 中解析 sub_url 失败")]
+    // SubUrl(String, #[source] url::ParseError),
 }
 
 #[derive(Debug, Error)]
 pub enum ConvUrlError {
-    #[error("[ConvUrl] 从 URL string 中解析失败")]
-    Url(#[source] url::ParseError),
+    #[error("[ConvUrl] 无法从 URL: `{0}` 中解析 ConvUrl")]
+    InvalidUrl(String, #[source] url::ParseError),
 
-    #[error("[ConvUrl] 无法从 URL string 中解析路径: {0}")]
-    NoPath(String),
-
-    #[error(transparent)]
-    Utf8(#[from] Utf8Error),
+    #[error("[ConvUrl] 缺失查询参数")]
+    MissingConvQuery,
 
     #[error("[ConvUrl] 无法从 ConvQuery 序列化为字符串")]
-    SerialQuery(#[source] ConvQueryError),
+    ConvQuery(#[source] ConvQueryError),
 
     #[error("[ConvUrl] 无法从字符串解析为 ConvQuery")]
-    DeSerialQuery(#[source] ConvQueryError),
+    ParseQuery(#[source] ConvQueryError),
 
     #[error("[ConvUrl] 无法加密/解密 ConvQuery")]
-    Encrypt(#[source] ConvQueryError),
+    EncryptQuery(#[source] ConvQueryError),
+
+    #[error("[ConvUrl] UTF-8 解码失败")]
+    Utf8(#[from] Utf8Error),
 }
 
 #[derive(Debug, Error)]
@@ -62,13 +60,12 @@ pub enum ConvQueryError {
     #[error("[ConvQuery] 无法序列化为字符串: {0:#?}")]
     Encode(ConvQuery, #[source] serde_qs::Error),
 
-    #[error("[ConvQuery] 请求: {0}, 不支持的客户端: {1}")]
+    #[error("[ConvQuery] 请求: [{0}], 不支持的客户端: {1}")]
     UnsupportedClient(String, ProxyClient),
 
-    #[error("[ConvQuery] 请求: {0}, 缺少有效的参数字段: {1}")]
+    #[error("[ConvQuery] 请求: [{0}], 缺少有效的参数字段: {1}")]
     MissingField(String, String),
-    // NoProxyProviderName(String),
 
-    // #[error("[ConvQuery] 请求失败, 无法返回 RuleProviderPayload: 未找到有效的 Policy")]
-    // NoRuleProviderPolicy,
+    #[error("[ConvQuery] 无效的 sub_url: {0}")]
+    InvalidSubUrl(String, #[source] url::ParseError),
 }

@@ -1,18 +1,12 @@
 use crate::core::profile::rule::Rule;
-use crate::error::{ConvUrlError, UrlBuilderError};
+use crate::error::{ConvUrlError, InternalError, UrlBuilderError};
 use thiserror::Error;
 
 /// 所有解析失败场景的统一错误
 #[derive(Debug, Error)]
 pub enum ParseError {
-    #[error("无法从 UrlBuilder 中获取 sub_host")]
-    SubHost,
-
-    #[error("缺少必要的原始配置")]
-    MissingRawProfile,
-
-    #[error("缺少密钥")]
-    MissingSecret,
+    #[error("缺少必要配置段: {0}")]
+    MissingSection(&'static str),
 
     #[error("规则解析失败 (第 {line} 行): {reason}")]
     Rule { line: usize, reason: String },
@@ -29,20 +23,8 @@ pub enum ParseError {
     #[error("代理策略解析失败 (第 {line} 行): {reason}")]
     Policy { line: usize, reason: String },
 
-    #[error("缺少必要配置段: {0}")]
-    SectionMissing(&'static str),
-
-    #[error(transparent)]
-    UrlBuilder(#[from] UrlBuilderError),
-
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-
-    #[error(transparent)]
-    Fmt(#[from] std::fmt::Error),
-
-    #[error(transparent)]
-    Yaml(#[from] serde_yml::Error),
+    #[error("解析阶段发生未知错误")]
+    Unknown(#[source] InternalError),
 }
 
 #[derive(Debug, Error)]
@@ -50,9 +32,15 @@ pub enum ConvertError {
     #[error("无法将: {0} 转换为 ProviderRule")]
     IntoProviderRule(Rule),
 
-    #[error(transparent)]
-    UrlBuilder(#[from] UrlBuilderError),
+    #[error("转换阶段构建或处理 URL 失败")]
+    UrlBuilder {
+        #[source]
+        source: UrlBuilderError,
+    },
 
-    #[error(transparent)]
-    ConvUrl(#[from] ConvUrlError),
+    #[error("转换阶段生成目标 URL 失败")]
+    ConvUrl {
+        #[source]
+        source: ConvUrlError,
+    },
 }

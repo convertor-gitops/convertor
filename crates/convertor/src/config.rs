@@ -11,7 +11,6 @@ use std::fmt::{Debug, Display};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use tracing::debug;
-use url::Url;
 
 pub mod proxy_client;
 pub mod redis_config;
@@ -22,7 +21,7 @@ type Result<T> = core::result::Result<T, ConfigError>;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub secret: String,
-    pub server: Url,
+    pub server: url::Url,
     pub subscription: SubscriptionConfig,
     pub redis: Option<RedisConfig>,
 }
@@ -30,7 +29,7 @@ pub struct Config {
 impl Config {
     pub fn template() -> Self {
         let secret = "bppleman".to_string();
-        let server = Url::parse("http://127.0.0.1:8080").expect("不合法的服务器地址");
+        let server = url::Url::parse("http://127.0.0.1:8080").expect("不合法的服务器地址");
         let subscription = SubscriptionConfig::template();
         let redis = Some(RedisConfig::template());
 
@@ -95,7 +94,9 @@ impl Config {
                 .try_parsing(true),
         );
 
-        Ok(builder.build()?.try_deserialize()?)
+        let built = builder.build().map_err(|source| ConfigError::SearchConfig { source })?;
+        let config = built.try_deserialize().map_err(|source| ConfigError::SearchConfig { source })?;
+        Ok(config)
     }
 
     fn search_dir(dir: impl AsRef<Path>) -> Option<Vec<(PathBuf, config::FileFormat)>> {
@@ -140,7 +141,7 @@ impl Config {
             return Err(ConfigError::NotFile(path.to_path_buf()));
         }
         let content = std::fs::read_to_string(path).map_err(ConfigError::Read)?;
-        let config: Config = toml::from_str(&content)?;
+        let config: Config = toml::from_str(&content).map_err(|source| ConfigError::Parse { source })?;
         Ok(config)
     }
 
@@ -159,7 +160,7 @@ impl FromStr for Config {
     type Err = ConfigError;
 
     fn from_str(s: &str) -> Result<Self> {
-        Ok(toml::from_str(s)?)
+        Ok(toml::from_str(s).map_err(|source| ConfigError::Parse { source })?)
     }
 }
 

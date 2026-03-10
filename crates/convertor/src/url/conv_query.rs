@@ -6,12 +6,11 @@ use serde::ser::SerializeStruct;
 use serde::{Deserialize, Serialize, Serializer};
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
-use url::Url;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Deserialize)]
 pub struct ConvQuery {
     // common
-    pub server: Url,
+    pub server: url::Url,
     pub sub_url: String,
     pub client: ProxyClient,
     pub interval: u64,
@@ -53,6 +52,14 @@ impl ConvQuery {
             policy: self.policy,
         };
         Ok(query)
+    }
+
+    pub fn parse_sub_url(&self) -> Result<url::Url, ConvQueryError> {
+        let url: url::Url = self
+            .sub_url
+            .parse()
+            .map_err(|e| ConvQueryError::InvalidSubUrl(self.sub_url.clone(), e))?;
+        Ok(url)
     }
 }
 

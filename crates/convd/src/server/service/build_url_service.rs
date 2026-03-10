@@ -1,5 +1,5 @@
 use crate::server::app_state::AppState;
-use crate::server::error::AppError;
+use crate::server::error::ServiceError;
 use crate::server::model::UrlResult;
 use convertor::config::Config;
 use convertor::config::proxy_client::ProxyClient;
@@ -24,12 +24,12 @@ impl BuildUrlService {
 }
 
 impl BuildUrlService {
-    pub async fn build_url(&self, state: Arc<AppState>, url_builder: UrlBuilder, raw_profile: String) -> Result<UrlResult, AppError> {
+    pub async fn build_url(&self, state: Arc<AppState>, url_builder: UrlBuilder, raw_profile: String) -> Result<UrlResult, ServiceError> {
         let client = url_builder.client;
 
-        let original_url = url_builder.build_original_url()?;
-        let raw_url = url_builder.build_raw_url()?;
-        let profile_url = url_builder.build_profile_url()?;
+        let original_url = url_builder.build_original_url().map_err(Box::new)?;
+        let raw_url = url_builder.build_raw_url().map_err(Box::new)?;
+        let profile_url = url_builder.build_profile_url().map_err(Box::new)?;
 
         let profile = match client {
             ProxyClient::Surge => {
@@ -57,13 +57,13 @@ impl BuildUrlService {
 
         let proxy_provider_urls = proxy_provider_names
             .iter()
-            .map(|name| url_builder.build_proxy_provider_url(name).map_err(AppError::UrlBuilder))
-            .collect::<Result<Vec<_>, AppError>>()?;
+            .map(|name| url_builder.build_proxy_provider_url(name).map_err(Box::new))
+            .collect::<Result<Vec<_>, _>>()?;
 
         let rule_provider_urls = policies
             .iter()
-            .map(|policy| url_builder.build_rule_provider_url(policy).map_err(AppError::UrlBuilder))
-            .collect::<Result<Vec<_>, AppError>>()?;
+            .map(|policy| url_builder.build_rule_provider_url(policy).map_err(Box::new))
+            .collect::<Result<Vec<_>, _>>()?;
 
         Ok(UrlResult {
             original_url,

@@ -94,23 +94,23 @@ impl<T: Serialize> IntoResponse for ResponseBody<T> {
     }
 }
 
-/// axum 拦截器：route 层返回 `Result<ApiResponse<T>, ApiError>`，
-/// axum 调用 `HandlerResult<T>::from(result)` 后再 `into_response()`，route 层完全无感。
-///
-/// 用新类型包装绕开孤儿规则（`Result` 是标准库类型，无法直接 impl 外部 trait）。
-pub struct HandlerResult<T: Serialize = ()>(pub Result<ApiResponse<T>, ApiError>);
-
-impl<T: Serialize> From<Result<ApiResponse<T>, ApiError>> for HandlerResult<T> {
-    fn from(result: Result<ApiResponse<T>, ApiError>) -> Self {
-        HandlerResult(result)
-    }
-}
-
-impl<T: Serialize> IntoResponse for HandlerResult<T> {
-    fn into_response(self) -> Response {
-        match self.0 {
-            Ok(response) => ResponseBody::from(response).into_response(),
-            Err(error) => ResponseBody::from(error).into_response(),
-        }
-    }
-}
+// /// axum 拦截器：route 层返回 `Result<ApiResponse<T>, ApiError>`，
+// /// axum 调用 `HandlerResult<T>::from(result)` 后再 `into_response()`，route 层完全无感。
+// ///
+// /// 用新类型包装绕开孤儿规则（`Result` 是标准库类型，无法直接 impl 外部 trait）。
+// pub struct HandlerResult<T: Serialize = ()>(pub Result<ApiResponse<T>, ApiError>);
+//
+// impl<T: Serialize> From<Result<ApiResponse<T>, ApiError>> for HandlerResult<T> {
+//     fn from(result: Result<ApiResponse<T>, ApiError>) -> Self {
+//         HandlerResult(result)
+//     }
+// }
+//
+// impl<T: Serialize> IntoResponse for HandlerResult<T> {
+//     fn into_response(self) -> Response {
+//         match self.0 {
+//             Ok(response) => ResponseBody::from(response).into_response(),
+//             Err(error) => ResponseBody::from(error).into_response(),
+//         }
+//     }
+// }

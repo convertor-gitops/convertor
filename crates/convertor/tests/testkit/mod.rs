@@ -4,7 +4,6 @@ use convertor::config::proxy_client::ProxyClient;
 use convertor::core::profile::policy::Policy;
 use convertor::url::url_builder::UrlBuilder;
 use std::path::PathBuf;
-use url::Url;
 
 pub(super) fn init_test() -> PathBuf {
     let base_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("test-assets");
@@ -22,12 +21,12 @@ pub(super) fn encryptor(label: impl AsRef<str>) -> Encryptor {
     Encryptor::new_with_label(secret, label)
 }
 
-pub(super) fn server_url() -> color_eyre::Result<Url> {
-    Ok(Url::parse("http://127.0.0.1:8080")?)
+pub(super) fn server_url() -> color_eyre::Result<url::Url> {
+    Ok(url::Url::parse("http://127.0.0.1:8080")?)
 }
 
-pub(super) fn subscription_url() -> color_eyre::Result<Url> {
-    Ok(Url::parse("https://convertor.bppleman.com/subscription?token=bppleman")?)
+pub(super) fn subscription_url() -> color_eyre::Result<url::Url> {
+    Ok(url::Url::parse("https://convertor.bppleman.com/subscription?token=bppleman")?)
 }
 
 pub(super) fn url_builder(client: ProxyClient, enc_label: impl AsRef<str>) -> color_eyre::Result<UrlBuilder> {

@@ -2,12 +2,12 @@ use crate::config::Config;
 use crate::config::proxy_client::ProxyClient;
 use crate::config::subscription_config::SubscriptionConfig;
 use crate::core::profile::policy::Policy;
+use crate::url::Url;
 use crate::url::url_builder::HostPort;
 use color_eyre::Report;
 use color_eyre::eyre::OptionExt;
 use httpmock::Method::GET;
 use httpmock::MockServer;
-use url::Url;
 
 #[macro_export]
 macro_rules! init_test {
