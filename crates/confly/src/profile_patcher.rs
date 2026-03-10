@@ -1,12 +1,10 @@
 use crate::config::ClientConfig;
 use crate::file_provider::FileProvider;
-use convertor::core::profile::ProfileTrait;
 use convertor::core::profile::clash_profile::ClashProfile;
 use convertor::core::profile::policy::Policy;
 use convertor::core::profile::rule::Rule;
 use convertor::core::profile::surge_header::SurgeHeader;
 use convertor::core::renderer::Renderer;
-use convertor::core::renderer::clash_renderer::ClashRenderer;
 use convertor::core::renderer::surge_renderer::{SURGE_RULE_PROVIDER_COMMENT_END, SURGE_RULE_PROVIDER_COMMENT_START, SurgeRenderer};
 use convertor::url::conv_url::UrlType;
 use convertor::url::url_builder::UrlBuilder;
@@ -101,12 +99,13 @@ impl ClientConfig {
         raw_profile: ClashProfile,
         secret: impl AsRef<str>,
     ) -> color_eyre::Result<()> {
-        let mut template = ClashProfile::template()?;
-        template.patch(raw_profile)?;
-        template.convert(url_builder)?;
-        template.secret = Some(secret.as_ref().to_string());
-        let main_profile = ClashRenderer::render_profile(&template)?;
-        file_provider.write(self.main_profile_path(), main_profile)?;
-        Ok(())
+        todo!()
+        // let mut template = ClashProfile::template()?;
+        // template.patch(raw_profile)?;
+        // template.convert(url_builder)?;
+        // template.secret = Some(secret.as_ref().to_string());
+        // let main_profile = ClashRenderer::render_profile(&template)?;
+        // file_provider.write(self.main_profile_path(), main_profile)?;
+        // Ok(())
     }
 }

@@ -1,5 +1,6 @@
 mod subscription;
 
+use crate::ext::Boxed;
 use crate::server::app_state::AppState;
 use crate::server::error::{AppError, InvalidQueryError, RequestError, UnknownError};
 use crate::server::response::{ApiError, RequestBody};
@@ -21,27 +22,27 @@ where
 fn gen_url_builder(state: Arc<AppState>, query: ConvQuery) -> Result<UrlBuilder, AppError> {
     let encryptor = Encryptor::new_random(&state.config.secret);
     UrlBuilder::from_conv_query(encryptor, query).map_err(|e| match e {
-        UrlBuilderError::ConvQuery(e) => AppError::Request(RequestError::InvalidQuery(Box::new(InvalidQueryError::ConvQuery(e)))),
-        _ => AppError::InternalServer(UnknownError::from(e)),
+        UrlBuilderError::ConvQuery(e) => AppError::Request(RequestError::InvalidQuery(InvalidQueryError::ConvQuery(e))),
+        _ => AppError::InternalServer(UnknownError::from(Box::new(e))),
     })
 }
 
 fn build_original_url(url_builder: &UrlBuilder) -> Result<url::Url, AppError> {
     let raw_url = url_builder.build_original_url().map_err(|e| match e {
-        UrlBuilderError::BuildUrl(_, _) => {
-            AppError::Request(RequestError::InvalidQuery(Box::new(InvalidQueryError::UrlBuilder(Box::new(e)))))
-        }
-        _ => AppError::InternalServer(UnknownError::from(e)),
+        UrlBuilderError::BuildUrl(_, _) => AppError::Request(RequestError::InvalidQuery(InvalidQueryError::UrlBuilder(Box::new(e)))),
+        _ => AppError::InternalServer(UnknownError::from(Box::new(e))),
     })?;
-    let url: url::Url = raw_url.try_into().map_err(|e| AppError::InternalServer(UnknownError::from(e)))?;
+    let url: url::Url = raw_url
+        .try_into()
+        .map_err(|e| AppError::InternalServer(UnknownError::from(Box::new(e))))?;
     Ok(url)
 }
 
-async fn get_original_profile(state: Arc<AppState>, sub_url: url::Url, headers: Headers) -> Result<String, AppError> {
+async fn get_original_profile(state: Arc<AppState>, sub_url: url::Url, headers: &Headers) -> Result<String, AppError> {
     state
         .provider
-        .get_raw_profile(sub_url, headers)
+        .get_raw_profile(sub_url, &headers)
         .await
-        .map_err(UnknownError::from)
+        .boxed_map_err(UnknownError::from)
         .map_err(AppError::InternalServer)
 }

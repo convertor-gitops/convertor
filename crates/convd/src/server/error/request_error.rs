@@ -7,7 +7,7 @@ pub enum RequestError {
     NoScheme,
 
     #[error("[Request] 请求失败, 无效的请求参数")]
-    InvalidQuery(#[from] Box<InvalidQueryError>),
+    InvalidQuery(#[from] InvalidQueryError),
 }
 
 #[derive(Debug, Error)]

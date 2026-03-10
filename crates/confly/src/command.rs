@@ -12,7 +12,6 @@ pub enum ConflyCommand {
     /// 获取配置模板, 生成配置文件等
     #[command(subcommand)]
     Config(ConfigCmd),
-
     /// 获取订阅提供商的订阅链接
     #[command(name = "subs")]
     Subscription(SubscriptionCmd),

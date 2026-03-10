@@ -21,7 +21,6 @@ type Result<T> = core::result::Result<T, ConfigError>;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub secret: String,
-    pub server: url::Url,
     pub subscription: SubscriptionConfig,
     pub redis: Option<RedisConfig>,
 }
@@ -29,13 +28,11 @@ pub struct Config {
 impl Config {
     pub fn template() -> Self {
         let secret = "bppleman".to_string();
-        let server = url::Url::parse("http://127.0.0.1:8080").expect("不合法的服务器地址");
         let subscription = SubscriptionConfig::template();
         let redis = Some(RedisConfig::template());
 
         Config {
             secret,
-            server,
             subscription,
             redis,
         }
@@ -46,7 +43,7 @@ impl Config {
         let mut vars = Vec::new();
 
         vars.push((format!("{prefix}__SECRET"), self.secret.clone()));
-        vars.push((format!("{prefix}__SERVER"), self.server.to_string()));
+        // vars.push((format!("{prefix}__SERVER"), self.server.to_string()));
 
         let sub_vars = self.subscription.env_template(format!("{prefix}__SUBSCRIPTION"));
         vars.extend(sub_vars);
@@ -94,8 +91,8 @@ impl Config {
                 .try_parsing(true),
         );
 
-        let built = builder.build().map_err(|source| ConfigError::SearchConfig { source })?;
-        let config = built.try_deserialize().map_err(|source| ConfigError::SearchConfig { source })?;
+        let built = builder.build().map_err(ConfigError::SearchConfig)?;
+        let config = built.try_deserialize().map_err(ConfigError::ParseConfig)?;
         Ok(config)
     }
 
@@ -141,15 +138,14 @@ impl Config {
             return Err(ConfigError::NotFile(path.to_path_buf()));
         }
         let content = std::fs::read_to_string(path).map_err(ConfigError::Read)?;
-        let config: Config = toml::from_str(&content).map_err(|source| ConfigError::Parse { source })?;
+        let config: Config = toml::from_str(&content).map_err(ConfigError::Parse)?;
         Ok(config)
     }
 
-    pub fn create_url_builder(&self, client: ProxyClient) -> Result<UrlBuilder> {
+    pub fn create_url_builder(&self, client: ProxyClient, server: url::Url) -> Result<UrlBuilder> {
         let sub_url = self.subscription.sub_url.clone();
         let interval = self.subscription.interval;
         let strict = self.subscription.strict;
-        let server = self.server.clone();
         let encryptor = Encryptor::new_random(&self.secret);
         let url_builder = UrlBuilder::new(encryptor, client, server, sub_url, interval, strict);
         Ok(url_builder)
@@ -160,7 +156,7 @@ impl FromStr for Config {
     type Err = ConfigError;
 
     fn from_str(s: &str) -> Result<Self> {
-        Ok(toml::from_str(s).map_err(|source| ConfigError::Parse { source })?)
+        toml::from_str(s).map_err(ConfigError::Parse)
     }
 }
 

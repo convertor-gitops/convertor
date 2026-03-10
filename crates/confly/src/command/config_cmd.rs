@@ -1,4 +1,4 @@
-use crate::config::ConflyConfig;
+use crate::config::CliConfig;
 use clap::Subcommand;
 use std::path::PathBuf;
 
@@ -17,10 +17,10 @@ pub enum ConfigCmd {
 }
 
 impl ConfigCmd {
-    pub async fn execute(self, base_dir: PathBuf, config: Option<PathBuf>) -> color_eyre::Result<ConflyConfig> {
+    pub async fn execute(self, base_dir: PathBuf, config: Option<PathBuf>) -> color_eyre::Result<CliConfig> {
         let config = match (self, config) {
             (ConfigCmd::Template { env }, _) => {
-                let config = ConflyConfig::template();
+                let config = CliConfig::template();
                 println!("\n# 配置文件模板.toml\n");
                 println!("{config}");
                 if env {
@@ -36,8 +36,8 @@ impl ConfigCmd {
             }
             (ConfigCmd::Validate, file) => {
                 let config = match file {
-                    None => ConflyConfig::search(base_dir, None::<&str>)?,
-                    Some(file) => ConflyConfig::from_file(file)?,
+                    None => CliConfig::search(base_dir, None::<&str>)?,
+                    Some(file) => CliConfig::from_file(file)?,
                 };
                 println!("{config}");
                 config

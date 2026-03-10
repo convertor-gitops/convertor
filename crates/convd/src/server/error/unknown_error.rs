@@ -50,51 +50,27 @@ define_error! {
     pub enum UnknownError {
         #[error(transparent)]
         Service(
-            #[from] ServiceError,
+            #[from] Box<ServiceError>,
             StatusCode::INTERNAL_SERVER_ERROR,
         ),
 
-        // #[error(transparent)]
-        // Convert(
-        //     #[from] ConvertError,
-        //     StatusCode::INTERNAL_SERVER_ERROR,
-        // ),
-
         #[error(transparent)]
         UrlBuilder(
-            #[from] UrlBuilderError,
+            #[from] Box<UrlBuilderError>,
             StatusCode::INTERNAL_SERVER_ERROR,
         ),
 
         #[error(transparent)]
         ConvUrl(
-            #[from] ConvUrlError,
+            #[from] Box<ConvUrlError>,
             StatusCode::INTERNAL_SERVER_ERROR,
         ),
-
-        // #[error(transparent)]
-        // ConvQuery(
-        //     #[from] ConvQueryError,
-        //     StatusCode::INTERNAL_SERVER_ERROR,
-        // ),
 
         #[error(transparent)]
         Provider(
-            #[from] ProviderError,
+            #[from] Box<ProviderError>,
             StatusCode::INTERNAL_SERVER_ERROR,
         ),
-
-        // #[error(transparent)]
-        // Parse(
-        //     #[from] ParseError,
-        //     StatusCode::INTERNAL_SERVER_ERROR,
-        // ),
-        //
-        // #[error(transparent)]
-        // Render(
-        //     #[from] RenderError,
-        //     StatusCode::INTERNAL_SERVER_ERROR,
-        // ),
 
         #[error(transparent)]
         ToStr(
@@ -108,27 +84,9 @@ define_error! {
             StatusCode::INTERNAL_SERVER_ERROR,
         ),
 
-        // #[error(transparent)]
-        // Cache(
-        //     #[from] Arc<AppError>,
-        //     StatusCode::INTERNAL_SERVER_ERROR,
-        // ),
-
         #[error(transparent)]
         Redis(
             #[from] RedisError,
-            StatusCode::INTERNAL_SERVER_ERROR,
-        ),
-
-        #[error("Redis 错误: {0}")]
-        RedisNoPong(
-            String,
-            StatusCode::INTERNAL_SERVER_ERROR,
-        ),
-
-        #[error(transparent)]
-        Json(
-            #[from] serde_json::Error,
             StatusCode::INTERNAL_SERVER_ERROR,
         ),
     }

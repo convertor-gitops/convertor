@@ -42,7 +42,7 @@ impl SubsProvider {
     }
 
     #[instrument(skip(self))]
-    pub async fn get_raw_profile(&self, sub_url: url::Url, headers: Headers) -> Result<String, ProviderError> {
+    pub async fn get_raw_profile(&self, sub_url: url::Url, headers: &Headers) -> Result<String, ProviderError> {
         let cache_key = CacheKey::new(&self.cache_prefix, sub_url.to_string(), None);
         let raw_profile = self
             .cache
@@ -52,7 +52,7 @@ impl SubsProvider {
     }
 
     #[instrument(skip(self))]
-    pub async fn fetch(&self, sub_url: url::Url, headers: Headers) -> Result<String, ProviderError> {
+    pub async fn fetch(&self, sub_url: url::Url, headers: &Headers) -> Result<String, ProviderError> {
         let request = FetchRequest::new(Method::GET, sub_url).with_headers(headers.deref().clone());
         let response = self.client.fetch(request).await.map_err(classify_fetch_failure)?;
         Ok(response.into_body_text_lossy())
