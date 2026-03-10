@@ -16,28 +16,19 @@ pub enum ConfigError {
     Read(#[source] std::io::Error),
 
     #[error("解析配置文件时发生错误")]
-    Parse {
-        #[source]
-        source: toml::de::Error,
-    },
+    Parse(#[source] toml::de::Error),
 
     #[error("序列化配置文件时发生错误")]
-    Serialize {
-        #[source]
-        source: toml::ser::Error,
-    },
+    Serialize(#[source] toml::ser::Error),
 
     #[error("多段配置合并错误")]
-    SearchConfig {
-        #[source]
-        source: config::ConfigError,
-    },
+    SearchConfig(#[source] config::ConfigError),
+
+    #[error("配置解析错误")]
+    ParseConfig(#[source] config::ConfigError),
 
     #[error("配置模块内部未知错误")]
-    Unknown {
-        #[source]
-        source: InternalError,
-    },
+    Unknown(#[from] InternalError),
 }
 
 #[derive(Debug, Error)]

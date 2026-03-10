@@ -1,4 +1,6 @@
+#[allow(unused)]
+mod box_extra;
+#[allow(unused)]
 mod watch_debounce;
 
-#[allow(unused)]
-pub(crate) use watch_debounce::*;
+pub(crate) use box_extra::*;

@@ -21,6 +21,7 @@ edition = "2024"
 # 本地/工作区包
 convertor = { path = "crates/convertor", version = "2.6.16" }
 fetcher = { path = "crates/fetcher", version = "2.6.17" }
+rush-say = { git = "https://github.com/bppleman/rush-env", branch = "rush-say" }
 
 # 异步运行时 & 并发相关
 tokio = { version = "1.48.0", default-features = false }

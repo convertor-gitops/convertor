@@ -1,6 +1,6 @@
 use color_eyre::eyre::OptionExt;
 use confly::command::subscription_cmd::SubscriptionCmd;
-use confly::config::{ClientConfig, ConflyConfig};
+use confly::config::{CliConfig, ClientConfig};
 use confly::file_provider::FileProvider;
 use convertor::config::proxy_client::ProxyClient;
 use convertor::init_test;
@@ -41,7 +41,7 @@ pub fn file_provider(config: &ClientConfig) -> FileProvider {
 
 async fn test_subscription(client: ProxyClient) -> color_eyre::Result<()> {
     let base_dir = init_test!();
-    let mut config = ConflyConfig::search(&base_dir, None::<&str>)?;
+    let mut config = CliConfig::search(&base_dir, None::<&str>)?;
     let client_config = config.clients.get(&client).ok_or_eyre(format!("没有找到 {client} 客户端配置"))?;
     start_mock_provider_server(&mut config.common).await?;
 

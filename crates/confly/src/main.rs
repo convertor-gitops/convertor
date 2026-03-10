@@ -1,11 +1,12 @@
 use clap::Parser;
 use color_eyre::Result;
 use confly::command::ConflyCommand;
-use confly::config::ConflyConfig;
+use confly::config::CliConfig;
 use confly::file_provider::FileProvider;
 use convertor::common::clap_style::SONOKAI_TC;
 use convertor::common::once::{init_backtrace, init_base_dir, init_log};
 use convertor::provider::SubsProvider;
+use std::io::stdout;
 use std::path::PathBuf;
 
 #[derive(Debug, Parser)]
@@ -38,10 +39,15 @@ async fn main() -> Result<()> {
             config_cmd.execute(base_dir, args.config).await?;
         }
         ConflyCommand::Subscription(sub_cmd) => {
-            let config = ConflyConfig::search(&base_dir, args.config)?;
+            let config = CliConfig::search(&base_dir, args.config)?;
             let subs_provider = SubsProvider::new(None, config.common.redis.as_ref().map(|r| r.prefix.as_str()));
-            let (_url_builder, url_result) = sub_cmd.execute(&config, &subs_provider, &FileProvider::FileSystem).await?;
-            println!("{url_result}");
+            let (_url_builder, url_result) = sub_cmd.execute(&config, &subs_provider).await?;
+            // println!("{url_result}");
+            let mut stdout = stdout();
+            let mut bubble = rush_say::Bubble::new(&mut stdout);
+            bubble.set_width(240);
+            bubble.say("订阅链接:")?;
+            bubble.say(url_result.profile_url.to_string())?;
         }
     }
 

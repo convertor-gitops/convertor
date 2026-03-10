@@ -10,6 +10,7 @@ repository.workspace = true
 [dependencies]
 # 本地 / 工作区 包
 convertor = { workspace = true }
+rush-say = { workspace = true }
 
 # 错误 / 诊断
 color-eyre = { workspace = true }
