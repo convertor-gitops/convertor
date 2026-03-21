@@ -1,6 +1,6 @@
 ---
 source: crates/convertor/tests/profile_test.rs
-expression: payload
+expression: all_proxy_providers_payload
 ---
 payload:
     { name: "剩余流量：43.9 GB", type: "trojan", server: "convertor.bppleman.cn", port: 60010, password: "bppleman_secret", udp: true, sni: "g.alicdn.com", skip-cert-verify: true }

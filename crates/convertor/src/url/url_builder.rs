@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct UrlBuilder {
-    encryptor: Encryptor,
+    pub encryptor: Encryptor,
     pub client: ProxyClient,
     pub server: url::Url,
     pub sub_url: url::Url,
@@ -38,13 +38,8 @@ impl UrlBuilder {
     }
 
     pub fn from_conv_url(encryptor: Encryptor, url: ConvUrl) -> Result<Self, UrlBuilderError> {
-        let query = url
-            .decrypt(&encryptor)
-            .map_err(Box::new)
-            .map_err(UrlBuilderError::ConvUrl)?
-            .take_query()
-            .map_err(Box::new)
-            .map_err(UrlBuilderError::ConvUrl)?;
+        // let url = url.decrypt(&encryptor).map_err(Box::new).map_err(UrlBuilderError::ConvUrl)?;
+        let query = url.take_query().map_err(Box::new).map_err(UrlBuilderError::ConvUrl)?;
         Self::from_conv_query(encryptor, query)
     }
 

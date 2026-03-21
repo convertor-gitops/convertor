@@ -19,7 +19,8 @@ async fn main() -> color_eyre::Result<()> {
     // tracing_profile::init_tracing()?;
 
     let config = Config::template();
-    let url_builder = config.create_url_builder(ProxyClient::Surge)?;
+    let server: url::Url = "http://127.0.0.1:8080".parse()?;
+    let url_builder = config.create_url_builder(ProxyClient::Surge, server)?;
 
     let file = std::fs::read_to_string(base_dir.join("mock.conf"))?;
     let mut profile = SurgeProfile::parse(file)?;

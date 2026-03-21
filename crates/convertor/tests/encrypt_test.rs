@@ -1,4 +1,5 @@
 #[allow(unused)]
+#[path = "./testkit.rs"]
 mod testkit;
 
 use crate::testkit::init_test;

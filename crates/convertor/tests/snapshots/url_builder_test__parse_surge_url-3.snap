@@ -3,7 +3,7 @@ source: crates/convertor/tests/url_builder_test.rs
 expression: profile_url
 ---
 ConvUrl {
-    type: Raw,
+    type: Profile,
     server: Url {
         scheme: "http",
         cannot_be_a_base: false,
@@ -40,7 +40,7 @@ ConvUrl {
                 query: None,
                 fragment: None,
             },
-            sub_url: "VhmGqJhTbQ6ZEO1Z1J4Z4ODDpeVgBlNJmF55TT9Sqc3EMVmYTeWCIBrClgWdR7uyL5xP6r6SMVBQExU3gXTM3JgEwuw4vQ6ATytNpd1q_4Mq_oOx98i8OHY9kjKOO4Quf9Q",
+            sub_url: "88wW1Vq-k8ffi8eWsfLouIQmLD4YasouA_9tQhI36EeDf-w3wukERaFAZZL7Am_g0SqmcJJ5CMgzLLhkbceOSmq54bP-OiN92hHI-uPmXj3156iy20qtxmfO82pxpdm_lFM",
             client: Surge,
             interval: 86400,
             strict: Some(

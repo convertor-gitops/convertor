@@ -22,6 +22,7 @@ tokio = { workspace = true, default-features = false, features = ["fs", "rt-mult
 color-eyre = { workspace = true, default-features = false }
 
 # other
+url = { workspace = true }
 headers = { workspace = true, default-features = false }
 
 # benchmarking

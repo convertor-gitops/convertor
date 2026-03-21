@@ -20,14 +20,19 @@ async fn main() -> color_eyre::Result<()> {
     let config: Config = Config::search(&base_dir, Option::<&str>::None)?;
     // 创建订阅供应商实例
     let provider = SubsProvider::new(None, config.redis.as_ref().map(|r| r.prefix.as_str()));
+    // 定义服务器访问 URI
+    let server: url::Url = "http://127.0.0.1:8080".parse()?;
+    // 创建 UrlBuilder 对象, 该 UrlBuilder 可用于创建适用于 Surge 的且使用 BosLife 订阅的 URL
+    let url_builder = config.create_url_builder(ProxyClient::Surge, server)?;
 
     // 获取原始订阅配置文件内容: 来源于 BosLife 机场;适用于 Surge
     let sub_url = config.subscription.sub_url.clone();
-    let raw_sub_content = provider.get_raw_profile(sub_url, [("User-Agent", "Surge Mac/8310")].into()).await?;
+    let raw_sub_content = provider
+        .get_raw_profile(sub_url, &[("User-Agent", "Surge Mac/8310")].into())
+        .await?;
     // 解析原始配置文件内容为 SurgeProfile 对象
     let mut profile = SurgeProfile::parse(raw_sub_content)?;
-    // 创建 UrlBuilder 对象, 该 UrlBuilder 可用于创建适用于 Surge 的且使用 BosLife 订阅的 URL
-    let url_builder = config.create_url_builder(ProxyClient::Surge)?;
+
     // 转换 SurgeProfile 对象
     // 传入 UrlBuilder 对象有两个作用
     // - 用于生成 Surge 配置的托管链接
@@ -37,7 +42,7 @@ async fn main() -> color_eyre::Result<()> {
 
     // 使用渲染器将 SurgeProfile 对象转换为字符串格式
     let converted = SurgeRenderer::render_profile(&profile)?;
-    println!("{converted}");
+    println!("{}", converted);
 
     Ok(())
 }

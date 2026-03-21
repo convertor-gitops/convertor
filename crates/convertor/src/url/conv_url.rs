@@ -167,10 +167,10 @@ impl UrlType {
 
     pub fn from_path(path: &str) -> Self {
         match path {
-            "/raw" => UrlType::Raw,
-            "/profile" => UrlType::Profile,
-            "/proxy-provider" => UrlType::ProxyProvider,
-            "/rule-provider" => UrlType::RuleProvider,
+            "/api/raw" => UrlType::Raw,
+            "/api/profile" => UrlType::Profile,
+            "/api/proxy-provider" => UrlType::ProxyProvider,
+            "/api/rule-provider" => UrlType::RuleProvider,
             _ => UrlType::Original,
         }
     }
@@ -178,7 +178,13 @@ impl UrlType {
 
 impl UrlType {
     pub fn variants() -> &'static [Self] {
-        &[UrlType::Original, UrlType::Raw, UrlType::ProxyProvider, UrlType::Profile]
+        &[
+            UrlType::Original,
+            UrlType::Raw,
+            UrlType::Profile,
+            UrlType::ProxyProvider,
+            UrlType::RuleProvider,
+        ]
     }
 }
 

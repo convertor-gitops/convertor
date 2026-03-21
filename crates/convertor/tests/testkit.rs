@@ -5,7 +5,7 @@ use convertor::core::profile::policy::Policy;
 use convertor::url::url_builder::UrlBuilder;
 use std::path::PathBuf;
 
-pub(super) fn init_test() -> PathBuf {
+pub fn init_test() -> PathBuf {
     let base_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("test-assets");
     init_backtrace(|| {
         if let Err(e) = color_eyre::install() {
@@ -16,20 +16,20 @@ pub(super) fn init_test() -> PathBuf {
     base_dir
 }
 
-pub(super) fn encryptor(label: impl AsRef<str>) -> Encryptor {
+pub fn encryptor(label: impl AsRef<str>) -> Encryptor {
     let secret = "bppleman_secret";
     Encryptor::new_with_label(secret, label)
 }
 
-pub(super) fn server_url() -> color_eyre::Result<url::Url> {
+pub fn server_url() -> color_eyre::Result<url::Url> {
     Ok(url::Url::parse("http://127.0.0.1:8080")?)
 }
 
-pub(super) fn subscription_url() -> color_eyre::Result<url::Url> {
+pub fn subscription_url() -> color_eyre::Result<url::Url> {
     Ok(url::Url::parse("https://convertor.bppleman.com/subscription?token=bppleman")?)
 }
 
-pub(super) fn url_builder(client: ProxyClient, enc_label: impl AsRef<str>) -> color_eyre::Result<UrlBuilder> {
+pub fn url_builder(client: ProxyClient, enc_label: impl AsRef<str>) -> color_eyre::Result<UrlBuilder> {
     let server = server_url()?;
     let sub_url = subscription_url()?;
     let encryptor = encryptor(enc_label);
@@ -37,7 +37,7 @@ pub(super) fn url_builder(client: ProxyClient, enc_label: impl AsRef<str>) -> co
     Ok(url_builder)
 }
 
-pub(super) fn policies() -> [Policy; 7] {
+pub fn policies() -> [Policy; 7] {
     [
         Policy::subscription_policy(),
         Policy::new("BosLife", None, false),
@@ -49,5 +49,5 @@ pub(super) fn policies() -> [Policy; 7] {
     ]
 }
 
-pub(super) const SURGE_PROFILE: &str = include_str!("../../test-assets/surge/mock_profile.conf");
-pub(super) const CLASH_PROFILE: &str = include_str!("../../test-assets/clash/mock_profile.yaml");
+pub const SURGE_PROFILE: &str = include_str!("../test-assets/surge/mock_profile.conf");
+pub const CLASH_PROFILE: &str = include_str!("../test-assets/clash/mock_profile.yaml");

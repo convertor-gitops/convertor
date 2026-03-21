@@ -611,6 +611,7 @@ dependencies = [
  "futures-util",
  "headers",
  "http-body-util",
+ "httpmock",
  "include_dir",
  "insta",
  "mime",
@@ -830,6 +831,7 @@ dependencies = [
  "headers",
  "tokio",
  "tracing-span-tree",
+ "url",
 ]
 
 [[package]]
