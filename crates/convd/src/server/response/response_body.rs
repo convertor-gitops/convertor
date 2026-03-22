@@ -1,3 +1,4 @@
+use crate::server::response::response_status::ResponseStatus;
 use crate::server::response::{ApiError, ApiResponse, RequestBody};
 use axum::http::{HeaderValue, StatusCode, header};
 use axum::response::{IntoResponse, Response};
@@ -17,7 +18,7 @@ use tokio_util::bytes::{BufMut, Bytes, BytesMut};
 /// - 失败路径由 `ApiError` 转入，status = 错误 variant 名，data = null
 #[derive(Serialize)]
 pub struct ResponseBody<T: Serialize = ()> {
-    pub status: String,
+    pub status: ResponseStatus,
     pub messages: Vec<Cow<'static, str>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub request: Option<RequestBody>,

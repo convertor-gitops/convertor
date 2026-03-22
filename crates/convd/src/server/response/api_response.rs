@@ -1,4 +1,5 @@
-use crate::server::response::RequestBody;
+use crate::server::response::response_status::ResponseStatus;
+use crate::server::response::{RequestBody, response_status};
 use axum::response::{IntoResponse, Response};
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
@@ -13,7 +14,7 @@ pub struct ApiResponse<T>
 where
     T: serde::Serialize,
 {
-    pub status: String,
+    pub status: ResponseStatus,
     pub messages: Vec<Cow<'static, str>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub request: Option<RequestBody>,
@@ -27,7 +28,7 @@ where
 {
     pub fn ok(data: T) -> Self {
         Self {
-            status: "ok".to_string(),
+            status: ResponseStatus::ok(),
             messages: vec![],
             request: None,
             data: Some(data),
@@ -44,21 +45,21 @@ where
         self
     }
 
-    pub fn error(status: impl Display, error: impl core::error::Error) -> Self {
-        let status = status.to_string();
-        let mut messages = vec![Cow::Owned(error.to_string())];
-        let mut source = error.source();
-        while let Some(src) = source {
-            messages.push(Cow::Owned(src.to_string()));
-            source = src.source();
-        }
-        Self {
-            status,
-            messages,
-            request: None,
-            data: None::<T>,
-        }
-    }
+    // pub fn error(status: impl Display, error: impl core::error::Error) -> Self {
+    //     let status = status.to_string();
+    //     let mut messages = vec![Cow::Owned(error.to_string())];
+    //     let mut source = error.source();
+    //     while let Some(src) = source {
+    //         messages.push(Cow::Owned(src.to_string()));
+    //         source = src.source();
+    //     }
+    //     Self {
+    //         status,
+    //         messages,
+    //         request: None,
+    //         data: None::<T>,
+    //     }
+    // }
 }
 
 /// `ApiResponse` 直接作为 handler 返回值时（无错误路径），委托给 `ResponseBody`。
