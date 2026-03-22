@@ -1,0 +1,98 @@
+---
+source: crates/convd/tests/rule_provider_test.rs
+expression: "all_actual.join(\"\\n========================================\\n\")"
+---
+// Subscription Direct
+DOMAIN,127.0.0.1,DIRECT
+DOMAIN,127.0.0.1,DIRECT
+DOMAIN,127.0.0.1,DIRECT
+DOMAIN,127.0.0.1,DIRECT
+DOMAIN,127.0.0.1,DIRECT
+
+========================================
+
+// PROCESS-NAME
+PROCESS-NAME,Backup and Sync,BosLife
+PROCESS-NAME,Google Chrome,BosLife
+PROCESS-NAME,Arc,BosLife
+PROCESS-NAME,Brave Browser,BosLife
+PROCESS-NAME,ChatGPT,BosLife
+
+// USER-AGENT
+USER-AGENT,%E7%BA%BD%E7%BA%A6%E6%97%B6%E6%8A%A5*,BosLife
+USER-AGENT,Argo*,BosLife
+USER-AGENT,ChatGPT*,BosLife
+USER-AGENT,Colab*,BosLife
+USER-AGENT,Deepmind*,BosLife
+
+# DOMAIN
+DOMAIN,openaicom-api-bdcpf8c6d2e9atf6.z01.azurefd.net,BosLife
+DOMAIN,openaicomproductionae4b.blob.core.windows.net,BosLife
+DOMAIN,production-openaicom-storage.azureedge.net,BosLife
+DOMAIN,static.cloudflareinsights.com,BosLife
+DOMAIN,v2.docs.google.com,BosLife
+
+// DOMAIN-KEYWORD
+DOMAIN-KEYWORD,microsoft,BosLife
+
+// BosLife
+DOMAIN-SUFFIX,boslife.io,BosLife
+DOMAIN-SUFFIX,boslife.net,BosLife
+DOMAIN-SUFFIX,wikibos.com,BosLife
+DOMAIN-SUFFIX,boswiki.net,BosLife
+
+========================================
+DOMAIN-KEYWORD,beetalk,BosLife,force-remote-dns
+DOMAIN-KEYWORD,blogspot,BosLife,force-remote-dns
+DOMAIN-KEYWORD,dropbox,BosLife,force-remote-dns
+DOMAIN-KEYWORD,facebook,BosLife,force-remote-dns
+
+// BosLife,force-remote-dns
+DOMAIN-SUFFIX,openai.com,BosLife,force-remote-dns
+DOMAIN-SUFFIX,gemini.google.com,BosLife,force-remote-dns
+DOMAIN-SUFFIX,proactivebackend-pa.googleapis.com,BosLife,force-remote-dns
+DOMAIN-SUFFIX,aisandbox-pa.googleapis.com,BosLife,force-remote-dns
+DOMAIN-SUFFIX,robinfrontend-pa.googleapis.com,BosLife,force-remote-dns
+
+========================================
+
+// BosLife,no-resolve
+IP-CIDR,8.41.4.0/24,BosLife,no-resolve
+IP-CIDR,23.246.0.0/18,BosLife,no-resolve
+IP-CIDR,34.210.42.111/32,BosLife,no-resolve
+IP-CIDR,37.77.184.0/21,BosLife,no-resolve
+IP-CIDR,38.72.126.0/24,BosLife,no-resolve
+
+========================================
+
+// Comment
+#RULE-SET,https://cdn.jsdelivr.net/gh/Loyalsoldier/surge-rules@release/ruleset/proxy.txt,BosLife,force-remote-dns
+#DOMAIN,browser-intake-datadoghq.com,BosLife
+#DOMAIN,chat.openai.com.cdn.cloudflare.net,BosLife
+#DOMAIN,gemini.google.com,BosLife
+#DOMAIN,openai-api.arkoselabs.com,BosLife
+
+# DIRECT
+DOMAIN-SUFFIX,baidu.com,DIRECT
+DOMAIN-SUFFIX,qq.com,DIRECT
+DOMAIN-SUFFIX,taobao.com,DIRECT
+DOMAIN-SUFFIX,tencent.com,DIRECT
+DOMAIN-SUFFIX,alibaba.com,DIRECT
+
+========================================
+
+# DIRECT,force-remote-dns
+DOMAIN-SUFFIX,apple.com,DIRECT,force-remote-dns
+DOMAIN-SUFFIX,icloud.com,DIRECT,force-remote-dns
+DOMAIN-SUFFIX,crashlytics.com,DIRECT,force-remote-dns
+DOMAIN-SUFFIX,bing.com,DIRECT,force-remote-dns
+DOMAIN-SUFFIX,msn.com,DIRECT,force-remote-dns
+
+========================================
+
+# DIRECT,no-resolve
+IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+IP-CIDR,100.64.0.0/10,DIRECT,no-resolve
+IP-CIDR,10.0.0.0/8,DIRECT,no-resolve

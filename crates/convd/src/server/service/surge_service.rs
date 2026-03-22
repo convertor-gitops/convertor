@@ -51,9 +51,9 @@ impl SurgeService {
     }
 
     #[instrument(skip_all)]
-    pub async fn rule_provider(&self, url_builder: UrlBuilder, raw_profile: String, policy: Policy) -> Result<String> {
+    pub async fn rule_provider(&self, url_builder: UrlBuilder, raw_profile: String, policy: &Policy) -> Result<String> {
         let profile = self.try_get_profile(url_builder, raw_profile).await?;
-        let Some(rules) = profile.rule_providers.get(&policy) else {
+        let Some(rules) = profile.rule_providers.get(policy) else {
             return Ok(String::new());
         };
         Ok(SurgeRenderer::render_rule_provider_payload(rules)?)

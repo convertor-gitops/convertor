@@ -1,5 +1,0 @@
----
-source: crates/convd/tests/rule_provider_test.rs
-expression: actual
----
-DOMAIN,trdy.subiway.com:8888

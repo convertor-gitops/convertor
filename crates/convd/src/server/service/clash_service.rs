@@ -32,9 +32,18 @@ impl ClashService {
     }
 
     #[instrument(skip_all)]
-    pub async fn rule_provider(&self, url_builder: UrlBuilder, raw_profile: String, policy: Policy) -> Result<String> {
+    pub async fn proxy_provider(&self, url_builder: UrlBuilder, raw_profile: String, name: impl AsRef<str>) -> Result<String> {
         let profile = self.try_get_profile(url_builder, raw_profile).await?;
-        let Some(rule_provider) = profile.rule_providers.get(&policy) else {
+        let Some(proxy_provider) = profile.proxy_providers.get(name.as_ref()) else {
+            return Ok(String::new());
+        };
+        Ok(ClashRenderer::render_proxy_provider_payload(&proxy_provider.proxies)?)
+    }
+
+    #[instrument(skip_all)]
+    pub async fn rule_provider(&self, url_builder: UrlBuilder, raw_profile: String, policy: &Policy) -> Result<String> {
+        let profile = self.try_get_profile(url_builder, raw_profile).await?;
+        let Some(rule_provider) = profile.rule_providers.get(policy) else {
             return Ok(String::new());
         };
         Ok(ClashRenderer::render_rule_provider_payload(&rule_provider.rules)?)

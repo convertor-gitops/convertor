@@ -1,4 +1,3 @@
-use crate::config::proxy_client::ProxyClient;
 use crate::error::{EncryptError, InternalError};
 use crate::url::conv_query::ConvQuery;
 use crate::url::conv_url::UrlType;
@@ -60,11 +59,8 @@ pub enum ConvQueryError {
     #[error("[ConvQuery] 无法序列化为字符串: {0:#?}")]
     Encode(ConvQuery, #[source] serde_qs::Error),
 
-    #[error("[ConvQuery] 请求: [{0}], 不支持的客户端: {1}")]
-    UnsupportedClient(String, ProxyClient),
-
-    #[error("[ConvQuery] 请求: [{0}], 缺少有效的参数字段: {1}")]
-    MissingField(String, String),
+    #[error("[ConvQuery] 缺少有效的参数字段: {0}")]
+    MissingField(String),
 
     #[error("[ConvQuery] 无效的 sub_url: {0}")]
     InvalidSubUrl(String, #[source] url::ParseError),

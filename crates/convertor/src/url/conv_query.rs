@@ -61,6 +61,18 @@ impl ConvQuery {
             .map_err(|e| ConvQueryError::InvalidSubUrl(self.sub_url.clone(), e))?;
         Ok(url)
     }
+
+    pub fn take_proxy_provider_name(&mut self) -> Result<String, ConvQueryError> {
+        self.proxy_provider_name
+            .take()
+            .ok_or(ConvQueryError::MissingField("ProxyProviderName".to_string()))
+    }
+
+    pub fn take_rule_provider_policy(&mut self) -> Result<Policy, ConvQueryError> {
+        self.policy
+            .take()
+            .ok_or(ConvQueryError::MissingField("RuleProviderPolicy".to_string()))
+    }
 }
 
 impl Serialize for ConvQuery {
@@ -78,6 +90,9 @@ impl Serialize for ConvQuery {
         }
         if let Some(policy) = &self.policy {
             state.serialize_field("policy", policy)?;
+        }
+        if let Some(proxy_provider_name) = &self.proxy_provider_name {
+            state.serialize_field("proxy_provider_name", proxy_provider_name)?;
         }
         state.serialize_field("sub_url", &self.sub_url)?;
         state.end()

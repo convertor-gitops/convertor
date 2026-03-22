@@ -2,7 +2,7 @@
 source: crates/convd/tests/profile_test.rs
 expression: actual
 ---
-#!MANAGED-CONFIG http://127.0.0.1/profile/surge?interval=86400&strict=true&sub_url=http://127.0.0.1:8080/subscription?token=bppleman interval=86400 strict=true
+#!MANAGED-CONFIG http://127.0.0.1:8080/api/profile?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&sub_url=http://127.0.0.1/api/original?token=bppleman interval=0 strict=false
 
 [General]
 skip-proxy = 192.168.0.0/16, 10.0.0.0/8, 172.16.0.0/12, 100.64.0.0/10, localhost, *.local, seed-sequoia.siri.apple.com, sequoia.apple.com, *.crashlytics.com
@@ -19,69 +19,75 @@ socks-interface = 0.0.0.0
 enhanced-mode-by-rule = true
 
 [Proxy]
-订阅提供商信息=ss,bppleman.com,8080,password=bppleman,encrypt-method=aes-128-gcm,udp-relay=true,tfo=true
-🇭🇰 香港 01=ss,bppleman.com,8080,password=bppleman,encrypt-method=aes-128-gcm,udp-relay=true,tfo=true
-🇭🇰 香港 02=ss,bppleman.com,8080,password=bppleman,encrypt-method=aes-128-gcm,udp-relay=true,tfo=true
-🇭🇰 香港 03=ss,bppleman.com,8080,password=bppleman,encrypt-method=aes-128-gcm,udp-relay=true,tfo=true
-🇭🇰 香港 04=ss,bppleman.com,8080,password=bppleman,encrypt-method=aes-128-gcm,udp-relay=true,tfo=true
-🇭🇰 香港 05 - YouTube免广=ss,bppleman.com,8080,password=bppleman,encrypt-method=aes-128-gcm,udp-relay=true,tfo=true
-🏳️‍🌈 台湾 01=ss,bppleman.com,8080,password=bppleman,encrypt-method=chacha20-ietf-poly1305,udp-relay=true,tfo=true
-🏳️‍🌈 台湾 02=ss,bppleman.com,8080,password=bppleman,encrypt-method=chacha20-ietf-poly1305,udp-relay=true,tfo=true
-🏳️‍🌈 台湾 03=ss,bppleman.com,8080,password=bppleman,encrypt-method=chacha20-ietf-poly1305,udp-relay=true,tfo=true
-🏳️‍🌈 台湾 04=ss,bppleman.com,8080,password=bppleman,encrypt-method=chacha20-ietf-poly1305,udp-relay=true,tfo=true
-🏳️‍🌈 台湾 05=ss,bppleman.com,8080,password=bppleman,encrypt-method=chacha20-ietf-poly1305,udp-relay=true,tfo=true
-🇸🇬 新加坡 01=ss,bppleman.com,8080,password=bppleman,encrypt-method=chacha20-ietf-poly1305,udp-relay=true,tfo=true
-🇸🇬 新加坡 02=ss,bppleman.com,8080,password=bppleman,encrypt-method=chacha20-ietf-poly1305,udp-relay=true,tfo=true
-🇸🇬 新加坡 03=ss,bppleman.com,8080,password=bppleman,encrypt-method=chacha20-ietf-poly1305,udp-relay=true,tfo=true
-🇸🇬 新加坡 04=ss,bppleman.com,8080,password=bppleman,encrypt-method=chacha20-ietf-poly1305,udp-relay=true,tfo=true
-🇸🇬 新加坡 05=ss,bppleman.com,8080,password=bppleman,encrypt-method=chacha20-ietf-poly1305,udp-relay=true,tfo=true
-🇯🇵 日本 01=ss,bppleman.com,8080,password=bppleman,encrypt-method=chacha20-ietf-poly1305,udp-relay=true,tfo=true
-🇯🇵 日本 02=ss,bppleman.com,8080,password=bppleman,encrypt-method=chacha20-ietf-poly1305,udp-relay=true,tfo=true
-🇯🇵 日本 03=ss,bppleman.com,8080,password=bppleman,encrypt-method=chacha20-ietf-poly1305,udp-relay=true,tfo=true
-🇯🇵 日本 04=ss,bppleman.com,8080,password=bppleman,encrypt-method=chacha20-ietf-poly1305,udp-relay=true,tfo=true
-🇯🇵 日本 05=ss,bppleman.com,8080,password=bppleman,encrypt-method=chacha20-ietf-poly1305,udp-relay=true,tfo=true
-🇺🇸 美国 01=ss,bppleman.com,8080,password=bppleman,encrypt-method=aes-128-gcm,udp-relay=true,tfo=true
-🇺🇸 美国 02=ss,bppleman.com,8080,password=bppleman,encrypt-method=aes-128-gcm,udp-relay=true,tfo=true
-🇺🇸 美国 03=ss,bppleman.com,8080,password=bppleman,encrypt-method=aes-128-gcm,udp-relay=true,tfo=true
-🇺🇸 美国 04=ss,bppleman.com,8080,password=bppleman,encrypt-method=aes-128-gcm,udp-relay=true,tfo=true
-🇺🇸 美国 05=ss,bppleman.com,8080,password=bppleman,encrypt-method=aes-128-gcm,udp-relay=true,tfo=true
-🇨🇦 加拿大 01=ss,bppleman.com,8080,password=bppleman,encrypt-method=aes-128-gcm,udp-relay=true,tfo=true
-🇰🇷 韩国 01=trojan,bppleman.com,8080,password=bppleman,udp-relay=true,tfo=true,sni=video-caps.wetvinfo.com,skip-cert-verify=true
-🇬🇧 英国 01=trojan,bppleman.com,8080,password=bppleman,udp-relay=true,tfo=true,sni=video-caps.wetvinfo.com,skip-cert-verify=true
-🇫🇷 法国 01=trojan,bppleman.com,8080,password=bppleman,udp-relay=true,tfo=true,sni=video-caps.wetvinfo.com,skip-cert-verify=true
-🇩🇪 德国 01=trojan,bppleman.com,8080,password=bppleman,udp-relay=true,tfo=true,sni=video-caps.wetvinfo.com,skip-cert-verify=true
-🇦🇺 澳洲 01=trojan,bppleman.com,8080,password=bppleman,udp-relay=true,tfo=true,sni=video-caps.wetvinfo.com,skip-cert-verify=true
+剩余流量：40.55 GB=trojan,convertor.bppleman.cn,60010,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+距离下次重置剩余：15 天=trojan,convertor.bppleman.cn,60010,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+套餐到期：2026-04-22=trojan,convertor.bppleman.cn,60010,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇭🇰 香港 01=trojan,convertor.bppleman.cn,60010,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇭🇰 香港 02=trojan,convertor.bppleman.cn,60011,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇭🇰 香港 03=trojan,convertor.bppleman.cn,60012,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇭🇰 香港 04=trojan,convertor.bppleman.cn,60013,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇭🇰 香港 05=trojan,convertor.bppleman.cn,60014,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇭🇰 香港 06=trojan,convertor.bppleman.cn,60015,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇭🇰 香港 07=trojan,convertor.bppleman.cn,60016,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇭🇰 香港 08=trojan,convertor.bppleman.cn,60017,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇭🇰 香港 09=trojan,convertor.bppleman.cn,60018,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇭🇰 香港 10=trojan,convertor.bppleman.cn,60019,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇸🇬 新加坡 01=trojan,convertor.bppleman.cn,60030,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇸🇬 新加坡 02=trojan,convertor.bppleman.cn,60031,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇸🇬 新加坡 03=trojan,convertor.bppleman.cn,60032,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇸🇬 新加坡 04=trojan,convertor.bppleman.cn,60033,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇸🇬 新加坡 05=trojan,convertor.bppleman.cn,60034,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇸🇬 新加坡 06=trojan,convertor.bppleman.cn,60035,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🏳️‍🌈 台湾 01=trojan,convertor.bppleman.cn,60040,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🏳️‍🌈 台湾 02=trojan,convertor.bppleman.cn,60041,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🏳️‍🌈 台湾 03=trojan,convertor.bppleman.cn,60042,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🏳️‍🌈 台湾 04=trojan,convertor.bppleman.cn,60043,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇯🇵 日本 01=trojan,convertor.bppleman.cn,60050,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇯🇵 日本 02=trojan,convertor.bppleman.cn,60051,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇯🇵 日本 03=trojan,convertor.bppleman.cn,60052,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇯🇵 日本 04=trojan,convertor.bppleman.cn,60053,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇺🇸 美国 01=trojan,convertor.bppleman.cn,60060,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇺🇸 美国 02=trojan,convertor.bppleman.cn,60061,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇺🇸 美国 03=trojan,convertor.bppleman.cn,60062,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇺🇸 美国 04=trojan,convertor.bppleman.cn,60063,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇺🇸 美国 05=trojan,convertor.bppleman.cn,60064,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇺🇸 美国 06=trojan,convertor.bppleman.cn,60065,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇺🇸 美国 07 - OnlyAI=trojan,convertor.bppleman.cn,60066,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇨🇦 加拿大 01=trojan,convertor.bppleman.cn,60099,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇰🇷 韩国 01=trojan,convertor.bppleman.cn,60101,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇬🇧 英国 01=trojan,convertor.bppleman.cn,60082,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇫🇷 法国 01=trojan,convertor.bppleman.cn,60138,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
+🇩🇪 德国 01=trojan,convertor.bppleman.cn,60125,password=bppleman_secret,udp-relay=true,tfo=true,sni=g.alicdn.com,skip-cert-verify=true
 
 [Proxy Group]
-BosLife=select,🇭🇰 香港,🇨🇳🏳️‍🌈 台湾,🇸🇬 新加坡,🇯🇵 日本,🇺🇸 美国,🇨🇦 加拿大,🇰🇷 韩国,🇬🇧 英国,🇫🇷 法国,🇩🇪 德国,🇦🇺 澳洲
-Subscription Info=select,订阅提供商信息
-🇭🇰 香港=smart,🇭🇰 香港 01,🇭🇰 香港 02,🇭🇰 香港 03,🇭🇰 香港 04,🇭🇰 香港 05 - YouTube免广
-🇨🇳🏳️‍🌈 台湾=smart,🏳️‍🌈 台湾 01,🏳️‍🌈 台湾 02,🏳️‍🌈 台湾 03,🏳️‍🌈 台湾 04,🏳️‍🌈 台湾 05
-🇸🇬 新加坡=smart,🇸🇬 新加坡 01,🇸🇬 新加坡 02,🇸🇬 新加坡 03,🇸🇬 新加坡 04,🇸🇬 新加坡 05
-🇯🇵 日本=smart,🇯🇵 日本 01,🇯🇵 日本 02,🇯🇵 日本 03,🇯🇵 日本 04,🇯🇵 日本 05
-🇺🇸 美国=smart,🇺🇸 美国 01,🇺🇸 美国 02,🇺🇸 美国 03,🇺🇸 美国 04,🇺🇸 美国 05
+BosLife=select,🇭🇰 香港,🇸🇬 新加坡,🇨🇳🏳️‍🌈 台湾,🇯🇵 日本,🇺🇸 美国,🇨🇦 加拿大,🇰🇷 韩国,🇬🇧 英国,🇫🇷 法国,🇩🇪 德国
+Subscription Info=select,剩余流量：40.55 GB,距离下次重置剩余：15 天,套餐到期：2026-04-22
+🇭🇰 香港=smart,🇭🇰 香港 01,🇭🇰 香港 02,🇭🇰 香港 03,🇭🇰 香港 04,🇭🇰 香港 05,🇭🇰 香港 06,🇭🇰 香港 07,🇭🇰 香港 08,🇭🇰 香港 09,🇭🇰 香港 10
+🇸🇬 新加坡=smart,🇸🇬 新加坡 01,🇸🇬 新加坡 02,🇸🇬 新加坡 03,🇸🇬 新加坡 04,🇸🇬 新加坡 05,🇸🇬 新加坡 06
+🇨🇳🏳️‍🌈 台湾=smart,🏳️‍🌈 台湾 01,🏳️‍🌈 台湾 02,🏳️‍🌈 台湾 03,🏳️‍🌈 台湾 04
+🇯🇵 日本=smart,🇯🇵 日本 01,🇯🇵 日本 02,🇯🇵 日本 03,🇯🇵 日本 04
+🇺🇸 美国=smart,🇺🇸 美国 01,🇺🇸 美国 02,🇺🇸 美国 03,🇺🇸 美国 04,🇺🇸 美国 05,🇺🇸 美国 06,🇺🇸 美国 07 - OnlyAI
 🇨🇦 加拿大=smart,🇨🇦 加拿大 01
 🇰🇷 韩国=smart,🇰🇷 韩国 01
 🇬🇧 英国=smart,🇬🇧 英国 01
 🇫🇷 法国=smart,🇫🇷 法国 01
 🇩🇪 德国=smart,🇩🇪 德国 01
-🇦🇺 澳洲=smart,🇦🇺 澳洲 01
 
 [Rule]
 // [Subscription]
-RULE-SET,http://127.0.0.1/rule-provider/surge?interval=86400&policy[name]=DIRECT&policy[is_subscription]=true&sub_url=http://127.0.0.1:8080/subscription?token=bppleman,DIRECT
+RULE-SET,http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=DIRECT&policy%5Boption%5D&policy%5Bis_subscription%5D=true&sub_url=http://127.0.0.1/api/original?token=bppleman
 // [BosLife]
-RULE-SET,http://127.0.0.1/rule-provider/surge?interval=86400&policy[name]=BosLife&policy[is_subscription]=false&sub_url=http://127.0.0.1:8080/subscription?token=bppleman,BosLife
+RULE-SET,http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=BosLife&policy%5Boption%5D&policy%5Bis_subscription%5D=false&sub_url=http://127.0.0.1/api/original?token=bppleman
 // [BosLife: no-resolve]
-RULE-SET,http://127.0.0.1/rule-provider/surge?interval=86400&policy[name]=BosLife&policy[option]=no-resolve&policy[is_subscription]=false&sub_url=http://127.0.0.1:8080/subscription?token=bppleman,BosLife,no-resolve
+RULE-SET,http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=BosLife&policy%5Boption%5D=no-resolve&policy%5Bis_subscription%5D=false&sub_url=http://127.0.0.1/api/original?token=bppleman
 // [BosLife: force-remote-dns]
-RULE-SET,http://127.0.0.1/rule-provider/surge?interval=86400&policy[name]=BosLife&policy[option]=force-remote-dns&policy[is_subscription]=false&sub_url=http://127.0.0.1:8080/subscription?token=bppleman,BosLife,force-remote-dns
+RULE-SET,http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=BosLife&policy%5Boption%5D=force-remote-dns&policy%5Bis_subscription%5D=false&sub_url=http://127.0.0.1/api/original?token=bppleman
 // [DIRECT]
-RULE-SET,http://127.0.0.1/rule-provider/surge?interval=86400&policy[name]=DIRECT&policy[is_subscription]=false&sub_url=http://127.0.0.1:8080/subscription?token=bppleman,DIRECT
+RULE-SET,http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=DIRECT&policy%5Boption%5D&policy%5Bis_subscription%5D=false&sub_url=http://127.0.0.1/api/original?token=bppleman
 // [DIRECT: no-resolve]
-RULE-SET,http://127.0.0.1/rule-provider/surge?interval=86400&policy[name]=DIRECT&policy[option]=no-resolve&policy[is_subscription]=false&sub_url=http://127.0.0.1:8080/subscription?token=bppleman,DIRECT,no-resolve
+RULE-SET,http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=DIRECT&policy%5Boption%5D=no-resolve&policy%5Bis_subscription%5D=false&sub_url=http://127.0.0.1/api/original?token=bppleman
 // [DIRECT: force-remote-dns]
-RULE-SET,http://127.0.0.1/rule-provider/surge?interval=86400&policy[name]=DIRECT&policy[option]=force-remote-dns&policy[is_subscription]=false&sub_url=http://127.0.0.1:8080/subscription?token=bppleman,DIRECT,force-remote-dns
+RULE-SET,http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=DIRECT&policy%5Boption%5D=force-remote-dns&policy%5Bis_subscription%5D=false&sub_url=http://127.0.0.1/api/original?token=bppleman
 
 GEOIP,CN,DIRECT
 FINAL,DIRECT

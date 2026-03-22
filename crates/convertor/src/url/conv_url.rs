@@ -33,6 +33,20 @@ impl ConvUrl {
         }
     }
 
+    pub fn path_and_query(&self) -> Result<String, ConvUrlError> {
+        let path = self.r#type.path();
+        let query: Option<String> = self
+            .query
+            .as_ref()
+            .map(|q| q.try_into())
+            .transpose()
+            .map_err(ConvUrlError::ConvQuery)?;
+        match query {
+            None => Ok(path.to_string()),
+            Some(query) => Ok(format!("{}?{}", path, query)),
+        }
+    }
+
     pub fn take_query(mut self) -> Result<ConvQuery, ConvUrlError> {
         self.query.take().ok_or(ConvUrlError::MissingConvQuery)
     }

@@ -19,17 +19,19 @@ where
     f.await.map_err(|e| ApiError::from_app_error(e, request))
 }
 
-fn gen_url_builder(state: Arc<AppState>, query: ConvQuery) -> Result<UrlBuilder, AppError> {
+fn gen_url_builder(state: Arc<AppState>, query: ConvQuery, url: impl Into<String>) -> Result<UrlBuilder, AppError> {
     let encryptor = Encryptor::new_random(&state.config.secret);
     UrlBuilder::from_conv_query(encryptor, query).map_err(|e| match e {
-        UrlBuilderError::ConvQuery(e) => AppError::Request(RequestError::InvalidQuery(InvalidQueryError::ConvQuery(e))),
+        UrlBuilderError::ConvQuery(e) => AppError::Request(RequestError::InvalidQuery(url.into(), InvalidQueryError::ConvQuery(e))),
         _ => AppError::InternalServer(UnknownError::from(Box::new(e))),
     })
 }
 
-fn build_original_url(url_builder: &UrlBuilder) -> Result<url::Url, AppError> {
+fn build_original_url(url_builder: &UrlBuilder, url: impl Into<String>) -> Result<url::Url, AppError> {
     let raw_url = url_builder.build_original_url().map_err(|e| match e {
-        UrlBuilderError::BuildUrl(_, _) => AppError::Request(RequestError::InvalidQuery(InvalidQueryError::UrlBuilder(Box::new(e)))),
+        UrlBuilderError::BuildUrl(_, _) => {
+            AppError::Request(RequestError::InvalidQuery(url.into(), InvalidQueryError::UrlBuilder(Box::new(e))))
+        }
         _ => AppError::InternalServer(UnknownError::from(Box::new(e))),
     })?;
     let url: url::Url = raw_url
@@ -41,7 +43,7 @@ fn build_original_url(url_builder: &UrlBuilder) -> Result<url::Url, AppError> {
 async fn get_original_profile(state: Arc<AppState>, sub_url: url::Url, headers: &Headers) -> Result<String, AppError> {
     state
         .provider
-        .get_raw_profile(sub_url, &headers)
+        .get_raw_profile(sub_url, headers)
         .await
         .boxed_map_err(UnknownError::from)
         .map_err(AppError::InternalServer)
