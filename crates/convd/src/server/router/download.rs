@@ -1,24 +1,27 @@
+use crate::server::app_state::AppState;
 use axum::body::Body;
+use axum::extract::State;
 use axum::http::header::{CONNECTION, HOST, PROXY_AUTHENTICATE, PROXY_AUTHORIZATION, TE, TRAILER, TRANSFER_ENCODING, UPGRADE};
 use axum::http::{HeaderName, HeaderValue, Request, Response, StatusCode};
 use futures_util::TryStreamExt;
 use reqwest::Url;
 use serde::Deserialize;
 use serde_qs::axum::QsQuery;
+use std::sync::Arc;
 
 #[derive(Debug, Deserialize)]
 pub struct DownloadQuery {
     pub url: String,
 }
 
-pub async fn download(QsQuery(q): QsQuery<DownloadQuery>, req: Request<Body>) -> Response<Body> {
+pub async fn download(State(state): State<Arc<AppState>>, QsQuery(q): QsQuery<DownloadQuery>, req: Request<Body>) -> Response<Body> {
     let url = match Url::parse(&q.url) {
         Ok(url) if matches!(url.scheme(), "http" | "https") => url,
         Ok(_) => return text_response(StatusCode::BAD_REQUEST, "url scheme must be http or https"),
         Err(e) => return text_response(StatusCode::BAD_REQUEST, format!("invalid url: {e}")),
     };
 
-    let client = reqwest::Client::new();
+    let client = state.download_client.clone();
 
     let (parts, body) = req.into_parts();
 
@@ -33,7 +36,7 @@ pub async fn download(QsQuery(q): QsQuery<DownloadQuery>, req: Request<Body>) ->
     }
 
     // 流式透传请求体
-    let req_stream = Body::from(body).into_data_stream().map_err(std::io::Error::other);
+    let req_stream = body.into_data_stream().map_err(std::io::Error::other);
 
     upstream_req = upstream_req.body(reqwest::Body::wrap_stream(req_stream));
 

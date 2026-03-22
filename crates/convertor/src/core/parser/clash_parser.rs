@@ -11,9 +11,9 @@ pub struct ClashParser;
 impl ClashParser {
     #[instrument(skip_all)]
     pub fn parse(raw_profile: impl AsRef<str>) -> Result<ClashProfile> {
-        Ok(from_str(raw_profile.as_ref())
+        from_str(raw_profile.as_ref())
             .map_err(InternalError::Yaml)
-            .map_err(ParseError::Unknown)?)
+            .map_err(ParseError::Unknown)
     }
 
     #[instrument(skip_all)]
@@ -24,13 +24,13 @@ impl ClashParser {
         let rules = match value {
             Value::Sequence(rules) => rules
                 .into_iter()
-                .map(|r| Ok(from_value(r).map_err(InternalError::Yaml).map_err(ParseError::Unknown)?))
+                .map(|r| from_value(r).map_err(InternalError::Yaml).map_err(ParseError::Unknown))
                 .collect::<Result<Vec<Rule>>>(),
             Value::Mapping(mut rules) => {
                 if rules.contains_key("rules") {
                     rules
                         .remove("rules")
-                        .map(|v| Ok(from_value(v).map_err(InternalError::Yaml).map_err(ParseError::Unknown)?))
+                        .map(|v| from_value(v).map_err(InternalError::Yaml).map_err(ParseError::Unknown))
                         .ok_or(ParseError::Rule {
                             line: 0,
                             reason: "rules 无法反序列化为 Rule 序列".to_string(),
@@ -38,7 +38,7 @@ impl ClashParser {
                 } else if rules.contains_key("payload") {
                     rules
                         .remove("payload")
-                        .map(|v| Ok(from_value(v).map_err(InternalError::Yaml).map_err(ParseError::Unknown)?))
+                        .map(|v| from_value(v).map_err(InternalError::Yaml).map_err(ParseError::Unknown))
                         .ok_or(ParseError::Rule {
                             line: 0,
                             reason: "payload 无法反序列化为 Rule 序列".to_string(),

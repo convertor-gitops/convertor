@@ -62,6 +62,12 @@ impl FetchRequest {
 }
 
 #[derive(Debug, Clone)]
+pub enum RequestBodyMeta {
+    Buffered(Vec<u8>),
+    Stream,
+}
+
+#[derive(Debug, Clone)]
 pub struct RequestMeta {
     /// 请求追踪 ID，用于串联日志和链路追踪。
     pub req_id: String,
@@ -73,7 +79,7 @@ pub struct RequestMeta {
     pub path: Option<String>,
     pub query: Option<String>,
     pub headers: Option<HashMap<String, String>>,
-    pub body: Option<Vec<u8>>,
+    pub body: Option<RequestBodyMeta>,
 }
 
 impl std::fmt::Display for RequestMeta {
@@ -91,26 +97,33 @@ impl std::fmt::Display for RequestMeta {
             }
         }
         if let Some(body) = &self.body {
-            writeln!(f, "\nBody:")?;
-            write!(f, "{}", String::from_utf8_lossy(body))?;
+            match body {
+                RequestBodyMeta::Buffered(bytes) => {
+                    writeln!(f, "\nBody ({} bytes):", bytes.len())?;
+                    write!(f, "{}", String::from_utf8_lossy(bytes))?;
+                }
+                RequestBodyMeta::Stream => {
+                    writeln!(f, "\nBody: <stream omitted>")?;
+                }
+            }
         }
         Ok(())
     }
 }
 
 impl RequestMeta {
-    pub(crate) fn new(url: Url, method: Method) -> Self {
+    pub(crate) fn from_fetch_request(url: &Url, method: &Method, headers: &HashMap<String, String>, body: Option<&FetchBody>) -> Self {
         Self {
             req_id: uuid::Uuid::new_v4().to_string(),
-            url,
-            method,
-            scheme: None,
-            host: None,
-            port: None,
-            path: None,
-            query: None,
-            headers: None,
-            body: None,
+            url: url.clone(),
+            method: method.clone(),
+            scheme: Some(url.scheme().to_string()),
+            host: url.host_str().map(|s| s.to_string()),
+            port: url.port(),
+            path: Some(url.path().to_string()),
+            query: url.query().map(|s| s.to_string()),
+            headers: Some(headers.clone()),
+            body: body.map(RequestBodyMeta::from_fetch_body),
         }
     }
 
@@ -125,9 +138,18 @@ impl RequestMeta {
         self.headers = Some(header_map_to_hash_map(request.headers()));
         // 流式 body 在这里通常拿不到 bytes；仅在普通 body 时可记录。
         if let Some(body) = request.body().and_then(|b| b.as_bytes()) {
-            self.body = Some(body.to_vec());
+            self.body = Some(RequestBodyMeta::Buffered(body.to_vec()));
         }
         self
+    }
+}
+
+impl RequestBodyMeta {
+    fn from_fetch_body(body: &FetchBody) -> Self {
+        match body {
+            FetchBody::Bytes(raw) => Self::Buffered(raw.clone()),
+            FetchBody::Stream(_) => Self::Stream,
+        }
     }
 }
 

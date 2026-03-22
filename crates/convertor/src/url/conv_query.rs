@@ -111,7 +111,7 @@ impl TryInto<String> for &ConvQuery {
     type Error = ConvQueryError;
 
     fn try_into(self) -> Result<String, Self::Error> {
-        serde_qs::to_string(self).map_err(|e| ConvQueryError::Encode(self.clone(), e))
+        serde_qs::to_string(self).map_err(|e| ConvQueryError::Encode(Box::new(self.clone()), e))
     }
 }
 

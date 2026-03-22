@@ -38,15 +38,14 @@ impl UrlBuilder {
     }
 
     pub fn from_conv_url(encryptor: Encryptor, url: ConvUrl) -> Result<Self, UrlBuilderError> {
-        // let url = url.decrypt(&encryptor).map_err(Box::new).map_err(UrlBuilderError::ConvUrl)?;
-        let query = url.take_query().map_err(Box::new).map_err(UrlBuilderError::ConvUrl)?;
+        let query = url.take_query()?;
         Self::from_conv_query(encryptor, query)
     }
 
     pub fn from_conv_query(encryptor: Encryptor, query: ConvQuery) -> Result<Self, UrlBuilderError> {
-        let query = query.decrypt(&encryptor).map_err(Box::new).map_err(UrlBuilderError::ConvQuery)?;
+        let query = query.decrypt(&encryptor)?;
         let strict = query.strict.unwrap_or(true);
-        let sub_url = query.parse_sub_url().map_err(Box::new).map_err(UrlBuilderError::ConvQuery)?;
+        let sub_url = query.parse_sub_url()?;
         let ConvQuery {
             server,
             sub_url: _,
@@ -64,7 +63,6 @@ impl UrlBuilder {
         url.query_pairs_mut().append_pair("flag", self.client.as_str());
         ConvUrl::original(url)
             .encrypt(&self.encryptor)
-            .map_err(Box::new)
             .map_err(|e| UrlBuilderError::BuildUrl(UrlType::Original, e))
     }
 
@@ -72,7 +70,6 @@ impl UrlBuilder {
         let query = self.as_profile_query();
         ConvUrl::new(UrlType::Raw, self.server.clone(), Some(query))
             .encrypt(&self.encryptor)
-            .map_err(Box::new)
             .map_err(|e| UrlBuilderError::BuildUrl(UrlType::Raw, e))
     }
 
@@ -80,7 +77,6 @@ impl UrlBuilder {
         let query = self.as_profile_query();
         ConvUrl::new(UrlType::Profile, self.server.clone(), Some(query))
             .encrypt(&self.encryptor)
-            .map_err(Box::new)
             .map_err(|e| UrlBuilderError::BuildUrl(UrlType::Profile, e))
     }
 
@@ -88,7 +84,6 @@ impl UrlBuilder {
         let query = self.as_proxy_provider_query(name);
         ConvUrl::new(UrlType::ProxyProvider, self.server.clone(), Some(query))
             .encrypt(&self.encryptor)
-            .map_err(Box::new)
             .map_err(|e| UrlBuilderError::BuildUrl(UrlType::ProxyProvider, e))
     }
 
@@ -96,7 +91,6 @@ impl UrlBuilder {
         let query = self.as_rule_provider_query(policy);
         ConvUrl::new(UrlType::RuleProvider, self.server.clone(), Some(query))
             .encrypt(&self.encryptor)
-            .map_err(Box::new)
             .map_err(|e| UrlBuilderError::BuildUrl(UrlType::RuleProvider, e))
     }
 
@@ -118,7 +112,6 @@ impl UrlBuilder {
         download_url.set_query(Some(
             serde_qs::to_string(&query)
                 .map_err(InternalError::Qs)
-                .map_err(Box::new)
                 .map_err(|e| UrlBuilderError::BuildDownloadUrl(url.to_string(), e))?
                 .as_str(),
         ));

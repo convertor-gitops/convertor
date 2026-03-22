@@ -7,24 +7,22 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum UrlBuilderError {
     #[error("[UrlBuilder] ConvQuery 出错")]
-    ConvQuery(#[from] Box<ConvQueryError>),
+    ConvQuery(#[from] ConvQueryError),
 
     #[error("[UrlBuilder] ConvUrl 出错")]
-    ConvUrl(#[from] Box<ConvUrlError>),
+    ConvUrl(#[from] ConvUrlError),
 
     #[error("[UrlBuilder] 无法获取 sub_host: {0}")]
     MissingSubHost(String),
 
     #[error("[UrlBuilder] 无法构建 ConvUrl: {0}")]
-    BuildUrl(UrlType, #[source] Box<ConvUrlError>),
+    BuildUrl(UrlType, #[source] ConvUrlError),
 
     #[error("[UrlBuilder] UrlType: {0}, 不支持构造为 SurgeHeader")]
     BuildSurgeHeader(UrlType),
 
     #[error("[UrlBuilder] 无法对链接创建中转下载链接: {0}")]
-    BuildDownloadUrl(String, #[source] Box<InternalError>),
-    // #[error("[UrlBuilder] 从 URL: `{0}` 中解析 sub_url 失败")]
-    // SubUrl(String, #[source] url::ParseError),
+    BuildDownloadUrl(String, #[source] InternalError),
 }
 
 #[derive(Debug, Error)]
@@ -57,7 +55,7 @@ pub enum ConvQueryError {
     Parse(String, #[source] serde_qs::Error),
 
     #[error("[ConvQuery] 无法序列化为字符串: {0:#?}")]
-    Encode(ConvQuery, #[source] serde_qs::Error),
+    Encode(Box<ConvQuery>, #[source] serde_qs::Error),
 
     #[error("[ConvQuery] 缺少有效的参数字段: {0}")]
     MissingField(String),

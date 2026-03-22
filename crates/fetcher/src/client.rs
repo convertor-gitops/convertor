@@ -7,6 +7,16 @@ use std::collections::HashMap;
 use std::time::{Duration, Instant};
 use tracing::debug;
 
+const STATUS_BODY_PREVIEW_LIMIT: usize = 16 * 1024;
+
+fn status_body_preview(bytes: &[u8]) -> (String, usize, bool) {
+    let body_len = bytes.len();
+    let preview_len = body_len.min(STATUS_BODY_PREVIEW_LIMIT);
+    let body_preview = String::from_utf8_lossy(&bytes[..preview_len]).into_owned();
+    let body_truncated = preview_len < body_len;
+    (body_preview, body_len, body_truncated)
+}
+
 #[derive(Clone)]
 pub struct FetchClient {
     /// 默认请求头：会与单次请求头合并，单次请求头优先级更高。
@@ -92,13 +102,16 @@ impl FetchClient {
             let response_body_bytes = prepared.resp.bytes().await.map_err(|e| FetchError::Response {
                 reason: "读取响应体失败".to_string(),
                 source: Box::new(e),
-                response: prepared.response.clone(),
+                response: Box::new(prepared.response.clone()),
             })?;
+            let (body_preview, body_len, body_truncated) = status_body_preview(&response_body_bytes);
             return Err(FetchError::Status {
                 reason: format!("上游返回非成功状态码: {}", prepared.response.status),
-                request: prepared.request,
-                response: prepared.response,
-                body: response_body_bytes.to_vec(),
+                request: Box::new(prepared.request),
+                response: Box::new(prepared.response),
+                body_preview,
+                body_len,
+                body_truncated,
             });
         }
         let response_for_stream = prepared.response.clone();
@@ -106,7 +119,7 @@ impl FetchClient {
             chunk.map_err(|e| FetchError::Stream {
                 reason: "读取响应流失败".to_string(),
                 source: Box::new(e),
-                response: response_for_stream.clone(),
+                response: Box::new(response_for_stream.clone()),
             })
         });
 
@@ -140,14 +153,17 @@ impl FetchClient {
         let response_body_bytes = prepared.resp.bytes().await.map_err(|e| FetchError::Response {
             reason: "读取响应体失败".to_string(),
             source: Box::new(e),
-            response: prepared.response.clone(),
+            response: Box::new(prepared.response.clone()),
         })?;
         if !prepared.response.status.is_success() {
+            let (body_preview, body_len, body_truncated) = status_body_preview(&response_body_bytes);
             return Err(FetchError::Status {
                 reason: format!("上游返回非成功状态码: {}", prepared.response.status),
-                request: prepared.request,
-                response: prepared.response,
-                body: response_body_bytes.to_vec(),
+                request: Box::new(prepared.request),
+                response: Box::new(prepared.response),
+                body_preview,
+                body_len,
+                body_truncated,
             });
         }
         let bytes_in = response_body_bytes.len() as u64;
@@ -241,11 +257,10 @@ impl FetchClient {
             body,
         } = request;
 
-        let mut request_info = RequestMeta::new(url.clone(), method.clone());
-        let mut rb = client.request(method, url);
-
         let mut merged_headers = self.default_headers.clone();
         merged_headers.extend(headers);
+        let mut request_info = RequestMeta::from_fetch_request(&url, &method, &merged_headers, body.as_ref());
+        let mut rb = client.request(method, url);
         for (k, v) in merged_headers {
             rb = rb.header(k, v);
         }
@@ -264,7 +279,7 @@ impl FetchClient {
         let req = rb.build().map_err(|e| FetchError::BuildRequest {
             reason: "无法构建请求".to_string(),
             source: Box::new(e),
-            request: request_info.clone(),
+            request: Box::new(request_info.clone()),
         })?;
 
         request_info = request_info.patch(&req);
@@ -273,7 +288,7 @@ impl FetchClient {
         let resp = client.execute(req).await.map_err(|e| FetchError::Request {
             reason: "请求失败".to_string(),
             source: Box::new(e),
-            request: request_info.clone(),
+            request: Box::new(request_info.clone()),
         })?;
         let ttfb_ms = started.elapsed().as_millis();
 

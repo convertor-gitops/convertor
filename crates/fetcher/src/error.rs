@@ -16,7 +16,7 @@ pub enum FetchError {
         reason: String,
         #[source]
         source: Box<reqwest::Error>,
-        request: RequestMeta,
+        request: Box<RequestMeta>,
     },
 
     #[error("{reason}: {source}\n{request}")]
@@ -24,7 +24,7 @@ pub enum FetchError {
         reason: String,
         #[source]
         source: Box<reqwest::Error>,
-        request: RequestMeta,
+        request: Box<RequestMeta>,
     },
 
     #[error("{reason}: {source}\n{response}")]
@@ -32,7 +32,7 @@ pub enum FetchError {
         reason: String,
         #[source]
         source: Box<reqwest::Error>,
-        response: ResponseMeta,
+        response: Box<ResponseMeta>,
     },
 
     #[error("{reason}: {source}\n{response}")]
@@ -40,15 +40,17 @@ pub enum FetchError {
         reason: String,
         #[source]
         source: Box<reqwest::Error>,
-        response: ResponseMeta,
+        response: Box<ResponseMeta>,
     },
 
-    #[error("{reason}\nRequest:\n{request}\nResponse:\n{response}")]
+    #[error("{reason}\nRequest:\n{request}\nResponse:\n{response}\nBody ({body_len} bytes, truncated: {body_truncated}):\n{body_preview}")]
     Status {
         reason: String,
-        request: RequestMeta,
-        response: ResponseMeta,
-        body: Vec<u8>,
+        request: Box<RequestMeta>,
+        response: Box<ResponseMeta>,
+        body_preview: String,
+        body_len: usize,
+        body_truncated: bool,
     },
 
     #[error("{reason}: {detail}")]

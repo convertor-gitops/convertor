@@ -6,7 +6,7 @@ use redis::aio::ConnectionManager;
 use reqwest::Method;
 use std::ops::Deref;
 use std::time::Duration;
-use tracing::instrument;
+use tracing::{error, instrument};
 
 #[derive(Clone)]
 pub struct SubsProvider {
@@ -47,7 +47,8 @@ impl SubsProvider {
         let raw_profile = self
             .cache
             .try_get_with(cache_key, async { self.fetch(sub_url, headers).await })
-            .await?;
+            .await
+            .map_err(|e| *e)?;
         Ok(raw_profile)
     }
 
@@ -61,12 +62,25 @@ impl SubsProvider {
 
 fn classify_fetch_failure(error: FetchError) -> ProviderError {
     match error {
-        e @ FetchError::BuildRequest { .. } => ProviderError::BuildRawProfileRequest(Box::new(e)),
-        e @ FetchError::Request { .. } => ProviderError::RequestUpstreamProfile(Box::new(e)),
-        e @ FetchError::Status { .. } => ProviderError::UpstreamRejectedProfile(Box::new(e)),
-        e @ FetchError::Response { .. } | e @ FetchError::Stream { .. } => ProviderError::ReadUpstreamProfile(Box::new(e)),
+        e @ FetchError::BuildRequest { .. } => {
+            error!(error = %e, error_debug = ?e, "构建上游订阅请求失败");
+            ProviderError::BuildRawProfileRequest
+        }
+        e @ FetchError::Request { .. } => {
+            error!(error = %e, error_debug = ?e, "请求上游订阅失败");
+            ProviderError::RequestUpstreamProfile
+        }
+        e @ FetchError::Status { .. } => {
+            error!(error = %e, error_debug = ?e, "上游订阅返回非成功状态");
+            ProviderError::UpstreamRejectedProfile
+        }
+        e @ FetchError::Response { .. } | e @ FetchError::Stream { .. } => {
+            error!(error = %e, error_debug = ?e, "读取上游订阅响应失败");
+            ProviderError::ReadUpstreamProfile
+        }
         e @ FetchError::BuildClient { .. } | e @ FetchError::EncodeQuery { .. } | e @ FetchError::EncodeBody { .. } => {
-            ProviderError::Unknown(Box::new(e))
+            error!(error = %e, error_debug = ?e, "Provider 遇到 fetcher 内部错误");
+            ProviderError::Unknown
         }
     }
 }

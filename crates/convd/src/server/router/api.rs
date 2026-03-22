@@ -22,7 +22,9 @@ where
 fn gen_url_builder(state: Arc<AppState>, query: ConvQuery, url: impl Into<String>) -> Result<UrlBuilder, AppError> {
     let encryptor = Encryptor::new_random(&state.config.secret);
     UrlBuilder::from_conv_query(encryptor, query).map_err(|e| match e {
-        UrlBuilderError::ConvQuery(e) => AppError::Request(RequestError::InvalidQuery(url.into(), InvalidQueryError::ConvQuery(e))),
+        UrlBuilderError::ConvQuery(e) => {
+            AppError::Request(RequestError::InvalidQuery(url.into(), InvalidQueryError::ConvQuery(Box::new(e))))
+        }
         _ => AppError::InternalServer(UnknownError::from(Box::new(e))),
     })
 }

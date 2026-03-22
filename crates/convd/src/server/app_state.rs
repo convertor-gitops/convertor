@@ -9,6 +9,7 @@ pub struct AppState {
     pub config: Arc<Config>,
     pub redis: Option<redis::Client>,
     pub redis_connection: Option<ConnectionManager>,
+    pub download_client: reqwest::Client,
     pub provider: SubsProvider,
     pub surge_service: SurgeService,
     pub clash_service: ClashService,
@@ -18,6 +19,7 @@ pub struct AppState {
 impl AppState {
     pub fn new(config: Config, redis: Option<redis::Client>, redis_connection: Option<ConnectionManager>) -> Self {
         let config = Arc::new(config);
+        let download_client = reqwest::Client::new();
         let surge_service = SurgeService::new(config.clone());
         let clash_service = ClashService::new(config.clone());
         let build_url_service = BuildUrlService::new(config.clone());
@@ -26,6 +28,7 @@ impl AppState {
             config,
             redis,
             redis_connection,
+            download_client,
             provider,
             surge_service,
             clash_service,
