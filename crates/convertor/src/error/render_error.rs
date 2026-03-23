@@ -3,10 +3,10 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum RenderError {
-    #[error("[Renderer] 渲染失败: {0}")]
+    #[error("[Render] 渲染失败: {0}")]
     Render(String),
 
-    #[error("[Renderer] 渲染失败")]
+    #[error("[Render] 渲染失败")]
     Unknown(#[from] Box<InternalError>),
 }
 

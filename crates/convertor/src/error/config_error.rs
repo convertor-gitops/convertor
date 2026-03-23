@@ -1,34 +1,22 @@
-use crate::error::InternalError;
+use std::path::PathBuf;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum ConfigError {
-    #[error("在 {} 中未找到配置文件: {}", .cwd.display(), .config_name)]
-    NotFound { cwd: std::path::PathBuf, config_name: String },
+    #[error("[Config] 搜索配置文件不是一个文件: {}", .0.display())]
+    NotFile(PathBuf),
 
-    #[error("搜索配置文件不是一个文件: {}", .0.display())]
-    NotFile(std::path::PathBuf),
-
-    #[error("搜索配置目录不是一个目录: {}", .0.display())]
-    NotDirectory(std::path::PathBuf),
-
-    #[error("读取配置文件时发生错误: {0}")]
+    #[error("[Config] 读取配置文件时发生错误: {0}")]
     Read(#[source] std::io::Error),
 
-    #[error("解析配置文件时发生错误")]
+    #[error("[Config] 解析配置文件时发生错误")]
     Parse(#[source] toml::de::Error),
 
-    #[error("序列化配置文件时发生错误")]
-    Serialize(#[source] toml::ser::Error),
-
-    #[error("多段配置合并错误")]
+    #[error("[Config] 多段配置合并错误")]
     SearchConfig(#[source] config::ConfigError),
 
-    #[error("配置解析错误")]
+    #[error("[Config] 配置解析错误")]
     ParseConfig(#[source] config::ConfigError),
-
-    #[error("配置模块内部未知错误")]
-    Unknown(#[from] InternalError),
 }
 
 #[derive(Debug, Error)]
@@ -37,8 +25,6 @@ pub enum RedisConfigError {
     MissingHost(Option<String>),
     #[error("[RedisConfig] 无效的 port")]
     MissingPort,
-    #[error("[RedisConfig] 无效的 password")]
-    MissingPassword,
     #[error("[RedisConfig] TLS 配置错误: client_cert 和 client_key 必须同时提供")]
     MissingCertOrKey,
 }

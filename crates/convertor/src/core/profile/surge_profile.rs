@@ -121,12 +121,7 @@ impl ProfileTrait for SurgeProfile {
         }
         for policy in self.rule_providers.keys() {
             let name = policy.bracket_name();
-            let url = url::Url::try_from(
-                url_builder
-                    .build_rule_provider_url(policy)
-                    .map_err(|source| ConvertError::UrlBuilder { source })?,
-            )
-            .map_err(|source| ConvertError::ConvUrl { source })?;
+            let url = url::Url::try_from(url_builder.build_rule_provider_url(policy)?)?;
             let rule = Rule::surge_rule_set(policy, name, url);
             self.rules.push(rule);
         }
@@ -134,7 +129,7 @@ impl ProfileTrait for SurgeProfile {
     }
 
     fn organize_other_rule(&mut self, url_builder: &UrlBuilder, mut rule: Rule) -> Result<(), ConvertError> {
-        let sub_host = url_builder.host_port().map_err(|source| ConvertError::UrlBuilder { source })?;
+        let sub_host = url_builder.host_port()?;
         rule.organize(sub_host);
         if let Some(policy) = rule.policy.clone() {
             self.rule_providers.entry(policy).or_default().push(rule);
@@ -151,10 +146,7 @@ impl SurgeProfile {
 
     #[instrument(skip_all)]
     fn replace_header(&mut self, url_builder: &UrlBuilder) -> Result<(), ConvertError> {
-        self.header = url_builder
-            .build_surge_header(UrlType::Profile)
-            .map_err(|source| ConvertError::UrlBuilder { source })?
-            .to_string();
+        self.header = url_builder.build_surge_header(UrlType::Profile)?.to_string();
         Ok(())
     }
 }

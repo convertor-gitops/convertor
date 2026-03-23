@@ -3,7 +3,7 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum EncryptError {
-    #[error("无法分离 nonce 与密文")]
+    #[error("[Encryptor] 无法分离 nonce 与密文")]
     Split,
 
     #[error("[Encryptor] nonce 长度不合法")]

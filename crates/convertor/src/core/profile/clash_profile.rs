@@ -92,9 +92,7 @@ impl ProfileTrait for ClashProfile {
     }
 
     fn convert(&mut self, url_builder: &UrlBuilder) -> Result<(), ConvertError> {
-        self.geox_url
-            .convert(url_builder)
-            .map_err(|source| ConvertError::UrlBuilder { source })?;
+        self.geox_url.convert(url_builder)?;
         self.organize_proxies(url_builder)?;
         self.organize_rules(url_builder)?;
         Ok(())
@@ -110,9 +108,7 @@ impl ProfileTrait for ClashProfile {
 
         // 创建一个 proxy-provider, 包含所有的代理
         let proxy_provider_name = "convertor";
-        let proxy_provider_url = url_builder
-            .build_proxy_provider_url(proxy_provider_name)
-            .map_err(|source| ConvertError::UrlBuilder { source })?;
+        let proxy_provider_url = url_builder.build_proxy_provider_url(proxy_provider_name)?;
         let mut proxy_provider = ProxyProvider::new(proxy_provider_url, proxy_provider_name, url_builder.interval);
         proxy_provider.proxies = std::mem::take(&mut self.proxies);
         self.proxy_providers.insert(proxy_provider_name.to_string(), proxy_provider);
@@ -187,18 +183,13 @@ impl ProfileTrait for ClashProfile {
     }
 
     fn organize_other_rule(&mut self, url_builder: &UrlBuilder, mut rule: Rule) -> Result<(), ConvertError> {
-        let sub_host = url_builder.host_port().map_err(|source| ConvertError::UrlBuilder { source })?;
+        let sub_host = url_builder.host_port()?;
         rule.organize(sub_host);
         if let Some(policy) = rule.policy.clone() {
             match self.rule_providers.entry(policy) {
                 Entry::Vacant(v) => {
                     let name = v.key().snake_case_name();
-                    let rule_provider_url = url::Url::try_from(
-                        url_builder
-                            .build_rule_provider_url(v.key())
-                            .map_err(|source| ConvertError::UrlBuilder { source })?,
-                    )
-                    .map_err(|source| ConvertError::ConvUrl { source })?;
+                    let rule_provider_url = url::Url::try_from(url_builder.build_rule_provider_url(v.key())?)?;
                     let mut rule_provider = RuleProvider::new(rule_provider_url, &name, url_builder.interval);
                     rule_provider.push_rule(rule);
                     v.insert(rule_provider);
