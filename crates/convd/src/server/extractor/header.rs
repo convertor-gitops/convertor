@@ -6,15 +6,15 @@ use std::convert::Infallible;
 use std::sync::Arc;
 
 #[derive(Debug, Clone)]
-pub struct HeaderExtra(pub Headers);
+pub struct HeaderExtractor(pub Headers);
 
-impl HeaderExtra {
+impl HeaderExtractor {
     pub fn into_inner(self) -> Headers {
         self.0
     }
 }
 
-impl FromRequestParts<Arc<AppState>> for HeaderExtra {
+impl FromRequestParts<Arc<AppState>> for HeaderExtractor {
     type Rejection = Infallible;
 
     async fn from_request_parts(parts: &mut Parts, state: &Arc<AppState>) -> Result<Self, Self::Rejection> {

@@ -1,6 +1,6 @@
 use crate::server::app_state::AppState;
-use crate::server::error::ServiceError;
 use crate::server::model::UrlResult;
+use crate::server::service::ServiceResult;
 use convertor::config::Config;
 use convertor::config::proxy_client::ProxyClient;
 use convertor::core::profile::Profile;
@@ -24,7 +24,7 @@ impl BuildUrlService {
 }
 
 impl BuildUrlService {
-    pub async fn build_url(&self, state: Arc<AppState>, url_builder: UrlBuilder, raw_profile: String) -> Result<UrlResult, ServiceError> {
+    pub async fn build_url(&self, state: Arc<AppState>, url_builder: UrlBuilder, raw_profile: String) -> ServiceResult<UrlResult> {
         let client = url_builder.client;
 
         let original_url = url_builder.build_original_url().map_err(Box::new)?;

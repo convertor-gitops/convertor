@@ -8,15 +8,15 @@ use std::convert::Infallible;
 const X_FORWARDED_PROTO_HEADER_KEY: &str = "X-Forwarded-Proto";
 
 #[derive(Debug, Clone)]
-pub struct RequestExtra(pub RequestBody);
+pub struct RequestExtractor(pub RequestBody);
 
-impl RequestExtra {
+impl RequestExtractor {
     pub fn into_inner(self) -> RequestBody {
         self.0
     }
 }
 
-impl<S> FromRequestParts<S> for RequestExtra
+impl<S> FromRequestParts<S> for RequestExtractor
 where
     S: Send + Sync,
 {

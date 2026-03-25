@@ -1,18 +1,16 @@
-use crate::server::error::ServiceError;
+use crate::server::service::ServiceResult;
+use color_eyre::eyre::eyre;
 use convertor::config::Config;
 use convertor::core::profile::ProfileTrait;
 use convertor::core::profile::policy::Policy;
 use convertor::core::profile::surge_profile::SurgeProfile;
 use convertor::core::renderer::Renderer;
 use convertor::core::renderer::surge_renderer::SurgeRenderer;
-use convertor::error::UrlBuilderError;
 use convertor::url::conv_url::UrlType;
 use convertor::url::url_builder::UrlBuilder;
 use moka::future::Cache;
 use std::sync::Arc;
 use tracing::instrument;
-
-type Result<T> = core::result::Result<T, ServiceError>;
 
 #[derive(Clone)]
 pub struct SurgeService {
@@ -28,21 +26,15 @@ impl SurgeService {
     }
 
     #[instrument(skip_all)]
-    pub async fn profile(&self, url_builder: UrlBuilder, raw_profile: String) -> Result<String> {
+    pub async fn profile(&self, url_builder: UrlBuilder, raw_profile: String) -> ServiceResult<String> {
         let profile = self.try_get_profile(url_builder, raw_profile).await?;
-        let content = SurgeRenderer::render_profile(&profile).map_err(ServiceError::Render)?;
+        let content = SurgeRenderer::render_profile(&profile)?;
         Ok(content)
     }
 
     #[instrument(skip_all)]
-    pub async fn render_raw_profile(&self, url_builder: UrlBuilder, raw_profile: String) -> Result<String> {
-        let surge_header = url_builder
-            .build_surge_header(UrlType::Raw)
-            .map_err(Box::new)
-            .map_err(|e| match e.as_ref() {
-                UrlBuilderError::BuildSurgeHeader(_) => ServiceError::BuildSurgeHeader(e),
-                _ => ServiceError::UrlBuilder(e),
-            })?;
+    pub async fn render_raw_profile(&self, url_builder: UrlBuilder, raw_profile: String) -> ServiceResult<String> {
+        let surge_header = url_builder.build_surge_header(UrlType::Raw)?;
         let raw_profile_content = match raw_profile.split_once('\n') {
             None => raw_profile,
             Some((_, lines)) => format!("{}\n{}", surge_header, lines),
@@ -51,7 +43,7 @@ impl SurgeService {
     }
 
     #[instrument(skip_all)]
-    pub async fn rule_provider(&self, url_builder: UrlBuilder, raw_profile: String, policy: &Policy) -> Result<String> {
+    pub async fn rule_provider(&self, url_builder: UrlBuilder, raw_profile: String, policy: &Policy) -> ServiceResult<String> {
         let profile = self.try_get_profile(url_builder, raw_profile).await?;
         let Some(rules) = profile.rule_providers.get(policy) else {
             return Ok(String::new());
@@ -60,14 +52,14 @@ impl SurgeService {
     }
 
     #[instrument(skip(self))]
-    pub async fn try_get_profile(&self, url_builder: UrlBuilder, raw_profile: String) -> Result<SurgeProfile> {
+    pub async fn try_get_profile(&self, url_builder: UrlBuilder, raw_profile: String) -> ServiceResult<SurgeProfile> {
         self.profile_cache
             .try_get_with(url_builder.clone(), async {
                 let mut profile = SurgeProfile::parse(raw_profile.clone())?;
                 profile.convert(&url_builder)?;
-                Ok::<_, ServiceError>(profile)
+                ServiceResult::<_>::Ok(profile)
             })
             .await
-            .map_err(ServiceError::Cache)
+            .map_err(|e| eyre!(e))
     }
 }

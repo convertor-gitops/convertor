@@ -1,15 +1,17 @@
 pub mod actuator;
-pub mod angular;
 pub mod api;
 pub mod download;
+pub mod frontend;
+mod helper;
+pub mod subscription;
 
 use crate::server::AppState;
 use crate::server::layer::trace::convd_trace_layer;
-use crate::server::response::ApiError;
 use axum::Router;
 use axum::response::Redirect;
-use axum::routing::{any, get};
+use axum::routing::get;
 use axum_prometheus::PrometheusMetricLayer;
+use convertor::url::conv_url::UrlType;
 use std::sync::Arc;
 
 pub fn router(app_state: AppState) -> Router {
@@ -18,17 +20,11 @@ pub fn router(app_state: AppState) -> Router {
         .route("/", get(|| async { Redirect::permanent("/dashboard/") }))
         .route("/dashboard", get(|| async { Redirect::permanent("/dashboard/") }))
         .route("/index.html", get(|| async { Redirect::permanent("/dashboard/") }))
-        .route("/actuator/healthy", get(actuator::healthy))
-        .route("/actuator/ready", get(actuator::redis))
-        .route("/actuator/redis", get(actuator::redis))
-        .route("/actuator/metrics", get(|| async move { prome_handle.render() }))
-        .route("/api/raw", get(api::raw_profile))
-        .route("/api/profile", get(api::profile))
-        .route("/api/rule-provider", get(api::rule_provider))
-        .route("/api/build-url", get(api::build_url))
-        .route("/api/health", get(|| async { Ok::<_, ApiError>(()) }))
-        .route("/download", any(download::download))
-        .nest("/dashboard/", angular::router())
+        .nest("/actuator", actuator::router(prome_handle))
+        .nest("/api", api::router())
+        .nest("/download", download::router())
+        .nest(UrlType::prefix(), subscription::router())
+        .nest("/dashboard/", frontend::router())
         .with_state(Arc::new(app_state))
         .layer(convd_trace_layer())
         .layer(prome_layer)

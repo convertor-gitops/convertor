@@ -2,11 +2,10 @@ use axum::Router;
 use axum::body::Body;
 use axum::extract::Request;
 use axum::response::Response;
-use axum::routing::get;
 use color_eyre::Result;
 use color_eyre::eyre::OptionExt;
 use convd::server::app_state::AppState;
-use convd::server::router::api;
+use convd::server::router::subscription;
 use convertor::common::once::{init_backtrace, init_log};
 use convertor::config::Config;
 use convertor::config::proxy_client::ProxyClient;
@@ -44,10 +43,7 @@ pub async fn start_server() -> Result<ServerContext> {
 
     let app = Arc::new(AppState::new(config, None, None));
     let router: Router = Router::new()
-        .route(UrlType::Raw.path(), get(api::raw_profile))
-        .route(UrlType::Profile.path(), get(api::profile))
-        .route(UrlType::ProxyProvider.path(), get(api::proxy_provider))
-        .route(UrlType::RuleProvider.path(), get(api::rule_provider))
+        .nest(UrlType::prefix(), subscription::router())
         .with_state(app.clone());
 
     Ok(ServerContext { router, app })

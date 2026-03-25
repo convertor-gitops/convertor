@@ -169,15 +169,21 @@ impl UrlType {
         }
     }
 
-    pub fn path(&self) -> &'static str {
-        match self {
-            UrlType::Original => "/api/original",
-            UrlType::Raw => "/api/raw",
-            UrlType::Profile => "/api/profile",
-            UrlType::ProxyProvider => "/api/proxy-provider",
-            UrlType::RuleProvider => "/api/rule-provider",
-        }
-    }
+    // pub const fn prefix() -> &'static str {
+    //     "/subscription/"
+    // }
+    //
+    // pub const fn sub_path(&self) -> &'static str {
+    //     match self {
+    //         UrlType::Original => "original",
+    //         UrlType::Raw => "raw",
+    //         UrlType::Profile => "profile",
+    //         UrlType::ProxyProvider => "proxy-provider",
+    //         UrlType::RuleProvider => "rule-provider",
+    //     }
+    // }
+    //
+    // pub fn path(&self) -> &'static str {}
 
     pub fn from_path(path: &str) -> Self {
         match path {
@@ -213,3 +219,49 @@ impl Display for UrlType {
         }
     }
 }
+
+macro_rules! impl_url_type_paths {
+    (
+        $ty:ty,
+        prefix = $prefix:literal,
+        {
+            $(
+                $variant:ident => $sub:literal
+            ),* $(,)?
+        }
+    ) => {
+        impl $ty {
+            pub const fn prefix() -> &'static str {
+                $prefix
+            }
+
+            pub const fn sub_path(&self) -> &'static str {
+                match self {
+                    $(
+                        Self::$variant => $sub,
+                    )*
+                }
+            }
+
+            pub const fn path(&self) -> &'static str {
+                match self {
+                    $(
+                        Self::$variant => concat!($prefix, $sub),
+                    )*
+                }
+            }
+        }
+    };
+}
+
+impl_url_type_paths!(
+    UrlType,
+    prefix = "/subscription",
+    {
+        Original => "/original",
+        Raw => "/raw",
+        Profile => "/profile",
+        ProxyProvider => "/proxy-provider",
+        RuleProvider => "/rule-provider",
+    }
+);

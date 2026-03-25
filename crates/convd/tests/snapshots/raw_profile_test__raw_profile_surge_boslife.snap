@@ -2,7 +2,7 @@
 source: crates/convd/tests/raw_profile_test.rs
 expression: actual
 ---
-#!MANAGED-CONFIG http://127.0.0.1:8080/api/raw?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&sub_url=http://127.0.0.1/api/original?token=bppleman interval=0 strict=false
+#!MANAGED-CONFIG http://127.0.0.1:8080/subscription/raw?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&sub_url=http://127.0.0.1/api/original?token=bppleman interval=0 strict=false
 
 [General]
 skip-proxy = 192.168.0.0/16, 10.0.0.0/8, 172.16.0.0/12, 100.64.0.0/10, localhost, *.local, seed-sequoia.siri.apple.com, sequoia.apple.com, *.crashlytics.com

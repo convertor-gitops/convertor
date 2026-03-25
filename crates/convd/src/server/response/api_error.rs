@@ -1,41 +1,32 @@
-use crate::server::error::UnknownError;
-use crate::server::error::{AppError, RequestError};
+use crate::server::error::AppError;
 use crate::server::response::RequestBody;
-use axum::http::StatusCode;
+use axum::http;
 use axum::response::{IntoResponse, Response};
 
-/// HTTP 非200 错误的载体。
+/// HTTP 非200 失败响应的载体。
 ///
-/// 持有 HTTP 状态码和业务错误，不负责序列化。
 /// 最终由 `ResponseBody` 负责序列化和 `IntoResponse`。
 #[derive(Debug)]
-pub enum ApiError {
-    Request {
-        status: StatusCode,
-        error: RequestError,
-        request: RequestBody,
-    },
-    InternalServer {
-        status: StatusCode,
-        error: UnknownError,
-        request: RequestBody,
-    },
+pub struct ApiError {
+    pub error: AppError,
+    pub request: RequestBody,
+    pub http_status: http::StatusCode,
 }
 
 impl ApiError {
-    pub fn bad_request(error: RequestError, request: RequestBody) -> Self {
-        let status = StatusCode::BAD_REQUEST;
-        Self::Request { status, error, request }
+    pub fn bad_request(error: AppError, request: RequestBody) -> Self {
+        Self {
+            error,
+            request,
+            http_status: http::StatusCode::BAD_REQUEST,
+        }
     }
 
-    pub fn internal_server(status: StatusCode, error: UnknownError, request: RequestBody) -> Self {
-        Self::InternalServer { status, error, request }
-    }
-
-    pub fn from_app_error(app_error: AppError, request_body: RequestBody) -> Self {
-        match app_error {
-            AppError::Request(e) => Self::bad_request(e, request_body),
-            AppError::InternalServer(e) => Self::internal_server(e.status_code(), e, request_body),
+    pub fn internal_server(error: AppError, request: RequestBody) -> Self {
+        Self {
+            error,
+            request,
+            http_status: http::StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }

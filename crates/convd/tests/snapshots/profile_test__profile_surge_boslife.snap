@@ -2,7 +2,7 @@
 source: crates/convd/tests/profile_test.rs
 expression: actual
 ---
-#!MANAGED-CONFIG http://127.0.0.1:8080/api/profile?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&sub_url=http://127.0.0.1/api/original?token=bppleman interval=0 strict=false
+#!MANAGED-CONFIG http://127.0.0.1:8080/subscription/profile?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&sub_url=http://127.0.0.1/api/original?token=bppleman interval=0 strict=false
 
 [General]
 skip-proxy = 192.168.0.0/16, 10.0.0.0/8, 172.16.0.0/12, 100.64.0.0/10, localhost, *.local, seed-sequoia.siri.apple.com, sequoia.apple.com, *.crashlytics.com
@@ -75,19 +75,19 @@ Subscription Info=select,剩余流量：40.55 GB,距离下次重置剩余：15 �
 
 [Rule]
 // [Subscription]
-RULE-SET,http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=DIRECT&policy%5Boption%5D&policy%5Bis_subscription%5D=true&sub_url=http://127.0.0.1/api/original?token=bppleman
+RULE-SET,http://127.0.0.1:8080/subscription/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=DIRECT&policy%5Boption%5D&policy%5Bis_subscription%5D=true&sub_url=http://127.0.0.1/api/original?token=bppleman
 // [BosLife]
-RULE-SET,http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=BosLife&policy%5Boption%5D&policy%5Bis_subscription%5D=false&sub_url=http://127.0.0.1/api/original?token=bppleman
+RULE-SET,http://127.0.0.1:8080/subscription/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=BosLife&policy%5Boption%5D&policy%5Bis_subscription%5D=false&sub_url=http://127.0.0.1/api/original?token=bppleman
 // [BosLife: no-resolve]
-RULE-SET,http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=BosLife&policy%5Boption%5D=no-resolve&policy%5Bis_subscription%5D=false&sub_url=http://127.0.0.1/api/original?token=bppleman
+RULE-SET,http://127.0.0.1:8080/subscription/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=BosLife&policy%5Boption%5D=no-resolve&policy%5Bis_subscription%5D=false&sub_url=http://127.0.0.1/api/original?token=bppleman
 // [BosLife: force-remote-dns]
-RULE-SET,http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=BosLife&policy%5Boption%5D=force-remote-dns&policy%5Bis_subscription%5D=false&sub_url=http://127.0.0.1/api/original?token=bppleman
+RULE-SET,http://127.0.0.1:8080/subscription/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=BosLife&policy%5Boption%5D=force-remote-dns&policy%5Bis_subscription%5D=false&sub_url=http://127.0.0.1/api/original?token=bppleman
 // [DIRECT]
-RULE-SET,http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=DIRECT&policy%5Boption%5D&policy%5Bis_subscription%5D=false&sub_url=http://127.0.0.1/api/original?token=bppleman
+RULE-SET,http://127.0.0.1:8080/subscription/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=DIRECT&policy%5Boption%5D&policy%5Bis_subscription%5D=false&sub_url=http://127.0.0.1/api/original?token=bppleman
 // [DIRECT: no-resolve]
-RULE-SET,http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=DIRECT&policy%5Boption%5D=no-resolve&policy%5Bis_subscription%5D=false&sub_url=http://127.0.0.1/api/original?token=bppleman
+RULE-SET,http://127.0.0.1:8080/subscription/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=DIRECT&policy%5Boption%5D=no-resolve&policy%5Bis_subscription%5D=false&sub_url=http://127.0.0.1/api/original?token=bppleman
 // [DIRECT: force-remote-dns]
-RULE-SET,http://127.0.0.1:8080/api/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=DIRECT&policy%5Boption%5D=force-remote-dns&policy%5Bis_subscription%5D=false&sub_url=http://127.0.0.1/api/original?token=bppleman
+RULE-SET,http://127.0.0.1:8080/subscription/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=0&strict=false&policy%5Bname%5D=DIRECT&policy%5Boption%5D=force-remote-dns&policy%5Bis_subscription%5D=false&sub_url=http://127.0.0.1/api/original?token=bppleman
 
 GEOIP,CN,DIRECT
 FINAL,DIRECT

@@ -1,5 +1,5 @@
-use crate::server::response::response_status::ResponseStatus;
-use crate::server::response::{RequestBody, response_status};
+use crate::server::error::{AppError, AppStatus};
+use crate::server::response::{RequestBody, collect_messages};
 use axum::response::{IntoResponse, Response};
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
@@ -14,12 +14,12 @@ pub struct ApiResponse<T>
 where
     T: serde::Serialize,
 {
-    pub status: ResponseStatus,
+    pub status: AppStatus,
     pub messages: Vec<Cow<'static, str>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub request: Option<RequestBody>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub data: Option<T>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub request: Option<RequestBody>,
 }
 
 impl<T> ApiResponse<T>
@@ -28,11 +28,25 @@ where
 {
     pub fn ok(data: T) -> Self {
         Self {
-            status: ResponseStatus::ok(),
+            status: AppStatus::Ok,
             messages: vec![],
             request: None,
             data: Some(data),
         }
+    }
+
+    pub fn business_error(error: AppError, request: RequestBody) -> ApiResponse<T> {
+        Self {
+            status: error.status,
+            messages: collect_messages(&error),
+            request: Some(request),
+            data: None,
+        }
+    }
+
+    pub fn set_status(mut self, status: AppStatus) -> Self {
+        self.status = status;
+        self
     }
 
     pub fn set_message(mut self, message: impl Display) -> Self {
@@ -40,26 +54,15 @@ where
         self
     }
 
+    pub fn set_data(mut self, data: T) -> Self {
+        self.data = Some(data);
+        self
+    }
+
     pub fn set_request(mut self, request: RequestBody) -> Self {
         self.request = Some(request);
         self
     }
-
-    // pub fn error(status: impl Display, error: impl core::error::Error) -> Self {
-    //     let status = status.to_string();
-    //     let mut messages = vec![Cow::Owned(error.to_string())];
-    //     let mut source = error.source();
-    //     while let Some(src) = source {
-    //         messages.push(Cow::Owned(src.to_string()));
-    //         source = src.source();
-    //     }
-    //     Self {
-    //         status,
-    //         messages,
-    //         request: None,
-    //         data: None::<T>,
-    //     }
-    // }
 }
 
 /// `ApiResponse` 直接作为 handler 返回值时（无错误路径），委托给 `ResponseBody`。

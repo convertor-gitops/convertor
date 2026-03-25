@@ -1,8 +1,10 @@
 use crate::server::app_state::AppState;
+use axum::Router;
 use axum::body::Body;
 use axum::extract::State;
 use axum::http::header::{CONNECTION, HOST, PROXY_AUTHENTICATE, PROXY_AUTHORIZATION, TE, TRAILER, TRANSFER_ENCODING, UPGRADE};
 use axum::http::{HeaderName, HeaderValue, Request, Response, StatusCode};
+use axum::routing::any;
 use futures_util::TryStreamExt;
 use reqwest::Url;
 use serde::Deserialize;
@@ -14,7 +16,11 @@ pub struct DownloadQuery {
     pub url: String,
 }
 
-pub async fn download(State(state): State<Arc<AppState>>, QsQuery(q): QsQuery<DownloadQuery>, req: Request<Body>) -> Response<Body> {
+pub fn router() -> Router<Arc<AppState>> {
+    Router::new().route("/", any(download))
+}
+
+async fn download(State(state): State<Arc<AppState>>, QsQuery(q): QsQuery<DownloadQuery>, req: Request<Body>) -> Response<Body> {
     let url = match Url::parse(&q.url) {
         Ok(url) if matches!(url.scheme(), "http" | "https") => url,
         Ok(_) => return text_response(StatusCode::BAD_REQUEST, "url scheme must be http or https"),
