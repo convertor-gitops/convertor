@@ -3,7 +3,7 @@ use crate::server::error::{AppError, AppStatus};
 use crate::server::extractor::{HeaderExtractor, RequestExtractor};
 use crate::server::model::UrlResult;
 use crate::server::response::{ApiResponse, RequestBody};
-use crate::server::router::helper::{build_original_url, gen_url_builder, get_original_profile, into_api_error};
+use crate::server::router::helper::{build_original_url, gen_url_builder, get_original_profile};
 use axum::Router;
 use axum::extract::State;
 use axum::routing::get;

@@ -2,7 +2,6 @@ use crate::server::app_state::AppState;
 use crate::server::error::{AppError, AppStatus};
 use crate::server::extractor::RequestExtractor;
 use crate::server::response::{ApiError, ApiResponse};
-use crate::server::router::helper::into_api_error;
 use axum::Router;
 use axum::extract::State;
 use axum::routing::get;
@@ -40,9 +39,7 @@ async fn redis(RequestExtractor(request): RequestExtractor, State(state): State<
     }
     .await;
 
-    into_api_error(
-        request,
-        |_req| async move { result.map_err(|r| AppError::new(AppStatus::NoRedis, r)) },
-    )
-    .await
+    result
+        .map_err(|r| AppError::new(AppStatus::NoRedis, r))
+        .map_err(|e| ApiError::internal_server(e, request))
 }
