@@ -41,17 +41,17 @@ async fn build_url(
     State(state): State<Arc<AppState>>,
 ) -> ApiResponse<UrlResult> {
     into_api_response(request, |_req| async move {
-        let url_builder = gen_url_builder(state.clone(), query).map_err(|r| AppError::new(AppStatus::UrlBuilder, r))?;
-        let sub_url: url::Url = build_original_url(&url_builder).map_err(|r| AppError::new(AppStatus::UrlBuilder, r))?;
+        let url_builder = gen_url_builder(state.clone(), query).map_err(|r| AppError::new(AppStatus::URL_BUILDER, r))?;
+        let sub_url: url::Url = build_original_url(&url_builder).map_err(|r| AppError::new(AppStatus::URL_BUILDER, r))?;
         let original_profile = get_original_profile(state.clone(), sub_url, &headers)
             .await
-            .map_err(|r| AppError::new(AppStatus::OriginalProfile, r))?;
+            .map_err(|r| AppError::new(AppStatus::ORIGINAL_PROFILE, r))?;
 
         let url_result = state
             .build_url_service
             .build_url(state.clone(), url_builder, original_profile)
             .await
-            .map_err(|r| AppError::new(AppStatus::Service, r))?;
+            .map_err(|r| AppError::new(AppStatus::SERVICE, r))?;
 
         Ok(url_result)
     })

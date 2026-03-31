@@ -3,19 +3,20 @@
 mod testkit;
 
 use crate::testkit::init_test;
+use color_eyre::Result;
 use convertor::common::encrypt::Encryptor;
 
 #[test]
-fn test_encrypt_and_decrypt() -> color_eyre::Result<()> {
+fn test_encrypt_and_decrypt() -> Result<()> {
     init_test();
 
-    let secret = "abcdefg"; // 密钥必须是32字节
+    let secret = "abcdefg";
     let message = "This is a secret message.";
 
     let encryptor = Encryptor::new_with_label(secret, "test_encrypt_and_decrypt");
     // 加密
     let encrypted = encryptor.encrypt(message)?;
-    insta::assert_snapshot!(encrypted, @"ANYFGS_Jgw8wigOWXNgSKeAOucYz2T9t5jnnekqypYk7ii9lfZOsBccxAM_Ag8AKx7INgIkIcNhvrX5e6XL1YkI");
+    insta::assert_snapshot!(encrypted, @"ANYFGS_Jgw8wigOWXNgSKeAOucYz2T9t9KwnZy7VTyJ3eYZIy7CQ31XR1KbqfuDmSxt7lTOgvq-70PrFNh42v-I");
 
     // 解密
     let decrypted = encryptor.decrypt(&encrypted)?;
@@ -25,28 +26,28 @@ fn test_encrypt_and_decrypt() -> color_eyre::Result<()> {
 }
 
 #[test]
-fn test_decrypt() -> color_eyre::Result<()> {
+fn test_decrypt() -> Result<()> {
     init_test();
 
     let secret = "bppleman";
     let encryptor = Encryptor::new_with_label(secret, "test_decrypt");
+    let token1 = encryptor.encrypt("http://127.0.0.1:64287/subscription?token=bppleman")?;
+    let token2 = encryptor.encrypt("http://127.0.0.1:65019/subscription?token=bppleman")?;
 
-    let decrypted = encryptor.decrypt(
-        "qDbvzIt3DcfaQVl8UVdIjXck4D-42Eo3UN2hjcQ3B_IH9FI51WQX94QusyP4URwR4naCdMYFGV6aljrLzyNRhsJg9Cj55JszewkvSRXW5zMgUJCkai79FKZ4",
-    )?;
+    let decryptor = Encryptor::new_with_label(secret, "test_decrypt");
+
+    let decrypted = decryptor.decrypt(&token1)?;
     println!("{}", decrypted);
     insta::assert_snapshot!(decrypted, @"http://127.0.0.1:64287/subscription?token=bppleman");
 
-    let decrypted = encryptor.decrypt(
-        "qDbvzIt3DcfaQVl8UVdIjXck4D-42Eo3UN2hjcQ3B_IH9FI51WQX94QusiHxXxwR4naCdMYFGV6aljrLzyNRhsJg9Cj55Jszewk65g-J2hWsrxSAc1sHyTK1",
-    )?;
+    let decrypted = decryptor.decrypt(&token2)?;
     insta::assert_snapshot!(decrypted, @"http://127.0.0.1:65019/subscription?token=bppleman");
 
     Ok(())
 }
 
 #[test]
-fn deterministic_first_token_by_label() -> convertor::common::encrypt::Result<()> {
+fn deterministic_first_token_by_label() -> Result<()> {
     let secret = "my-secret";
 
     let e1 = Encryptor::new_with_label(secret, "case:hello:v1");
@@ -59,16 +60,38 @@ fn deterministic_first_token_by_label() -> convertor::common::encrypt::Result<()
 
     let p = e2.decrypt(&t1)?;
     assert_eq!(p, "hello");
+
     Ok(())
 }
 
 #[test]
-fn deterministic_advances_per_instance() -> convertor::common::encrypt::Result<()> {
+fn deterministic_advances_per_instance() -> Result<()> {
     let secret = "my-secret";
     let e = Encryptor::new_with_label(secret, "case:seq:v1");
 
     let t1 = e.encrypt("hello")?;
     let t2 = e.encrypt("hello")?;
     assert_ne!(t1, t2);
+    Ok(())
+}
+
+#[test]
+fn long_secret_suffix_affects_key() -> Result<()> {
+    let _ = init_test();
+
+    let secret = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    let enc = Encryptor::new_random(secret);
+    let string = enc.encrypt("bppleman")?;
+    assert_eq!(enc.decrypt(&string)?, "bppleman");
+
+    let enc2 =
+        Encryptor::new_random("viyExNQmEkwqCsc@sx!XF4A_DexX2HB-DYmPjYosr2R*Rd9gT_DW4LCXKRdKdATd4xokWscG8fAiPYUMLk7LUE6LwUkn.oNDjVhV");
+    assert!(enc2.decrypt(&string).is_err());
+
+    let enc3 = Encryptor::new_random("viyExNQmEkwqCsc@sx!XF4A_DexX2HB-DYmPjYosr2R*Rd9gT_DW4LCXKRdKdATd4xokWscG8fAiPYUMLk7LUE6LwUkn");
+    let string = enc3.encrypt("bppleman")?;
+    assert!(enc2.decrypt(&string).is_err());
+    assert_eq!(enc3.decrypt(&string)?, "bppleman");
+
     Ok(())
 }

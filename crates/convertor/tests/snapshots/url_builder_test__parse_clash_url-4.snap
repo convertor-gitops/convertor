@@ -41,7 +41,7 @@ expression: rule_provider_urls
                     query: None,
                     fragment: None,
                 },
-                sub_url: "ezYMhGpX6Tv4eJs0tkRkH3Dat5ujCVYjOU2v9gPih_NdCt0OQqRoqxejTk84muXA1C1gjvLKfqUjzdJvP7eX4JzJ5QfchW-S5YicO0hmrkSyaqUVGz3gUonV0mZCaVGhEkI",
+                sub_url: "ezYMhGpX6Tv4eJs0tkRkH3Dat5ujCVYjw5EqiCAToCL6yoI4qQiREkk7Gphjk-TKoqguuW_mwJlrg5I37VcTzT2FezZkYEx9LTZBoez1QhQsrgI7ARSnVucnuBBsI5bqCZY",
                 client: Clash,
                 interval: 86400,
                 strict: Some(
@@ -96,7 +96,7 @@ expression: rule_provider_urls
                     query: None,
                     fragment: None,
                 },
-                sub_url: "g1kwJW_VNvSbKS6WrAGjF8byz5F-8QdOMVVqKVcg58WZT7ehCAoRy_dQ99p7dljHOxHsjs6rYlc3v8DjyyCF3F94AFJ56rZGQxl0yuRO2cS1O1ECynDr6LN1iaV_48aXX0U",
+                sub_url: "g1kwJW_VNvSbKS6WrAGjF8byz5F-8QdOWl-thu_oo-nLONvXcGU07ywFjmVd5AQa-trPz8QFfROqbRvFZLhBWvtH-cTyi8S_A1kDcBCwiQXZH3KQpOHVfA8R9niaADvw8KY",
                 client: Clash,
                 interval: 86400,
                 strict: Some(
@@ -151,7 +151,7 @@ expression: rule_provider_urls
                     query: None,
                     fragment: None,
                 },
-                sub_url: "8GBW8kJV4rJfYqnxtCfmqYLqFPQs1WgkUYZs5GGFpp6aWu5lhHKWmBJ4HiWc7sbvcQmFCO8xgv-GelRy1oqVvIncxuV8Ql-1O-6aU6bzSV84biw5q_BMa4KaZ5hotMHHNBs",
+                sub_url: "8GBW8kJV4rJfYqnxtCfmqYLqFPQs1Wgk15xxomDSgVuUBZGnyRGqx045PuXnFI3X5Pp7PODNAfE3WOTflnHRK2IAs3id7U6FxpW3XOA9267NoWqN-v1naZGR6HlLYK5uwoU",
                 client: Clash,
                 interval: 86400,
                 strict: Some(
@@ -208,7 +208,7 @@ expression: rule_provider_urls
                     query: None,
                     fragment: None,
                 },
-                sub_url: "hb5EfgFntmxwBP85w1jLlLQG6AMasTlckKbxQdwgg6PbqCpLsPx2SfVINZyvLaaMDwKKXf-E0e_sTxS6iCQqvi1I-GgSbS6dedlhKNg1irSLlg_iKHKI1Jb3g3F4Kf-yCoU",
+                sub_url: "hb5EfgFntmxwBP85w1jLlLQG6AMasTlcXZkLFlfvyAOyFzKfYhaACgLwzqLDMk0Rv7SRHJt4F9HLN4bxhZDeDf_WQpAhS1BKtKCt9RMVVfp4y_qkH3MDf70RR_0EDUC41G0",
                 client: Clash,
                 interval: 86400,
                 strict: Some(
@@ -265,7 +265,7 @@ expression: rule_provider_urls
                     query: None,
                     fragment: None,
                 },
-                sub_url: "838LWMhjYKCayG-FrHVIn0IXp9yNzahvBxLfbmejxW3LBeeOO8N2RpSJAOdnDVOLfa1SmVJll4e1CtrwZr8SV0gL-8AW7eeWNW0wd5RGH_-EWlopIF0fYBK3ruuF6jYjOnA",
+                sub_url: "838LWMhjYKCayG-FrHVIn0IXp9yNzahvaneyIsQiYQBdPrXx9Tk9wFisJx_NQ-gR4GuxrMygy5iGFYSKkEnFTxKzfiq4bSpMqU_vGpMJ9Ws2j7B0rZIGI8Wz_qQr5-bKvfk",
                 client: Clash,
                 interval: 86400,
                 strict: Some(
@@ -320,7 +320,7 @@ expression: rule_provider_urls
                     query: None,
                     fragment: None,
                 },
-                sub_url: "5tnglcFMVhld81iEKbOEIDyGsfsJ1Bvncd2kjQTxxjx-r7qaHwJIWMlmwEIr0liXg8D9g0AbF3PF5PrXQwe5R2TnTNxBv5mj3AW5BLNqkaLZkEr5Uqoy5tSzUq-TJjLx2dA",
+                sub_url: "5tnglcFMVhld81iEKbOEIDyGsfsJ1BvnuoXYXXWOo7qli8w_-IcVIaaK2yKb0E4XGLHn_OiBxCkLrd6TNHtcxHJDHVAlMCGFCF_9FTVYQpXg_QglHabpsSJwa8psdKisV8w",
                 client: Clash,
                 interval: 86400,
                 strict: Some(
@@ -377,7 +377,7 @@ expression: rule_provider_urls
                     query: None,
                     fragment: None,
                 },
-                sub_url: "x_x-GEVdgLCq_dOJ0R7FVzZTb79IkcSAVqaSdHawPgCmb0dK48MotE_h16lqEvpvYsUVfdfOPaf2ZMI6dvBZ3Xj4JjcCN8uL1r0oirUxvBKEbqnoaqoqWPew8-w8eKnlozo",
+                sub_url: "x_x-GEVdgLCq_dOJ0R7FVzZTb79IkcSA2Hzr6dzkMoC5_Hj8lwR988yBURK7oDdPvYCk6qXyVsoujRKKY_0OeUlSiVK3e98oTlJfDC09BElblCwSZlCqzB55qfpMrmbDgxs",
                 client: Clash,
                 interval: 86400,
                 strict: Some(

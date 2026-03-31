@@ -1,75 +1,72 @@
 <app-dashboard-panel>
     <mat-card-header>
-        <mat-card-title>HTTP 错误详情</mat-card-title>
+        <mat-card-title>错误响应详情</mat-card-title>
     </mat-card-header>
-    <mat-card-content class="scrollable">
+    <mat-card-content class = "scrollable">
         <mat-accordion multi>
-            @let requests = (requests$ | async) ?? {};
-            @for (key of Object.keys(requests); track key) {
-                <mat-expansion-panel expanded="true">
-                    @let url = requests[key]?.url() ?? "no content";
+            @let requests = (requests$ | async) ?? [];
+            @for (requestInfo of requests; track requestInfo.desc) {
+                <mat-expansion-panel expanded = "true">
+                    @let request = requestInfo.body?.request;
+                    @let url = request?.url() ?? "no content";
                     <mat-expansion-panel-header>
-                        <mat-panel-title>{{ key }}</mat-panel-title>
-                        <mat-panel-description class="error-status">
-                            <mat-chip class="error-chip">{{ requests[key]?.method }}</mat-chip>
+                        <mat-panel-title>{{ requestInfo.desc }}</mat-panel-title>
+                        <mat-panel-description class = "error-status">
+                            @if (request) {
+                                <mat-chip class = "error-chip">{{ request.method }}</mat-chip>
+                            }
+                            @let status = requestInfo.body?.status;
+                            @if (status) {
+                                <mat-chip class = "error-chip">{{ status.code }} {{ status.status }}</mat-chip>
+                            }
                         </mat-panel-description>
                     </mat-expansion-panel-header>
                     <mat-divider></mat-divider>
-                    <section class="url">
+                    <section class = "url">
                         <mat-panel-title>完整的请求链接</mat-panel-title>
                         <mat-panel-description>
-                            <code class="full-url">{{ url }}</code>
+                            <code class = "full-url">{{ url }}</code>
                         </mat-panel-description>
                     </section>
                     <mat-divider></mat-divider>
-                    <section class="headers">
-                        @for (header of requests[key]?.headers?.entries() ?? []; track header[0]) {
-                            <h6 class="name">{{ header[0] }}</h6>
-                            <code class="value right">{{ header[1] }}</code>
+                    <section class = "headers">
+                        @for (header of request?.headers?.entries() ?? []; track header[0]) {
+                            <h6 class = "name">{{ header[0] }}</h6>
+                            <code class = "value right">{{ header[1] }}</code>
                         }
                     </section>
                 </mat-expansion-panel>
             }
 
-            <mat-expansion-panel expanded="true">
+            <mat-expansion-panel expanded = "true">
+                @let responseBody = responseBody$ | async;
                 <mat-expansion-panel-header>
-                    <mat-panel-title>服务端返回响应</mat-panel-title>
-                    <mat-panel-description class="error-status">
-                        <mat-chip class="error-chip">{{ (httpErrorResponse$ | async)?.statusText }}</mat-chip>
-                        <mat-chip class="error-chip">{{ (httpErrorResponse$ | async)?.status }}</mat-chip>
+                    <mat-panel-title>错误链</mat-panel-title>
+                    <mat-panel-description class = "error-status">
+                        @let appStatus = responseBody?.status;
+                        @if (appStatus) {
+                            <mat-chip class = "error-chip">{{ appStatus.status }}</mat-chip>
+                        }
                     </mat-panel-description>
                 </mat-expansion-panel-header>
                 <mat-divider></mat-divider>
-                <section class="error-detail">
-                    <mat-panel-title>错误详情</mat-panel-title>
-                    <mat-panel-description>
-                        <pre><code>{{ errorMessage$ | async }}</code></pre>
-                    </mat-panel-description>
-                </section>
-                <mat-divider></mat-divider>
-                <section class="headers">
-                    <!--                    @for (header of requests[key]?.headers?.entries() ?? []; track header[0]) {-->
-                    <!--                        <h6 class="name">{{ header[0] }}</h6>-->
-                    <!--                        <code class="value right">{{ header[1] }}</code>-->
-                    <!--                    }-->
-                </section>
-                <mat-divider></mat-divider>
-                <section class="error-chain">
-                    <div class="main-message">
-                        <div class="left">
+                <section class = "error-chain">
+                    <div class = "main-message">
+                        <div class = "left">
                             <h5>错误链</h5>
-                            <div class="v-dash"></div>
+                            <div class = "v-dash"></div>
                         </div>
-                        <pre class="right"><code>{{ mainMessage$ | async }}</code></pre>
+                        <pre class = "right"><code>{{ mainMessage$ | async }}</code></pre>
                     </div>
-                    <div class="h-dash" style="height: 1px; margin-left: 28px"></div>
+                    <div class = "h-dash"
+                         style = "height: 1px; margin-left: 28px"></div>
                     @for (causeMessage of (causeMessages$ | async); track causeMessage) {
-                        <div class="cause-message">
-                            <div class="left">
-                                <div class="v-dash"></div>
-                                <div class="h-dash"></div>
+                        <div class = "cause-message">
+                            <div class = "left">
+                                <div class = "v-dash"></div>
+                                <div class = "h-dash"></div>
                             </div>
-                            <pre class="right"><code>{{ causeMessage }}</code></pre>
+                            <pre class = "right"><code>{{ causeMessage }}</code></pre>
                         </div>
                     }
                 </section>

@@ -1,81 +1,98 @@
-import { HttpClient, HttpErrorResponse } from "@angular/common/http";
+import {
+    HttpClient,
+    HttpContext,
+    HttpErrorResponse,
+} from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { BehaviorSubject, catchError, finalize, map, Observable, tap } from "rxjs";
-import ConvertorQuery from "../common/model/convertor-query";
-import { UrlResult } from "../common/model/url_result";
-import { ApiResponse } from "../common/response/response";
-import { LatencyService } from "./latency/latency-service";
-import { LatencyResult } from "./latency/latency-types";
-import { DashboardHttpError } from "../common/error/dashboard-http.error";
+import {
+    BehaviorSubject,
+    catchError,
+    finalize,
+    map,
+    Observable,
+    tap,
+} from "rxjs";
+import { DashboardErrorResponse } from "../common/error/dashboard-http.error";
+import {
+    CAPTURED_EXCHANGE,
+    CapturedExchangeHolder,
+} from "../common/http/captured-exchange";
+import { UrlResult } from "../common/model/api/url_result";
+import ConvQuery from "../common/model/core/conv-query";
+import {
+    ResponseBody,
+    ResponseBodyScheme,
+} from "../common/response/response";
 
 @Injectable()
 export class DashboardService {
     public static readonly HEALTH_ENDPOINT = `/actuator/healthy`;
     public static readonly REDIS_ENDPOINT = `/actuator/redis`;
+    public static readonly BUILD_URL = `/api/build-url`;
 
     loading: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
     loading$ = this.loading.asObservable();
 
-    error: BehaviorSubject<DashboardHttpError | null> = new BehaviorSubject<DashboardHttpError | null>(null);
+    error: BehaviorSubject<DashboardErrorResponse | null> = new BehaviorSubject<DashboardErrorResponse | null>(null);
     error$ = this.error.asObservable();
 
-    urlResult = new BehaviorSubject<UrlResult | null>(null);
-    urlResult$ = this.urlResult.asObservable();
+    data = new BehaviorSubject<UrlResult | null>(null);
+    data$ = this.data.asObservable();
 
     public constructor(
         private http: HttpClient,
-        private latencyService: LatencyService,
     ) {
     }
 
-    public healthCheck(): Observable<ApiResponse> {
-        return this.http.get<ApiResponse>(DashboardService.HEALTH_ENDPOINT)
-            .pipe(
-                map(response => ApiResponse.deserialize(response)),
-            );
+    public healthCheck(): Observable<ResponseBody | null> {
+        return this.http.get<ResponseBody>(DashboardService.HEALTH_ENDPOINT)
+                   .pipe(
+                       map(response => ResponseBody.deserialize(ResponseBodyScheme.parse(response), undefined)),
+                   );
     }
 
-    public async healthLatency(): Promise<LatencyResult> {
-        return await this.latencyService.fetchWithLatency(DashboardService.HEALTH_ENDPOINT);
+    public redisCheck(): Observable<ResponseBody<string> | null> {
+        return this.http.get<ResponseBody<string>>(DashboardService.REDIS_ENDPOINT)
+                   .pipe(
+                       map(response => ResponseBody.deserialize(ResponseBodyScheme.parse(response), undefined)),
+                   );
     }
 
-    public redisCheck(): Observable<ApiResponse> {
-        return this.http.get<ApiResponse>(DashboardService.REDIS_ENDPOINT)
-            .pipe(
-                map(response => ApiResponse.deserialize(response)),
-            );
-    }
-
-    public async redisLatency(): Promise<LatencyResult> {
-        return await this.latencyService.fetchWithLatency(DashboardService.REDIS_ENDPOINT);
-    }
-
-    public getSubscription(query: ConvertorQuery): Observable<ApiResponse<UrlResult>> {
+    public getSubscription(query: ConvQuery): Observable<ResponseBody<UrlResult>> {
+        const path = `${DashboardService.BUILD_URL}?${query.toString()}`;
+        console.log("请求", query, path);
         this.loading.next(true);
-        return this.http.get(query.subscriptionPath()).pipe(
-            // tap(console.log),
-            map(response => ApiResponse.deserialize(response, UrlResult)),
+        const holder: CapturedExchangeHolder = { exchange: null };
+        const context = new HttpContext().set(CAPTURED_EXCHANGE, holder);
+        return this.http.get(path, { context }).pipe(
+            map(response => {
+                const body = ResponseBody.deserialize(ResponseBodyScheme.parse(response), UrlResult);
+                if (body === null) {
+                    throw new Error("Unexpected null: failed to deserialize ResponseBody<UrlResult>");
+                }
+                return body;
+            }),
             // 请求成功时清除错误信息
             tap(response => {
-                this.error.next(null);
+                console.log("请求成功", response);
                 if (response.isOk()) {
-                    this.urlResult.next(response.data!);
+                    this.error.next(null);
+                    this.data.next(response.data!);
                 } else {
-                    // TODO(处理非网络的业务型错误)
+                    console.error("业务错误", response);
+                    this.data.next(null);
+                    this.error.next(DashboardErrorResponse.fromBiz(response, holder));
                 }
-                return response;
             }),
             // 错误只在 HTTP 内部处理，吞掉，不打断主流
             catchError((err: HttpErrorResponse) => {
-                console.log("[DashboardService.getSubscription] catchError: ", err);
-                const httpError = new DashboardHttpError(err, "GET");
-                console.log("[DashboardService.getSubscription] httpError:", httpError);
-                this.error.next(httpError);
-                throw httpError;
+                console.error("请求失败", err);
+                const dashboardError = DashboardErrorResponse.fromHttp(err, holder);
+                this.error.next(dashboardError);
+                throw dashboardError;
             }),
             // 结束（成功/失败/取消）：关 loading
             finalize(() => {
-                console.log("[DashboardService.getSubscription] finalize");
                 this.loading.next(false);
             }),
         );

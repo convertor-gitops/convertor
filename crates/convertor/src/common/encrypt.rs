@@ -14,56 +14,52 @@ const NONCE_B64URL_LEN: usize = 32;
 
 pub type Result<T> = core::result::Result<T, EncryptError>;
 
-fn normalize_key_32(key: &[u8]) -> [u8; 32] {
-    // 兼容你旧逻辑：截断/补零（不是 KDF）
-    let mut normalized = [0u8; 32];
-    let len = key.len().min(32);
-    normalized[..len].copy_from_slice(&key[..len]);
-    normalized
+fn derive_key_from_secret(secret: &[u8]) -> [u8; 32] {
+    *blake3::hash(secret).as_bytes()
 }
 
-fn seed_from_label(label: &str) -> [u8; 32] {
+fn derive_nonce_seed_from_label(label: &str) -> [u8; 32] {
     *blake3::hash(label.as_bytes()).as_bytes()
 }
 
-fn nonce_from_seed_cursor(seed32: &[u8; 32], cursor: u64) -> [u8; NONCE_LEN] {
-    let mut hasher = blake3::Hasher::new_keyed(seed32);
-    hasher.update(&cursor.to_le_bytes());
-    let out = hasher.finalize(); // 32 bytes
+fn derive_nonce_from_seed_and_counter(seed: &[u8; 32], counter: u64) -> [u8; NONCE_LEN] {
+    let mut hasher = blake3::Hasher::new_keyed(seed);
+    hasher.update(&counter.to_le_bytes());
+    let out = hasher.finalize();
     let mut nonce = [0u8; NONCE_LEN];
     nonce.copy_from_slice(&out.as_bytes()[..NONCE_LEN]);
     nonce
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
-enum NonceModeRepr {
+enum NonceStateSnapshot {
     Random,
-    Deterministic { seed: [u8; 32], cursor: u64 },
+    Deterministic { seed: [u8; 32], counter: u64 },
 }
 
 #[derive(Debug)]
-enum NonceMode {
+enum NonceState {
     Random,
-    Deterministic { seed: [u8; 32], cursor: AtomicU64 },
+    Deterministic { seed: [u8; 32], counter: AtomicU64 },
 }
 
-impl NonceMode {
-    fn to_repr(&self) -> NonceModeRepr {
+impl NonceState {
+    fn as_snapshot(&self) -> NonceStateSnapshot {
         match self {
-            NonceMode::Random => NonceModeRepr::Random,
-            NonceMode::Deterministic { seed, cursor } => NonceModeRepr::Deterministic {
+            NonceState::Random => NonceStateSnapshot::Random,
+            NonceState::Deterministic { seed, counter } => NonceStateSnapshot::Deterministic {
                 seed: *seed,
-                cursor: cursor.load(Ordering::Relaxed),
+                counter: counter.load(Ordering::Relaxed),
             },
         }
     }
 
-    fn from_repr(r: NonceModeRepr) -> Self {
-        match r {
-            NonceModeRepr::Random => NonceMode::Random,
-            NonceModeRepr::Deterministic { seed, cursor } => NonceMode::Deterministic {
+    fn from_snapshot(snapshot: NonceStateSnapshot) -> Self {
+        match snapshot {
+            NonceStateSnapshot::Random => NonceState::Random,
+            NonceStateSnapshot::Deterministic { seed, counter } => NonceState::Deterministic {
                 seed,
-                cursor: AtomicU64::new(cursor),
+                counter: AtomicU64::new(counter),
             },
         }
     }
@@ -71,33 +67,33 @@ impl NonceMode {
 
 pub struct Encryptor {
     key: [u8; 32],
-    nonce: NonceMode,
+    nonce_state: NonceState,
 }
 
 impl Encryptor {
     pub fn new_random(secret: impl AsRef<str>) -> Self {
         Self {
-            key: normalize_key_32(secret.as_ref().as_bytes()),
-            nonce: NonceMode::Random,
+            key: derive_key_from_secret(secret.as_ref().as_bytes()),
+            nonce_state: NonceState::Random,
         }
     }
 
     pub fn new_with_label(secret: impl AsRef<str>, label: impl AsRef<str>) -> Self {
         Self {
-            key: normalize_key_32(secret.as_ref().as_bytes()),
-            nonce: NonceMode::Deterministic {
-                seed: seed_from_label(label.as_ref()),
-                cursor: AtomicU64::new(0),
+            key: derive_key_from_secret(secret.as_ref().as_bytes()),
+            nonce_state: NonceState::Deterministic {
+                seed: derive_nonce_seed_from_label(label.as_ref()),
+                counter: AtomicU64::new(0),
             },
         }
     }
 
     pub fn new_with_label_and_cursor(secret: impl AsRef<str>, label: impl AsRef<str>, cursor: u64) -> Self {
         Self {
-            key: normalize_key_32(secret.as_ref().as_bytes()),
-            nonce: NonceMode::Deterministic {
-                seed: seed_from_label(label.as_ref()),
-                cursor: AtomicU64::new(cursor),
+            key: derive_key_from_secret(secret.as_ref().as_bytes()),
+            nonce_state: NonceState::Deterministic {
+                seed: derive_nonce_seed_from_label(label.as_ref()),
+                counter: AtomicU64::new(cursor),
             },
         }
     }
@@ -107,26 +103,26 @@ impl Encryptor {
         XChaCha20Poly1305::new(Key::from_slice(&self.key))
     }
 
-    fn gen_nonce24(&self) -> Result<[u8; NONCE_LEN]> {
-        match &self.nonce {
-            NonceMode::Random => {
-                let mut n = [0u8; NONCE_LEN];
-                getrandom::fill(&mut n)
+    fn generate_nonce(&self) -> Result<[u8; NONCE_LEN]> {
+        match &self.nonce_state {
+            NonceState::Random => {
+                let mut nonce = [0u8; NONCE_LEN];
+                getrandom::fill(&mut nonce)
                     .map_err(InternalError::Rng)
                     .map_err(Box::new)
                     .map_err(EncryptError::Unknown)?;
-                Ok(n)
+                Ok(nonce)
             }
-            NonceMode::Deterministic { seed, cursor } => {
-                let c = cursor.fetch_add(1, Ordering::Relaxed);
-                Ok(nonce_from_seed_cursor(seed, c))
+            NonceState::Deterministic { seed, counter } => {
+                let next_counter = counter.fetch_add(1, Ordering::Relaxed);
+                Ok(derive_nonce_from_seed_and_counter(seed, next_counter))
             }
         }
     }
 
     /// token = b64url(nonce24) || b64url(ciphertext_with_tag)
     pub fn encrypt(&self, plaintext: &str) -> Result<String> {
-        let nonce_bytes = self.gen_nonce24()?;
+        let nonce_bytes = self.generate_nonce()?;
         let nonce = XNonce::from_slice(&nonce_bytes);
 
         let ciphertext = self
@@ -165,13 +161,12 @@ impl Encryptor {
 
 impl Debug for Encryptor {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        // key 只显示前 4 bytes + 长度，避免泄露
         let key_prefix = &self.key[..4];
 
         f.debug_struct("Encryptor")
             .field("key_prefix", &key_prefix)
             .field("key_len", &self.key.len())
-            .field("nonce", &self.nonce.to_repr()) // 用 repr，避免 Cell 细节
+            .field("nonce_state", &self.nonce_state.as_snapshot())
             .finish()
     }
 }
@@ -180,14 +175,14 @@ impl Clone for Encryptor {
     fn clone(&self) -> Self {
         Self {
             key: self.key,
-            nonce: NonceMode::from_repr(self.nonce.to_repr()),
+            nonce_state: NonceState::from_snapshot(self.nonce_state.as_snapshot()),
         }
     }
 }
 
 impl PartialEq for Encryptor {
     fn eq(&self, other: &Self) -> bool {
-        self.key == other.key && self.nonce.to_repr() == other.nonce.to_repr()
+        self.key == other.key && self.nonce_state.as_snapshot() == other.nonce_state.as_snapshot()
     }
 }
 impl Eq for Encryptor {}
@@ -195,7 +190,7 @@ impl Eq for Encryptor {}
 impl Hash for Encryptor {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.key.hash(state);
-        self.nonce.to_repr().hash(state);
+        self.nonce_state.as_snapshot().hash(state);
     }
 }
 
@@ -204,11 +199,11 @@ impl Serialize for Encryptor {
         #[derive(Serialize)]
         struct Repr {
             key: [u8; 32],
-            nonce: NonceModeRepr,
+            nonce_state: NonceStateSnapshot,
         }
         let r = Repr {
             key: self.key,
-            nonce: self.nonce.to_repr(),
+            nonce_state: self.nonce_state.as_snapshot(),
         };
         r.serialize(serializer)
     }
@@ -219,12 +214,12 @@ impl<'de> Deserialize<'de> for Encryptor {
         #[derive(Deserialize)]
         struct Repr {
             key: [u8; 32],
-            nonce: NonceModeRepr,
+            nonce_state: NonceStateSnapshot,
         }
         let r = Repr::deserialize(deserializer)?;
         Ok(Self {
             key: r.key,
-            nonce: NonceMode::from_repr(r.nonce),
+            nonce_state: NonceState::from_snapshot(r.nonce_state),
         })
     }
 }

@@ -24,6 +24,9 @@
                         "browser": "src/main.ts",
                         "tsConfig": "tsconfig.app.json",
                         "inlineStyleLanguage": "scss",
+                        "allowedCommonJsDependencies": [
+                            "qs"
+                        ],
                         "assets": [
                             {
                                 "glob": "**/*",
@@ -39,7 +42,7 @@
                             "budgets": [
                                 {
                                     "type": "initial",
-                                    "maximumWarning": "600kB",
+                                    "maximumWarning": "750kB",
                                     "maximumError": "1MB"
                                 },
                                 {

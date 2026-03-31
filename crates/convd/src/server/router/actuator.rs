@@ -26,8 +26,8 @@ pub fn router(metrics_handle: PrometheusHandle) -> Router<Arc<AppState>> {
 }
 
 #[instrument(skip_all)]
-async fn healthy() -> ApiResponse<()> {
-    ApiResponse::ok(())
+async fn healthy() -> Result<ApiResponse<()>, ApiError> {
+    Ok(ApiResponse::ok(()))
 }
 
 #[instrument(skip_all)]
@@ -40,6 +40,6 @@ async fn redis(RequestExtractor(request): RequestExtractor, State(state): State<
     .await;
 
     result
-        .map_err(|r| AppError::new(AppStatus::NoRedis, r))
+        .map_err(|r| AppError::new(AppStatus::NO_REDIS, r))
         .map_err(|e| ApiError::internal_server(e, request))
 }

@@ -40,7 +40,7 @@ ConvUrl {
                 query: None,
                 fragment: None,
             },
-            sub_url: "ydgGuWMN4VNtPe__koDVXi2nZPSRnfIGAsDpI1HBcpmaHt1QeeFKlR0ISwVcdsMZf8FQfNHxLM9_yh7tH7ja_MaYjgalH0gg69zKlObGm_Qwk6EvANV2UhDiuEp8i4h89fA",
+            sub_url: "ydgGuWMN4VNtPe__koDVXi2nZPSRnfIGRDpMJ8u1AAJ6_cS4TZIknmA4ndSpezqtfwIP7LGq4RJNgv71-h9tPJSFJ1v-oqYdh6jcak1ksoPCy9mZEare_7e6IGVDWIgYoeQ",
             client: Clash,
             interval: 86400,
             strict: Some(

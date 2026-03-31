@@ -1,7 +1,7 @@
 use crate::server::error::{AppError, AppStatus};
 use crate::server::response::{RequestBody, collect_messages};
 use axum::response::{IntoResponse, Response};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::borrow::Cow;
 use std::fmt::Display;
 
@@ -9,7 +9,7 @@ use std::fmt::Display;
 ///
 /// 只表达业务语义（成功或业务级失败），不持有 HTTP 状态码。
 /// 最终由 `ResponseBody` 负责序列化和 `IntoResponse`。
-#[derive(Default, Clone, Serialize, Deserialize)]
+#[derive(Default, Clone, Serialize)]
 pub struct ApiResponse<T>
 where
     T: serde::Serialize,
@@ -28,7 +28,7 @@ where
 {
     pub fn ok(data: T) -> Self {
         Self {
-            status: AppStatus::Ok,
+            status: AppStatus::OK,
             messages: vec![],
             request: None,
             data: Some(data),

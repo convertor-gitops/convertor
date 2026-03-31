@@ -168,32 +168,6 @@ impl UrlType {
             UrlType::RuleProvider => "规则提供者".to_string(),
         }
     }
-
-    // pub const fn prefix() -> &'static str {
-    //     "/subscription/"
-    // }
-    //
-    // pub const fn sub_path(&self) -> &'static str {
-    //     match self {
-    //         UrlType::Original => "original",
-    //         UrlType::Raw => "raw",
-    //         UrlType::Profile => "profile",
-    //         UrlType::ProxyProvider => "proxy-provider",
-    //         UrlType::RuleProvider => "rule-provider",
-    //     }
-    // }
-    //
-    // pub fn path(&self) -> &'static str {}
-
-    pub fn from_path(path: &str) -> Self {
-        match path {
-            "/api/raw" => UrlType::Raw,
-            "/api/profile" => UrlType::Profile,
-            "/api/proxy-provider" => UrlType::ProxyProvider,
-            "/api/rule-provider" => UrlType::RuleProvider,
-            _ => UrlType::Original,
-        }
-    }
 }
 
 impl UrlType {
@@ -224,6 +198,7 @@ macro_rules! impl_url_type_paths {
     (
         $ty:ty,
         prefix = $prefix:literal,
+        default = $default:ident,
         {
             $(
                 $variant:ident => $sub:literal
@@ -250,6 +225,15 @@ macro_rules! impl_url_type_paths {
                     )*
                 }
             }
+
+            pub fn from_path(path: &str) -> Self {
+                match path {
+                    $(
+                        concat!($prefix, $sub) => Self::$variant,
+                    )*
+                    _ => Self::$default,
+                }
+            }
         }
     };
 }
@@ -257,6 +241,7 @@ macro_rules! impl_url_type_paths {
 impl_url_type_paths!(
     UrlType,
     prefix = "/subscription",
+    default = Original,
     {
         Original => "/original",
         Raw => "/raw",

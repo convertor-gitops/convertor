@@ -38,16 +38,16 @@ async fn raw_profile(
     State(state): State<Arc<AppState>>,
 ) -> Result<String, SubscriptionError> {
     into_subscription_error(request, |_req| async move {
-        let url_builder = gen_url_builder(state.clone(), query).map_err(|r| AppError::new(AppStatus::UrlBuilder, r))?;
-        let sub_url: url::Url = build_original_url(&url_builder).map_err(|r| AppError::new(AppStatus::UrlBuilder, r))?;
+        let url_builder = gen_url_builder(state.clone(), query).map_err(|r| AppError::new(AppStatus::URL_BUILDER, r))?;
+        let sub_url: url::Url = build_original_url(&url_builder).map_err(|r| AppError::new(AppStatus::URL_BUILDER, r))?;
         let original_profile = get_original_profile(state.clone(), sub_url, &headers)
             .await
-            .map_err(|r| AppError::new(AppStatus::OriginalProfile, r))?;
+            .map_err(|r| AppError::new(AppStatus::ORIGINAL_PROFILE, r))?;
         match &url_builder.client {
             ProxyClient::Surge => state.surge_service.render_raw_profile(url_builder, original_profile).await,
             ProxyClient::Clash => Ok(original_profile),
         }
-        .map_err(|r| AppError::new(AppStatus::Service, r))
+        .map_err(|r| AppError::new(AppStatus::SERVICE, r))
     })
     .await
 }
@@ -60,16 +60,16 @@ async fn profile(
     State(state): State<Arc<AppState>>,
 ) -> Result<String, SubscriptionError> {
     into_subscription_error(request, |_req| async move {
-        let url_builder = gen_url_builder(state.clone(), query).map_err(|r| AppError::new(AppStatus::UrlBuilder, r))?;
-        let sub_url: url::Url = build_original_url(&url_builder).map_err(|r| AppError::new(AppStatus::UrlBuilder, r))?;
+        let url_builder = gen_url_builder(state.clone(), query).map_err(|r| AppError::new(AppStatus::URL_BUILDER, r))?;
+        let sub_url: url::Url = build_original_url(&url_builder).map_err(|r| AppError::new(AppStatus::URL_BUILDER, r))?;
         let original_profile = get_original_profile(state.clone(), sub_url, &headers)
             .await
-            .map_err(|r| AppError::new(AppStatus::OriginalProfile, r))?;
+            .map_err(|r| AppError::new(AppStatus::ORIGINAL_PROFILE, r))?;
         match url_builder.client {
             ProxyClient::Surge => state.surge_service.profile(url_builder, original_profile).await,
             ProxyClient::Clash => state.clash_service.profile(url_builder, original_profile).await,
         }
-        .map_err(|r| AppError::new(AppStatus::Service, r))
+        .map_err(|r| AppError::new(AppStatus::SERVICE, r))
     })
     .await
 }
@@ -85,16 +85,16 @@ async fn proxy_provider(
         let proxy_provider_name = query
             .take_proxy_provider_name()
             .map_err(|e| eyre!(e))
-            .map_err(|r| AppError::new(AppStatus::MissingProxyProviderName, r))?;
-        let url_builder = gen_url_builder(state.clone(), query).map_err(|r| AppError::new(AppStatus::UrlBuilder, r))?;
-        let sub_url: url::Url = build_original_url(&url_builder).map_err(|r| AppError::new(AppStatus::UrlBuilder, r))?;
+            .map_err(|r| AppError::new(AppStatus::MISSING_PROXY_PROVIDER_NAME, r))?;
+        let url_builder = gen_url_builder(state.clone(), query).map_err(|r| AppError::new(AppStatus::URL_BUILDER, r))?;
+        let sub_url: url::Url = build_original_url(&url_builder).map_err(|r| AppError::new(AppStatus::URL_BUILDER, r))?;
         let original_profile = get_original_profile(state.clone(), sub_url, &headers)
             .await
-            .map_err(|r| AppError::new(AppStatus::OriginalProfile, r))?;
+            .map_err(|r| AppError::new(AppStatus::ORIGINAL_PROFILE, r))?;
         match url_builder.client {
             ProxyClient::Surge => {
                 return Err(AppError::new(
-                    AppStatus::UnsupportedClient,
+                    AppStatus::UNSUPPORTED_CLIENT,
                     eyre!("无法对 Surge 客户端返回相应的 ProxyProvider 配置"),
                 ));
             }
@@ -105,7 +105,7 @@ async fn proxy_provider(
                     .await
             }
         }
-        .map_err(|r| AppError::new(AppStatus::Service, r))
+        .map_err(|r| AppError::new(AppStatus::SERVICE, r))
     })
     .await
 }
@@ -121,17 +121,17 @@ async fn rule_provider(
         let policy = query
             .take_rule_provider_policy()
             .map_err(|e| eyre!(e))
-            .map_err(|r| AppError::new(AppStatus::MissingRuleProviderPolicy, r))?;
-        let url_builder = gen_url_builder(state.clone(), query).map_err(|r| AppError::new(AppStatus::UrlBuilder, r))?;
-        let sub_url: url::Url = build_original_url(&url_builder).map_err(|r| AppError::new(AppStatus::UrlBuilder, r))?;
+            .map_err(|r| AppError::new(AppStatus::MISSING_RULE_PROVIDER_POLICY, r))?;
+        let url_builder = gen_url_builder(state.clone(), query).map_err(|r| AppError::new(AppStatus::URL_BUILDER, r))?;
+        let sub_url: url::Url = build_original_url(&url_builder).map_err(|r| AppError::new(AppStatus::URL_BUILDER, r))?;
         let original_profile = get_original_profile(state.clone(), sub_url, &headers)
             .await
-            .map_err(|r| AppError::new(AppStatus::OriginalProfile, r))?;
+            .map_err(|r| AppError::new(AppStatus::ORIGINAL_PROFILE, r))?;
         match url_builder.client {
             ProxyClient::Surge => state.surge_service.rule_provider(url_builder, original_profile, &policy).await,
             ProxyClient::Clash => state.clash_service.rule_provider(url_builder, original_profile, &policy).await,
         }
-        .map_err(|r| AppError::new(AppStatus::Service, r))
+        .map_err(|r| AppError::new(AppStatus::SERVICE, r))
     })
     .await
 }

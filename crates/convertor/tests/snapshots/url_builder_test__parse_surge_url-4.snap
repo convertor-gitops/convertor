@@ -41,7 +41,7 @@ expression: rule_provider_urls
                     query: None,
                     fragment: None,
                 },
-                sub_url: "-kEIP719vVY4nBzOQkubd0GtBRqTYh1XS1lPTtbLjl70aOeLEKlbMNGzAE_xaSH3je42JVDaL207i-Dw9jZitpPT5QW5xxHruCN3kfTumdTZP8bkm_Xs9_nLafPi0SxCHSk",
+                sub_url: "-kEIP719vVY4nBzOQkubd0GtBRqTYh1XAqh8Y-rcZZZfleQwVR9d1N_6qOxcCmxEKheEvR2LP6-XGKlB-rOtildiOLEt619sjAnnrB-ofha9da_n2alGfqjJwFFg_RgYQNA",
                 client: Surge,
                 interval: 86400,
                 strict: Some(
@@ -96,7 +96,7 @@ expression: rule_provider_urls
                     query: None,
                     fragment: None,
                 },
-                sub_url: "m8wxspjY4LmbI43SrzVd9-g5JK6MqoiuL6JnF9rGbsPh0f4gk5kTQH-XOYOvGkwropUpogfi9K8q4anoV8z2NjLPhlgIaAhNW9aSj2utU3A7x4kKZfl6clGvfpISfkbFhYY",
+                sub_url: "m8wxspjY4LmbI43SrzVd9-g5JK6MqoiuXm0if_jTUI6G88nVc5NNPwY09a6RtnXm9qtA3dHbnvn5gIDxoJpeI7I5eZeHrNLcHTMkl1ynrdWnK69KpoMpex6yzVgtmwO_Ddg",
                 client: Surge,
                 interval: 86400,
                 strict: Some(
@@ -151,7 +151,7 @@ expression: rule_provider_urls
                     query: None,
                     fragment: None,
                 },
-                sub_url: "breKfdOlzXbfy_6lUz9KhU8qbMXRTv5i64Dhngbi3KD3jorpYCpsJE_VndQOeOyirYx4Ol06-LIGL-tqw8iuXyREfZBNl9SyN2aJE-RUrQlAL1z6BNDNTwB2Okwj2M7cWjE",
+                sub_url: "breKfdOlzXbfy_6lUz9KhU8qbMXRTv5iVR6BLzT68iKD7iygfJ9CgOovTJiINx-AHv3gEnlyMaya3FpmPmw8RQeK8qtgy1kMLAPuZLeSO9P3b1Fy8sDd6-p8eW2bO9nvnbo",
                 client: Surge,
                 interval: 86400,
                 strict: Some(
@@ -208,7 +208,7 @@ expression: rule_provider_urls
                     query: None,
                     fragment: None,
                 },
-                sub_url: "n9PCU_KZCmBk-_hJr-8acNo8Eqayz6SfcPffezDVMrn25Bw2DiipLtSikXHTudeblrp4WA_0cmECc3f_9rHerj9mcVZhAf3NC4w1jXcrE6w1Usq8AOPLx3Mz2lZZj9NC0PI",
+                sub_url: "n9PCU_KZCmBk-_hJr-8acNo8Eqayz6Sfkso_hG9GkxHZngLqZuI_qp_d45ausSvAj7vq293ZLm-1yR2QmGf8eALBtbDwjdjhmxQf_Q7WgKYuVxV6f1ACgjWneOlrahnJyDA",
                 client: Surge,
                 interval: 86400,
                 strict: Some(
@@ -265,7 +265,7 @@ expression: rule_provider_urls
                     query: None,
                     fragment: None,
                 },
-                sub_url: "16v06FNRPjiZTp0aNjWn-gyaH0DVPdqNeKBd2_cjK5-Ady_q-i21OHV62X0zYUbumgO7hUfZMxIC_zoFdRWHBKUZNSEFqukjenlE9n3alFkv0LupQnDdwZI6mNWFajhhAaM",
+                sub_url: "16v06FNRPjiZTp0aNjWn-gyaH0DVPdqNeeflhrrXsF50qE32xG-RmQlnuU8wBpepIvr-QiJdLhIamSEjGsJuuN-QTUSmJe4htiUQgdcaCzD7LL5I8DUmCQaJgLWGHg40LL8",
                 client: Surge,
                 interval: 86400,
                 strict: Some(
@@ -320,7 +320,7 @@ expression: rule_provider_urls
                     query: None,
                     fragment: None,
                 },
-                sub_url: "6TsiZSfVo_1i3Nvi5gMhKa5LsQptc1w2tTGA6nIGw2_hmcTqRq2QFFEvVxuV9X-h2y1GHLq3FLaiexK5B8ql5bBBoMVT5_4gSm7KTBBeyqQUky4eoVEz-8N7g0Rg_9SNo7w",
+                sub_url: "6TsiZSfVo_1i3Nvi5gMhKa5LsQptc1w2BbmRIIMhyGg4mtzGaWVRwjYBf3FHgANkp7mmQwzi7FVBSpoAykExmBpd6L2-ua40hUVG2841aO6BygqVFWK6W7gx6fW1Ngwrg6U",
                 client: Surge,
                 interval: 86400,
                 strict: Some(
@@ -377,7 +377,7 @@ expression: rule_provider_urls
                     query: None,
                     fragment: None,
                 },
-                sub_url: "VyzZ34rDtonm0HGBMK05dYPt9KOdcmsLni9JXkV2aHBpCDFngYR5zSGalzpfSi8Hww8R1-s29aR_VWo0mbZCUH7dJzomtATe3IUDoIh3VUkjy3OMHwW7PyszBf-1XST67G4",
+                sub_url: "VyzZ34rDtonm0HGBMK05dYPt9KOdcmsLYvVDoQEJc09SBD0JaS4MGXMFCx-VoREfqut6DMDnD2irt24fqC0eGcHDwKPnqtgVOIMDAVosDgA2LkLMuxpud7OGSU7lyiBEw0c",
                 client: Surge,
                 interval: 86400,
                 strict: Some(
