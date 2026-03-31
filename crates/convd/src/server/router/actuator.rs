@@ -1,6 +1,7 @@
 use crate::server::app_state::AppState;
 use crate::server::error::{AppError, AppStatus};
 use crate::server::extractor::RequestExtractor;
+use crate::server::model::{BackendStatus, ServiceStatus};
 use crate::server::response::{ApiError, ApiResponse};
 use axum::Router;
 use axum::extract::State;
@@ -16,6 +17,7 @@ pub fn router(metrics_handle: PrometheusHandle) -> Router<Arc<AppState>> {
         .route("/healthy", get(healthy))
         .route("/ready", get(redis))
         .route("/redis", get(redis))
+        .route("/status", get(status))
         .route(
             "/metrics",
             get(move || {
@@ -42,4 +44,35 @@ async fn redis(RequestExtractor(request): RequestExtractor, State(state): State<
     result
         .map_err(|r| AppError::new(AppStatus::NO_REDIS, r))
         .map_err(|e| ApiError::internal_server(e, request))
+}
+
+#[instrument(skip_all)]
+async fn status(State(state): State<Arc<AppState>>) -> ApiResponse<BackendStatus> {
+    let mut services = Vec::new();
+
+    // Redis
+    match state.redis_connection.clone() {
+        Some(mut con) => match con.ping().await {
+            Ok(_) => services.push(ServiceStatus::healthy("redis")),
+            Err(e) => services.push(ServiceStatus::unhealthy("redis", e.to_string())),
+        },
+        None => services.push(ServiceStatus::unhealthy("redis", "未配置")),
+    }
+
+    // Loki
+    match std::env::var("LOKI_URL") {
+        Ok(url) if !url.is_empty() => services.push(ServiceStatus::healthy("loki")),
+        _ => services.push(ServiceStatus::unhealthy("loki", "未配置 LOKI_URL")),
+    }
+
+    // Tempo (OTLP)
+    match std::env::var("OTLP_GRPC") {
+        Ok(url) if !url.is_empty() => services.push(ServiceStatus::healthy("tempo")),
+        _ => services.push(ServiceStatus::unhealthy("tempo", "未配置 OTLP_GRPC")),
+    }
+
+    ApiResponse::ok(BackendStatus {
+        version: env!("CARGO_PKG_VERSION").to_string(),
+        services,
+    })
 }
