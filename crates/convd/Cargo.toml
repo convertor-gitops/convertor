@@ -18,8 +18,9 @@ include = [
 convertor = { workspace = true }
 
 # 序列化 / 解析
-serde_json = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+serde_qs = { workspace = true, features = ["default_to_form_encoding", "axum"] }
 
 # 日志 / 追踪
 tracing = { workspace = true, features = ["attributes"] }
@@ -38,10 +39,14 @@ axum-extra = { workspace = true, features = ["typed-header", "scheme", "tracing"
 tower = { workspace = true, features = [] }
 tower-http = { workspace = true, features = ["trace", "fs", "request-id"] }
 axum-prometheus = { workspace = true, features = ["prometheus"] }
+reqwest = { workspace = true, features = ["http2", "json", "stream", "rustls-tls"] }
+headers = { workspace = true }
+httpmock = { workspace = true }
 
 # 并发 / 异步 运行时
 tokio = { workspace = true, features = ["fs", "rt-multi-thread", "signal", "macros"] }
 tokio-util = { workspace = true, features = [] }
+futures-util = { workspace = true }
 
 # 缓存 / 存储 / 数据库
 moka = { workspace = true, features = ["future"] }
@@ -59,10 +64,11 @@ color-eyre = { workspace = true }
 [dev-dependencies]
 # 测试 / 开发工具
 http-body-util = { workspace = true }
-convertor = { workspace = true, features = ["testkit"] }
+#convertor = { workspace = true }
 insta = { workspace = true, features = ["json", "default"] }
 tower = { workspace = true }
 serde_json = { workspace = true }
+regex = { workspace = true }
 
 [build-dependencies]
 anyhow = { workspace = true }

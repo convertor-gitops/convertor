@@ -1,58 +1,41 @@
-use crate::server::response::{ApiResponse, AppError, RequestSnapshot};
+use crate::server::error::AppError;
+use crate::server::response::RequestBody;
+use axum::http;
 use axum::response::{IntoResponse, Response};
-use tokio_util::bytes::{BufMut, Bytes, BytesMut};
 
+/// HTTP 非200 失败响应的载体。
+///
+/// 最终由 `ResponseBody` 负责序列化和 `IntoResponse`。
 #[derive(Debug)]
 pub struct ApiError {
-    pub status: axum::http::StatusCode,
     pub error: AppError,
-    pub request: Option<RequestSnapshot>,
+    pub request: RequestBody,
+    pub http_status: http::StatusCode,
 }
 
 impl ApiError {
-    pub fn bad_request(error: impl Into<AppError>) -> Self {
+    pub fn bad_request(error: AppError, request: RequestBody) -> Self {
         Self {
-            status: axum::http::StatusCode::BAD_REQUEST,
-            error: error.into(),
-            request: None,
+            error,
+            request,
+            http_status: http::StatusCode::BAD_REQUEST,
         }
     }
 
-    pub fn internal_server_error(error: impl Into<AppError>) -> Self {
+    pub fn internal_server(error: AppError, request: RequestBody) -> Self {
         Self {
-            status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-            error: error.into(),
-            request: None,
+            error,
+            request,
+            http_status: http::StatusCode::INTERNAL_SERVER_ERROR,
         }
-    }
-
-    pub fn with_request(mut self, request: RequestSnapshot) -> Self {
-        self.request = Some(request);
-        self
     }
 }
 
+/// `ApiError` 需要实现 `IntoResponse` 以满足 axum extractor `Rejection` 约束。
+/// 内部委托给 `ResponseBody`，保持序列化逻辑唯一。
 impl IntoResponse for ApiError {
-    fn into_response(mut self) -> Response {
-        let mut buf = BytesMut::with_capacity(256).writer();
-        let request = self.request.take();
-        let mut api_response: ApiResponse<()> = self.error.into();
-        if let Some(request) = request {
-            api_response = api_response.with_request(request);
-        }
-        match serde_json::to_writer(&mut buf, &api_response) {
-            Ok(()) => (
-                self.status,
-                [(axum::http::header::CONTENT_TYPE, "application/problem+json")],
-                buf.into_inner().freeze(),
-            )
-                .into_response(),
-            Err(err) => (
-                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                [(axum::http::header::CONTENT_TYPE, mime::TEXT_PLAIN_UTF_8.as_ref())],
-                Bytes::from(format!("Failed to serialize error response: {}", err)),
-            )
-                .into_response(),
-        }
+    fn into_response(self) -> Response {
+        use crate::server::response::ResponseBody;
+        ResponseBody::from(self).into_response()
     }
 }

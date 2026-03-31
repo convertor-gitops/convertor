@@ -10,17 +10,19 @@ use convertor::config::proxy_client::ProxyClient;
 
 #[derive(Debug, Clone)]
 #[derive(Serialize, Deserialize)]
-pub struct ConflyConfig {
+pub struct CliConfig {
     #[serde(flatten)]
     pub common: Config,
+
+    pub server: url::Url,
 
     #[serde(flatten)]
     pub clients: HashMap<ProxyClient, ClientConfig>,
 }
 
-impl ConflyConfig {
+impl CliConfig {
     pub fn search(cwd: impl AsRef<Path>, config_path: Option<impl AsRef<Path>>) -> Result<Self> {
-        let config: ConflyConfig = Config::search(&cwd, config_path)?;
+        let config: CliConfig = Config::search(&cwd, config_path)?;
         Ok(config)
     }
 
@@ -35,17 +37,18 @@ impl ConflyConfig {
     }
 }
 
-impl ConflyConfig {
+impl CliConfig {
     pub fn template() -> Self {
         let common = Config::template();
+        let server = url::Url::parse("http://127.0.0.1:8080").expect("不合法的服务器地址");
         let mut clients = HashMap::new();
         clients.insert(ProxyClient::Surge, ClientConfig::surge_template());
         clients.insert(ProxyClient::Clash, ClientConfig::clash_template());
-        Self { common, clients }
+        Self { common, server, clients }
     }
 }
 
-impl Display for ConflyConfig {
+impl Display for CliConfig {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", toml::to_string(self).map_err(|_| std::fmt::Error)?)
     }
@@ -54,7 +57,7 @@ impl Display for ConflyConfig {
 #[derive(Default, Debug, Clone, Eq, PartialEq, Hash)]
 #[derive(Serialize, Deserialize)]
 pub struct ClientConfig {
-    config_dir: PathBuf,
+    profile_dir: PathBuf,
     main_profile: String,
     raw: Option<String>,
     raw_profile: Option<String>,
@@ -64,7 +67,7 @@ pub struct ClientConfig {
 impl ClientConfig {
     pub fn surge_template() -> Self {
         Self {
-            config_dir: PathBuf::from("/path/to/surge"),
+            profile_dir: PathBuf::from("/path/to/surge"),
             main_profile: "surge.conf".to_string(),
             ..Default::default()
         }
@@ -72,7 +75,7 @@ impl ClientConfig {
 
     pub fn clash_template() -> Self {
         Self {
-            config_dir: PathBuf::from("/path/to/mihomo"),
+            profile_dir: PathBuf::from("/path/to/mihomo"),
             main_profile: "config.yaml".to_string(),
             ..Default::default()
         }
@@ -81,11 +84,11 @@ impl ClientConfig {
 
 impl ClientConfig {
     pub fn set_config_dir(&mut self, config_dir: impl AsRef<Path>) {
-        self.config_dir = config_dir.as_ref().to_path_buf();
+        self.profile_dir = config_dir.as_ref().to_path_buf();
     }
 
     pub fn config_dir(&self) -> &Path {
-        &self.config_dir
+        &self.profile_dir
     }
 
     pub fn main_profile_path(&self) -> PathBuf {

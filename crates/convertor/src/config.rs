@@ -1,9 +1,9 @@
-use crate::common::encrypt::encrypt;
+use crate::common::encrypt::Encryptor;
 use crate::common::once::HOME_CONFIG_DIR;
-use crate::config::config_error::ConfigError;
 use crate::config::proxy_client::ProxyClient;
 use crate::config::redis_config::RedisConfig;
 use crate::config::subscription_config::SubscriptionConfig;
+use crate::error::ConfigError;
 use crate::url::url_builder::UrlBuilder;
 use serde::{Deserialize, Serialize};
 use std::ffi::OsStr;
@@ -11,9 +11,7 @@ use std::fmt::{Debug, Display};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use tracing::debug;
-use url::Url;
 
-pub mod config_error;
 pub mod proxy_client;
 pub mod redis_config;
 pub mod subscription_config;
@@ -23,7 +21,6 @@ type Result<T> = core::result::Result<T, ConfigError>;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub secret: String,
-    pub server: Url,
     pub subscription: SubscriptionConfig,
     pub redis: Option<RedisConfig>,
 }
@@ -31,13 +28,11 @@ pub struct Config {
 impl Config {
     pub fn template() -> Self {
         let secret = "bppleman".to_string();
-        let server = Url::parse("http://127.0.0.1:8080").expect("不合法的服务器地址");
         let subscription = SubscriptionConfig::template();
         let redis = Some(RedisConfig::template());
 
         Config {
             secret,
-            server,
             subscription,
             redis,
         }
@@ -48,7 +43,7 @@ impl Config {
         let mut vars = Vec::new();
 
         vars.push((format!("{prefix}__SECRET"), self.secret.clone()));
-        vars.push((format!("{prefix}__SERVER"), self.server.to_string()));
+        // vars.push((format!("{prefix}__SERVER"), self.server.to_string()));
 
         let sub_vars = self.subscription.env_template(format!("{prefix}__SUBSCRIPTION"));
         vars.extend(sub_vars);
@@ -96,7 +91,9 @@ impl Config {
                 .try_parsing(true),
         );
 
-        Ok(builder.build()?.try_deserialize()?)
+        let built = builder.build().map_err(ConfigError::SearchConfig)?;
+        let config = built.try_deserialize().map_err(ConfigError::ParseConfig)?;
+        Ok(config)
     }
 
     fn search_dir(dir: impl AsRef<Path>) -> Option<Vec<(PathBuf, config::FileFormat)>> {
@@ -140,23 +137,17 @@ impl Config {
         if !path.is_file() {
             return Err(ConfigError::NotFile(path.to_path_buf()));
         }
-        let content = std::fs::read_to_string(path).map_err(ConfigError::ReadError)?;
-        let config: Config = toml::from_str(&content)?;
+        let content = std::fs::read_to_string(path).map_err(ConfigError::Read)?;
+        let config: Config = toml::from_str(&content).map_err(ConfigError::Parse)?;
         Ok(config)
     }
 
-    pub fn enc_secret(&self) -> Result<String> {
-        Ok(encrypt(self.secret.as_bytes(), &self.secret)?)
-    }
-
-    pub fn create_url_builder(&self, client: ProxyClient) -> Result<UrlBuilder> {
+    pub fn create_url_builder(&self, client: ProxyClient, server: url::Url) -> Result<UrlBuilder> {
         let sub_url = self.subscription.sub_url.clone();
         let interval = self.subscription.interval;
         let strict = self.subscription.strict;
-        let server = self.server.clone();
-        let secret = self.secret.clone();
-        let enc_secret = encrypt(secret.as_bytes(), &secret)?;
-        let url_builder = UrlBuilder::new(secret, Some(enc_secret), client, server, sub_url, None, interval, strict)?;
+        let encryptor = Encryptor::new_random(&self.secret);
+        let url_builder = UrlBuilder::new(encryptor, client, server, sub_url, interval, strict);
         Ok(url_builder)
     }
 }
@@ -165,7 +156,7 @@ impl FromStr for Config {
     type Err = ConfigError;
 
     fn from_str(s: &str) -> Result<Self> {
-        Ok(toml::from_str(s)?)
+        toml::from_str(s).map_err(ConfigError::Parse)
     }
 }
 

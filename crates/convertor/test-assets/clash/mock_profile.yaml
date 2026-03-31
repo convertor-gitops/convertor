@@ -4,91 +4,133 @@ redir-port: 7892
 allow-lan: true
 mode: Rule
 log-level: info
-external-controller: 0.0.0.0:9091
-external-ui: ui
-secret: ""
-
+external-controller: '0.0.0.0:9090'
+secret: ''
 proxies:
-    - { name: '订阅提供商信息', type: ss, server: bppleman.com, port: 24000, cipher: aes-128-gcm, password: bppleman, udp: true }
-    - { name: '🇭🇰 香港 01', type: ss, server: bppleman.com, port: 24000, cipher: aes-128-gcm, password: bppleman, udp: true }
-    - { name: '🇭🇰 香港 02', type: ss, server: bppleman.com, port: 24001, cipher: aes-128-gcm, password: bppleman, udp: true }
-    - { name: '🇭🇰 香港 03', type: ss, server: bppleman.com, port: 24002, cipher: aes-128-gcm, password: bppleman, udp: true }
-    - { name: '🇭🇰 香港 04', type: ss, server: bppleman.com, port: 24003, cipher: aes-128-gcm, password: bppleman, udp: true }
-    - { name: '🇭🇰 香港 05 - YouTube免广', type: ss, server: bppleman.com, port: 24004, cipher: aes-128-gcm, password: bppleman, udp: true }
-    - { name: '🏳️‍🌈 台湾 01', type: ss, server: bppleman.com, port: 23010, cipher: chacha20-ietf-poly1305, password: bppleman, udp: true }
-    - { name: '🏳️‍🌈 台湾 02', type: ss, server: bppleman.com, port: 23011, cipher: chacha20-ietf-poly1305, password: bppleman, udp: true }
-    - { name: '🏳️‍🌈 台湾 03', type: ss, server: bppleman.com, port: 23012, cipher: chacha20-ietf-poly1305, password: bppleman, udp: true }
-    - { name: '🏳️‍🌈 台湾 04', type: ss, server: bppleman.com, port: 23013, cipher: chacha20-ietf-poly1305, password: bppleman, udp: true }
-    - { name: '🏳️‍🌈 台湾 05', type: ss, server: bppleman.com, port: 23014, cipher: chacha20-ietf-poly1305, password: bppleman, udp: true }
-    - { name: '🇸🇬 新加坡 01', type: ss, server: bppleman.com, port: 23001, cipher: chacha20-ietf-poly1305, password: bppleman, udp: true }
-    - { name: '🇸🇬 新加坡 02', type: ss, server: bppleman.com, port: 23002, cipher: chacha20-ietf-poly1305, password: bppleman, udp: true }
-    - { name: '🇸🇬 新加坡 03', type: ss, server: bppleman.com, port: 23003, cipher: chacha20-ietf-poly1305, password: bppleman, udp: true }
-    - { name: '🇸🇬 新加坡 04', type: ss, server: bppleman.com, port: 23004, cipher: chacha20-ietf-poly1305, password: bppleman, udp: true }
-    - { name: '🇸🇬 新加坡 05', type: ss, server: bppleman.com, port: 23005, cipher: chacha20-ietf-poly1305, password: bppleman, udp: true }
-    - { name: '🇯🇵 日本 01', type: ss, server: bppleman.com, port: 23020, cipher: chacha20-ietf-poly1305, password: bppleman, udp: true }
-    - { name: '🇯🇵 日本 02', type: ss, server: bppleman.com, port: 23021, cipher: chacha20-ietf-poly1305, password: bppleman, udp: true }
-    - { name: '🇯🇵 日本 03', type: ss, server: bppleman.com, port: 23022, cipher: chacha20-ietf-poly1305, password: bppleman, udp: true }
-    - { name: '🇯🇵 日本 04', type: ss, server: bppleman.com, port: 23023, cipher: chacha20-ietf-poly1305, password: bppleman, udp: true }
-    - { name: '🇯🇵 日本 05', type: ss, server: bppleman.com, port: 23024, cipher: chacha20-ietf-poly1305, password: bppleman, udp: true }
-    - { name: '🇺🇸 美国 01', type: ss, server: bppleman.com, port: 24050, cipher: aes-128-gcm, password: bppleman, udp: true }
-    - { name: '🇺🇸 美国 02', type: ss, server: bppleman.com, port: 24051, cipher: aes-128-gcm, password: bppleman, udp: true }
-    - { name: '🇺🇸 美国 03', type: ss, server: bppleman.com, port: 24052, cipher: aes-128-gcm, password: bppleman, udp: true }
-    - { name: '🇺🇸 美国 04', type: ss, server: bppleman.com, port: 24053, cipher: aes-128-gcm, password: bppleman, udp: true }
-    - { name: '🇺🇸 美国 05', type: ss, server: bppleman.com, port: 24054, cipher: aes-128-gcm, password: bppleman, udp: true }
-    - { name: '🇨🇦 加拿大 01', type: ss, server: bppleman.com, port: 24060, cipher: aes-128-gcm, password: bppleman, udp: true }
-    - { name: '🇰🇷 韩国 01', type: trojan, server: bppleman.com, port: 60101, password: bppleman, udp: true, sni: video-caps.wetvinfo.com, skip-cert-verify: true }
-    - { name: '🇬🇧 英国 01', type: trojan, server: bppleman.com, port: 60082, password: bppleman, udp: true, sni: video-caps.wetvinfo.com, skip-cert-verify: true }
-    - { name: '🇫🇷 法国 01', type: trojan, server: bppleman.com, port: 60138, password: bppleman, udp: true, sni: video-caps.wetvinfo.com, skip-cert-verify: true }
-    - { name: '🇩🇪 德国 01', type: trojan, server: bppleman.com, port: 60125, password: bppleman, udp: true, sni: video-caps.wetvinfo.com, skip-cert-verify: true }
-    - { name: '🇦🇺 澳洲 01', type: trojan, server: bppleman.com, port: 60092, password: bppleman, udp: true, sni: video-caps.wetvinfo.com, skip-cert-verify: true }
-
+  - { name: '剩余流量：43.9 GB', type: trojan, server: convertor.bppleman.cn, port: 60010, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '距离下次重置剩余：15 天', type: trojan, server: convertor.bppleman.cn, port: 60010, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: 套餐到期：2026-04-22, type: trojan, server: convertor.bppleman.cn, port: 60010, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇭🇰 香港 01', type: trojan, server: convertor.bppleman.cn, port: 60010, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇭🇰 香港 02', type: trojan, server: convertor.bppleman.cn, port: 60011, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇭🇰 香港 03', type: trojan, server: convertor.bppleman.cn, port: 60012, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇭🇰 香港 04', type: trojan, server: convertor.bppleman.cn, port: 60013, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇭🇰 香港 05', type: trojan, server: convertor.bppleman.cn, port: 60014, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇭🇰 香港 06', type: trojan, server: convertor.bppleman.cn, port: 60015, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇭🇰 香港 07', type: trojan, server: convertor.bppleman.cn, port: 60016, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇭🇰 香港 08', type: trojan, server: convertor.bppleman.cn, port: 60017, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇭🇰 香港 09', type: trojan, server: convertor.bppleman.cn, port: 60018, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇭🇰 香港 10', type: trojan, server: convertor.bppleman.cn, port: 60019, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇸🇬 新加坡 01', type: trojan, server: convertor.bppleman.cn, port: 60030, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇸🇬 新加坡 02', type: trojan, server: convertor.bppleman.cn, port: 60031, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇸🇬 新加坡 03', type: trojan, server: convertor.bppleman.cn, port: 60032, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇸🇬 新加坡 04', type: trojan, server: convertor.bppleman.cn, port: 60033, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇸🇬 新加坡 05', type: trojan, server: convertor.bppleman.cn, port: 60034, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇸🇬 新加坡 06', type: trojan, server: convertor.bppleman.cn, port: 60035, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🏳️‍🌈 台湾 01', type: trojan, server: convertor.bppleman.cn, port: 60040, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🏳️‍🌈 台湾 02', type: trojan, server: convertor.bppleman.cn, port: 60041, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🏳️‍🌈 台湾 03', type: trojan, server: convertor.bppleman.cn, port: 60042, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🏳️‍🌈 台湾 04', type: trojan, server: convertor.bppleman.cn, port: 60043, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇯🇵 日本 01', type: trojan, server: convertor.bppleman.cn, port: 60050, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇯🇵 日本 02', type: trojan, server: convertor.bppleman.cn, port: 60051, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇯🇵 日本 03', type: trojan, server: convertor.bppleman.cn, port: 60052, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇯🇵 日本 04', type: trojan, server: convertor.bppleman.cn, port: 60053, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇺🇸 美国 01', type: trojan, server: convertor.bppleman.cn, port: 60060, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇺🇸 美国 02', type: trojan, server: convertor.bppleman.cn, port: 60061, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇺🇸 美国 03', type: trojan, server: convertor.bppleman.cn, port: 60062, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇺🇸 美国 04', type: trojan, server: convertor.bppleman.cn, port: 60063, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇺🇸 美国 05', type: trojan, server: convertor.bppleman.cn, port: 60064, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇺🇸 美国 06', type: trojan, server: convertor.bppleman.cn, port: 60065, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇺🇸 美国 07 - OnlyAI', type: trojan, server: convertor.bppleman.cn, port: 60066, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇨🇦 加拿大 01', type: trojan, server: convertor.bppleman.cn, port: 60099, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇰🇷 韩国 01', type: trojan, server: convertor.bppleman.cn, port: 60101, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇬🇧 英国 01', type: trojan, server: convertor.bppleman.cn, port: 60082, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇫🇷 法国 01', type: trojan, server: convertor.bppleman.cn, port: 60138, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+  - { name: '🇩🇪 德国 01', type: trojan, server: convertor.bppleman.cn, port: 60125, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
 proxy-groups:
-    - { name: BosLife, type: select, proxies: [ '订阅提供商信息' ] }
-
+  - { name: BosLife, type: select, proxies: [ '剩余流量：43.9 GB', '距离下次重置剩余：15 天', 套餐到期：2026-04-22, '🇭🇰 香港 01', '🇭🇰 香港 02', '🇭🇰 香港 03', '🇭🇰 香港 04', '🇭🇰 香港 05', '🇭🇰 香港 06', '🇭🇰 香港 07', '🇭🇰 香港 08', '🇭🇰 香港 09', '🇭🇰 香港 10', '🇸🇬 新加坡 01', '🇸🇬 新加坡 02', '🇸🇬 新加坡 03', '🇸🇬 新加坡 04', '🇸🇬 新加坡 05', '🇸🇬 新加坡 06', '🏳️‍🌈 台湾 01', '🏳️‍🌈 台湾 02', '🏳️‍🌈 台湾 03', '🏳️‍🌈 台湾 04', '🇯🇵 日本 01', '🇯🇵 日本 02', '🇯🇵 日本 03', '🇯🇵 日本 04', '🇺🇸 美国 01', '🇺🇸 美国 02', '🇺🇸 美国 03', '🇺🇸 美国 04', '🇺🇸 美国 05', '🇺🇸 美国 06', '🇺🇸 美国 07 - OnlyAI', '🇨🇦 加拿大 01', '🇰🇷 韩国 01', '🇬🇧 英国 01', '🇫🇷 法国 01', '🇩🇪 德国 01' ] }
 rules:
-    # Subscription Direct
-    - "DOMAIN,{sub_host},DIRECT"
-    - "DOMAIN,trdy.subiway.com:8888,DIRECT"
+  # Subscription Direct
+  - "DOMAIN,1.convertor.bppleman.com,DIRECT"
+  - "DOMAIN,2.convertor.bppleman.com,DIRECT"
+  - "DOMAIN,3.convertor.bppleman.com,DIRECT"
+  - "DOMAIN,4.convertor.bppleman.com,DIRECT"
+  - "DOMAIN,5.convertor.bppleman.com,DIRECT"
 
-    # Process Name
-    - "PROCESS-NAME,Backup and Sync,BosLife"
+  # PROCESS-NAME
+  - "PROCESS-NAME,Backup and Sync,BosLife"
+  - "PROCESS-NAME,Google Chrome,BosLife"
+  - "PROCESS-NAME,Arc,BosLife"
+  - "PROCESS-NAME,Brave Browser,BosLife"
+  - "PROCESS-NAME,ChatGPT,BosLife"
 
-    # User Agent
-    - USER-AGENT,%E7%BA%BD%E7%BA%A6%E6%97%B6%E6%8A%A5*,BosLife
-    - USER-AGENT,Argo*,BosLife
+  # USER-AGENT
+  - "USER-AGENT,%E7%BA%BD%E7%BA%A6%E6%97%B6%E6%8A%A5*,BosLife"
+  - "USER-AGENT,Argo*,BosLife"
+  - "USER-AGENT,ChatGPT*,BosLife"
+  - "USER-AGENT,Colab*,BosLife"
+  - "USER-AGENT,Deepmind*,BosLife"
 
-    # BosLife
-    - "DOMAIN-SUFFIX,boslife.io,BosLife"
-    - "DOMAIN-SUFFIX,boslife.net,BosLife"
-    - "DOMAIN-SUFFIX,wikibos.com,BosLife"
-    - "DOMAIN-SUFFIX,boswiki.net,BosLife"
+  # DOMAIN
+  - "DOMAIN,openaicom-api-bdcpf8c6d2e9atf6.z01.azurefd.net,BosLife"
+  - "DOMAIN,openaicomproductionae4b.blob.core.windows.net,BosLife"
+  - "DOMAIN,production-openaicom-storage.azureedge.net,BosLife"
+  - "DOMAIN,static.cloudflareinsights.com,BosLife"
+  - "DOMAIN,v2.docs.google.com,BosLife"
 
-    # BosLife,force-remote-dns
-    - "DOMAIN,lin.ee,BosLife,force-remote-dns"
-    - "DOMAIN-SUFFIX,line.me,BosLife,force-remote-dns"
-    - "DOMAIN-KEYWORD,line.naver.jp,BosLife,force-remote-dns"
-    - "DOMAIN-SUFFIX,line-apps.com,BosLife,force-remote-dns"
-    - "DOMAIN-KEYWORD,line-cdn.net,BosLife,force-remote-dns"
+  # DOMAIN-KEYWORD
+  - "DOMAIN-KEYWORD,microsoft,BosLife"
+  - "DOMAIN-KEYWORD,beetalk,BosLife,force-remote-dns"
+  - "DOMAIN-KEYWORD,blogspot,BosLife,force-remote-dns"
+  - "DOMAIN-KEYWORD,dropbox,BosLife,force-remote-dns"
+  - "DOMAIN-KEYWORD,facebook,BosLife,force-remote-dns"
 
-    # BosLife,no-resolve
-    - "IP-CIDR,8.41.4.0/24,BosLife,no-resolve"
-    - "IP-CIDR,23.246.0.0/18,BosLife,no-resolve"
-    - "IP-CIDR,34.210.42.111/32,BosLife,no-resolve"
-    - "IP-CIDR,37.77.184.0/21,BosLife,no-resolve"
-    - "IP-CIDR,38.72.126.0/24,BosLife,no-resolve"
+  # BosLife
+  - "DOMAIN-SUFFIX,boslife.io,BosLife"
+  - "DOMAIN-SUFFIX,boslife.net,BosLife"
+  - "DOMAIN-SUFFIX,wikibos.com,BosLife"
+  - "DOMAIN-SUFFIX,boswiki.net,BosLife"
 
-    # Disabled
-    #- "RULE-SET,https://cdn.jsdelivr.net/gh/Loyalsoldier/surge-rules@release/ruleset/proxy.txt,BosLife,force-remote-dns"
+  # BosLife,force-remote-dns
+  - "DOMAIN-SUFFIX,openai.com,BosLife,force-remote-dns"
+  - "DOMAIN-SUFFIX,gemini.google.com,BosLife,force-remote-dns"
+  - "DOMAIN-SUFFIX,proactivebackend-pa.googleapis.com,BosLife,force-remote-dns"
+  - "DOMAIN-SUFFIX,aisandbox-pa.googleapis.com,BosLife,force-remote-dns"
+  - "DOMAIN-SUFFIX,robinfrontend-pa.googleapis.com,BosLife,force-remote-dns"
 
-    # DIRECT,force-remote-dns
-    - "DOMAIN-SUFFIX,bppleman.com,DIRECT,force-remote-dns"
+  # BosLife,no-resolve
+  - "IP-CIDR,8.41.4.0/24,BosLife,no-resolve"
+  - "IP-CIDR,23.246.0.0/18,BosLife,no-resolve"
+  - "IP-CIDR,34.210.42.111/32,BosLife,no-resolve"
+  - "IP-CIDR,37.77.184.0/21,BosLife,no-resolve"
+  - "IP-CIDR,38.72.126.0/24,BosLife,no-resolve"
 
-    # LAN DIRECT,no-resolve
-    - "IP-CIDR,127.0.0.0/8,DIRECT,no-resolve"
-    - "IP-CIDR,192.168.0.0/16,DIRECT,no-resolve"
-    - "IP-CIDR,172.16.0.0/12,DIRECT,no-resolve"
-    - "IP-CIDR,100.64.0.0/10,DIRECT,no-resolve"
-    - "IP-CIDR,10.0.0.0/8,DIRECT,no-resolve"
+  # Comment
+  # - "RULE-SET,https://cdn.jsdelivr.net/gh/Loyalsoldier/surge-rules@release/ruleset/proxy.txt,BosLife,force-remote-dns"
+  # - "DOMAIN,browser-intake-datadoghq.com,BosLife"
+  # - "DOMAIN,chat.openai.com.cdn.cloudflare.net,BosLife"
+  # - "DOMAIN,gemini.google.com,BosLife"
+  # - "DOMAIN,openai-api.arkoselabs.com,BosLife"
 
-    - "GEOIP,CN,DIRECT"
-    - "MATCH,DIRECT"
+  # DIRECT
+  - "DOMAIN-SUFFIX,baidu.com,DIRECT"
+  - "DOMAIN-SUFFIX,qq.com,DIRECT"
+  - "DOMAIN-SUFFIX,taobao.com,DIRECT"
+  - "DOMAIN-SUFFIX,tencent.com,DIRECT"
+  - "DOMAIN-SUFFIX,alibaba.com,DIRECT"
+
+  # Direct,no-resolve
+  - "IP-CIDR,127.0.0.0/8,DIRECT,no-resolve"
+  - "IP-CIDR,192.168.0.0/16,DIRECT,no-resolve"
+  - "IP-CIDR,172.16.0.0/12,DIRECT,no-resolve"
+  - "IP-CIDR,100.64.0.0/10,DIRECT,no-resolve"
+  - "IP-CIDR,10.0.0.0/8,DIRECT,no-resolve"
+
+  # DIRECT,force-remote-dns
+  - "DOMAIN-SUFFIX,apple.com,DIRECT,force-remote-dns"
+  - "DOMAIN-SUFFIX,icloud.com,DIRECT,force-remote-dns"
+  - "DOMAIN-SUFFIX,crashlytics.com,DIRECT,force-remote-dns"
+  - "DOMAIN-SUFFIX,bing.com,DIRECT,force-remote-dns"
+  - "DOMAIN-SUFFIX,msn.com,DIRECT,force-remote-dns"
+
+  - 'GEOIP,CN,DIRECT'
+  - 'MATCH,DIRECT'

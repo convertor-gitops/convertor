@@ -1,28 +1,45 @@
 use crate::server::app_state::AppState;
+use crate::server::error::{AppError, AppStatus};
+use crate::server::extractor::RequestExtractor;
 use crate::server::response::{ApiError, ApiResponse};
+use axum::Router;
 use axum::extract::State;
+use axum::routing::get;
+use axum_prometheus::metrics_exporter_prometheus::PrometheusHandle;
+use color_eyre::eyre::OptionExt;
 use redis::AsyncTypedCommands;
 use std::sync::Arc;
 use tracing::instrument;
 
-#[instrument(skip_all)]
-pub async fn healthy() -> ApiResponse<()> {
-    ApiResponse::ok(())
+pub fn router(metrics_handle: PrometheusHandle) -> Router<Arc<AppState>> {
+    Router::new()
+        .route("/healthy", get(healthy))
+        .route("/ready", get(redis))
+        .route("/redis", get(redis))
+        .route(
+            "/metrics",
+            get(move || {
+                let metrics_handle = metrics_handle.clone();
+                async move { metrics_handle.render() }
+            }),
+        )
 }
 
 #[instrument(skip_all)]
-pub async fn redis(State(state): State<Arc<AppState>>) -> Result<ApiResponse<String>, ApiError> {
-    let pong = async move {
-        let pong = state.redis_connection.clone()?.ping().await;
-        Some(pong)
+async fn healthy() -> Result<ApiResponse<()>, ApiError> {
+    Ok(ApiResponse::ok(()))
+}
+
+#[instrument(skip_all)]
+async fn redis(RequestExtractor(request): RequestExtractor, State(state): State<Arc<AppState>>) -> Result<ApiResponse<String>, ApiError> {
+    let result: color_eyre::Result<_> = async move {
+        let mut con = state.redis_connection.clone().ok_or_eyre("缺失 Redis 连接")?;
+        let pone = con.ping().await?;
+        Ok(ApiResponse::ok(pone))
     }
-    .await
-    .transpose()
-    .map_err(ApiError::internal_server_error)?;
-    Ok(ApiResponse::ok(pong.unwrap_or_else(|| "Redis not configured".to_string())))
-}
+    .await;
 
-#[instrument(skip_all)]
-pub async fn metrics() -> ApiResponse<()> {
-    ApiResponse::ok(())
+    result
+        .map_err(|r| AppError::new(AppStatus::NO_REDIS, r))
+        .map_err(|e| ApiError::internal_server(e, request))
 }

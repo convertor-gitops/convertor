@@ -1,6 +1,7 @@
-use crate::server::response::AppError;
+use crate::server::service::ServiceResult;
+use color_eyre::eyre::eyre;
 use convertor::config::Config;
-use convertor::core::profile::Profile;
+use convertor::core::profile::ProfileTrait;
 use convertor::core::profile::clash_profile::ClashProfile;
 use convertor::core::profile::policy::Policy;
 use convertor::core::renderer::Renderer;
@@ -9,8 +10,6 @@ use convertor::url::url_builder::UrlBuilder;
 use moka::future::Cache;
 use std::sync::Arc;
 use tracing::instrument;
-
-type Result<T> = core::result::Result<T, AppError>;
 
 #[derive(Clone)]
 pub struct ClashService {
@@ -26,37 +25,44 @@ impl ClashService {
     }
 
     #[instrument(skip_all)]
-    pub async fn profile(&self, url_builder: UrlBuilder, raw_profile: String) -> Result<String> {
+    pub async fn profile(&self, url_builder: UrlBuilder, raw_profile: String) -> ServiceResult<String> {
         let profile = self.try_get_profile(url_builder, raw_profile).await?;
         Ok(ClashRenderer::render_profile(&profile)?)
     }
 
     #[instrument(skip_all)]
-    pub async fn rule_provider(&self, url_builder: UrlBuilder, raw_profile: String, policy: Policy) -> Result<String> {
+    pub async fn proxy_provider(&self, url_builder: UrlBuilder, raw_profile: String, name: impl AsRef<str>) -> ServiceResult<String> {
         let profile = self.try_get_profile(url_builder, raw_profile).await?;
-        match profile.get_provider_rules_with_policy(&policy) {
-            None => Ok(String::new()),
-            Some(provider_rules) => Ok(ClashRenderer::render_provider_rules(provider_rules)?),
-        }
+        let Some(proxy_provider) = profile.proxy_providers.get(name.as_ref()) else {
+            return Ok(String::new());
+        };
+        Ok(ClashRenderer::render_proxy_provider_payload(&proxy_provider.proxies)?)
     }
 
     #[instrument(skip_all)]
-    pub async fn subscription(&self, url_builder: UrlBuilder, raw_profile: String) -> Result<String> {
+    pub async fn rule_provider(&self, url_builder: UrlBuilder, raw_profile: String, policy: &Policy) -> ServiceResult<String> {
+        let profile = self.try_get_profile(url_builder, raw_profile).await?;
+        let Some(rule_provider) = profile.rule_providers.get(policy) else {
+            return Ok(String::new());
+        };
+        Ok(ClashRenderer::render_rule_provider_payload(&rule_provider.rules)?)
+    }
+
+    #[instrument(skip_all)]
+    pub async fn subscription(&self, url_builder: UrlBuilder, raw_profile: String) -> ServiceResult<String> {
         let profile = self.try_get_profile(url_builder, raw_profile).await?;
 
         Ok(ClashRenderer::render_profile(&profile)?)
     }
 
-    pub async fn try_get_profile(&self, url_builder: UrlBuilder, raw_profile: String) -> Result<ClashProfile> {
+    pub async fn try_get_profile(&self, url_builder: UrlBuilder, raw_profile: String) -> ServiceResult<ClashProfile> {
         self.profile_cache
             .try_get_with(url_builder.clone(), async {
-                let profile = ClashProfile::parse(raw_profile)?;
-                let mut template = ClashProfile::template()?;
-                template.patch(profile)?;
-                template.convert(&url_builder)?;
-                Ok::<_, AppError>(template)
+                let mut profile = ClashProfile::parse(raw_profile)?;
+                profile.convert(&url_builder)?;
+                ServiceResult::<_>::Ok(profile)
             })
             .await
-            .map_err(AppError::CacheError)
+            .map_err(|e| eyre!(e))
     }
 }

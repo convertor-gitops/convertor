@@ -1,6 +1,8 @@
 import { Injectable } from "@angular/core";
-import ConvertorQuery from "../common/model/convertor_query";
-import { Crypto_xchachaService } from "./crypto_xchacha.service";
+import ConvQuery from "../common/model/core/conv-query";
+import { ProxyClientSerde } from "../common/model/core/proxy-client";
+import { EncryptorService } from "./encrypt.service";
+import { EnvService } from "./env.service";
 
 
 @Injectable({
@@ -8,18 +10,24 @@ import { Crypto_xchachaService } from "./crypto_xchacha.service";
 })
 export class UrlService {
     constructor(
-        public crypto: Crypto_xchachaService,
+        public crypto: EncryptorService,
+        public env: EnvService,
     ) {
     }
 
-    public buildSubscriptionQuery(params: UrlParams): ConvertorQuery {
+    public buildSubscriptionQuery(params: UrlParams): ConvQuery {
         const { secret, url, client, interval, strict } = params;
         const sub_url = this.crypto.encrypt(secret, url);
-        return new ConvertorQuery(
-            client,
+        const server = `${window.location.protocol}//${this.env.host.value}`;
+        const proxyClient = ProxyClientSerde.deserialize(client);
+        return new ConvQuery(
+            server,
+            sub_url,
+            proxyClient,
             interval,
             strict,
-            sub_url,
+            null,
+            null,
         );
     }
 }

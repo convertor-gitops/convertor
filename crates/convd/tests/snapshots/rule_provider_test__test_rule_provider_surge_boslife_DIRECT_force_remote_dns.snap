@@ -1,9 +1,0 @@
----
-source: crates/convd/tests/rule_provider_test.rs
-expression: actual
----
-// Disabled
-#RULE-SET,https://cdn.jsdelivr.net/gh/Loyalsoldier/surge-rules@release/ruleset/proxy.txt,BosLife,force-remote-dns
-
-// DIRECT,force-remote-dns
-DOMAIN-SUFFIX,bppleman.com

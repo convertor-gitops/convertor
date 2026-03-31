@@ -1,7 +1,7 @@
 use convertor::common::once::{HOME_CONFIG_DIR, init_backtrace};
 use convertor::config::Config;
 use convertor::config::proxy_client::ProxyClient;
-use convertor::core::profile::Profile;
+use convertor::core::profile::ProfileTrait;
 use convertor::core::profile::surge_profile::SurgeProfile;
 use std::path::Path;
 
@@ -19,7 +19,8 @@ async fn main() -> color_eyre::Result<()> {
     // tracing_profile::init_tracing()?;
 
     let config = Config::template();
-    let url_builder = config.create_url_builder(ProxyClient::Surge)?;
+    let server: url::Url = "http://127.0.0.1:8080".parse()?;
+    let url_builder = config.create_url_builder(ProxyClient::Surge, server)?;
 
     let file = std::fs::read_to_string(base_dir.join("mock.conf"))?;
     let mut profile = SurgeProfile::parse(file)?;

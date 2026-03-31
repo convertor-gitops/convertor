@@ -1,6 +1,7 @@
 use crate::server::app_state::AppState;
 use axum::Router;
 use color_eyre::Result;
+use color_eyre::eyre::WrapErr;
 use convertor::config::Config;
 use std::net::{SocketAddr, SocketAddrV4};
 use tokio::net::{TcpListener, TcpSocket};
@@ -9,8 +10,10 @@ use tokio_util::sync::CancellationToken;
 use tracing::{info, warn};
 
 pub mod app_state;
+mod error;
+pub mod extractor;
 pub mod layer;
-pub mod query;
+mod model;
 pub mod response;
 pub mod router;
 pub mod service;
@@ -21,7 +24,9 @@ pub async fn start_server(listen_addr: SocketAddrV4, config: Config) -> Result<(
             info!("+──────────────────────────────────────────────+");
             info!("│             初始化 Redis 连接...             │");
             info!("+──────────────────────────────────────────────+");
-            let redis_client = redis_config.build_redis_client()?;
+            let redis_config = redis_config.validate().wrap_err("验证 RedisConfig 失败")?;
+            let redis_client = redis_config.create_redis_client()?;
+
             tracing::debug!("等待 connection_manager 就绪...");
             let connection_manager = redis::aio::ConnectionManager::new_with_config(
                 redis_client.clone(),

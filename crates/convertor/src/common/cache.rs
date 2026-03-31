@@ -31,15 +31,8 @@ where
     V: Clone + From<String> + ToString + Send + Sync + 'static,
 {
     pub fn new(redis: Option<ConnectionManager>, capacity: u64, mem_tty: Duration, redis_tty: Duration) -> Self {
-        let memory = moka::future::Cache::builder()
-            .max_capacity(capacity)
-            .time_to_live(mem_tty)
-            .build();
-        Self {
-            memory,
-            redis,
-            redis_tty,
-        }
+        let memory = moka::future::Cache::builder().max_capacity(capacity).time_to_live(mem_tty).build();
+        Self { memory, redis, redis_tty }
     }
 
     pub async fn try_get_with<F, E>(&self, key: CacheKey<K>, init: F) -> Result<V, Arc<E>>
@@ -47,10 +40,8 @@ where
         F: Future<Output = Result<V, E>>,
         E: Display + Send + Sync + 'static,
     {
-        futures_util::pin_mut!(init);
-        self.memory
-            .try_get_with(key.clone(), async { self.try_get_from_redis(key, init).await })
-            .await
+        // futures_util::pin_mut!(init);
+        self.memory.try_get_with(key.clone(), self.try_get_from_redis(key, init)).await
     }
 
     async fn try_get_from_redis<F, E>(&self, key: CacheKey<K>, init: F) -> Result<V, E>

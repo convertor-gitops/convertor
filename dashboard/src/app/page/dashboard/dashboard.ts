@@ -26,5 +26,5 @@ export class Dashboard {
     dashboardService: DashboardService = inject(DashboardService);
 
     error$ = this.dashboardService.error$;
-    data$ = this.dashboardService.urlResult$;
+    data$ = this.dashboardService.data$;
 }

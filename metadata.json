@@ -1,10 +1,10 @@
 {
-  "name": "convertor",
-  "repository": "https://github.com/convertor-gitops/convertor",
-  "description": "A profile converter for surge/clash.",
-  "author": "BppleMan",
-  "license": "Apache-2.0",
-  "version": "2.6.16",
-  "build": 1
+    "name": "convertor",
+    "repository": "https://github.com/convertor-gitops/convertor",
+    "description": "A profile converter for surge/clash.",
+    "author": "BppleMan",
+    "license": "Apache-2.0",
+    "version": "2.6.17",
+    "build": 1
 }
 

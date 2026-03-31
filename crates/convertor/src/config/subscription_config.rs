@@ -4,12 +4,11 @@ use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
 use std::ops::{Deref, DerefMut, Not};
-use url::Url;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 #[derive(Serialize, Deserialize)]
 pub struct SubscriptionConfig {
-    pub sub_url: Url,
+    pub sub_url: url::Url,
     #[serde(default = "default_interval")]
     pub interval: u64,
     #[serde(default = "default_strict")]

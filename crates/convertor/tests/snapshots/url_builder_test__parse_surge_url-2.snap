@@ -1,0 +1,53 @@
+---
+source: crates/convertor/tests/url_builder_test.rs
+expression: raw_url
+---
+ConvUrl {
+    type: Raw,
+    server: Url {
+        scheme: "http",
+        cannot_be_a_base: false,
+        username: "",
+        password: None,
+        host: Some(
+            Ipv4(
+                127.0.0.1,
+            ),
+        ),
+        port: Some(
+            8080,
+        ),
+        path: "/",
+        query: None,
+        fragment: None,
+    },
+    query: Some(
+        ConvQuery {
+            server: Url {
+                scheme: "http",
+                cannot_be_a_base: false,
+                username: "",
+                password: None,
+                host: Some(
+                    Ipv4(
+                        127.0.0.1,
+                    ),
+                ),
+                port: Some(
+                    8080,
+                ),
+                path: "/",
+                query: None,
+                fragment: None,
+            },
+            sub_url: "iImwC4XKfx_wFPtS_z90X5RlgwMLZx_r6elfLMS2vhnML4qrFO08yM3VxM66DctAznbimC4ILKcAqkswpZGv2ZvaXTXsAd7uRGMJHDKfhQrUxpYnemM8hSI79qe5OvxvOYc",
+            client: Surge,
+            interval: 86400,
+            strict: Some(
+                true,
+            ),
+            proxy_provider_name: None,
+            policy: None,
+        },
+    ),
+}

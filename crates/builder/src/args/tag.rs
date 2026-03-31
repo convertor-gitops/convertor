@@ -43,7 +43,7 @@ impl Tag {
             version.unwrap_or(&self.version),
             arch.as_ref().map(Arch::as_image_tag).unwrap_or_default(),
         )
-            .unwrap();
+        .unwrap();
         tag
     }
 }

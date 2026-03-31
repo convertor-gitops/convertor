@@ -1,6 +1,12 @@
 import { HttpErrorResponse } from "@angular/common/http";
-import { catchError, defer, map, OperatorFunction, throwError } from "rxjs";
-import { ApiResponse } from "../response/response";
+import {
+    catchError,
+    defer,
+    map,
+    OperatorFunction,
+    throwError,
+} from "rxjs";
+import { ResponseBody } from "../response/response";
 
 export class LatencyWrapper<T> {
     time: number;
@@ -9,7 +15,7 @@ export class LatencyWrapper<T> {
     constructor(
         public sentAt: number,
         public latency: number,
-        public response?: ApiResponse<T>,
+        public response?: ResponseBody<T>,
         public error?: HttpErrorResponse,
     ) {
         this.time = this.sentAt;
@@ -17,7 +23,7 @@ export class LatencyWrapper<T> {
     }
 }
 
-export function withLatency<T extends ApiResponse<R>, R>(
+export function withLatency<T extends ResponseBody<R>, R>(
     onSample?: (response: LatencyWrapper<R>) => void,
 ): OperatorFunction<T, LatencyWrapper<R>> {
     return (source$) => defer(() => {
