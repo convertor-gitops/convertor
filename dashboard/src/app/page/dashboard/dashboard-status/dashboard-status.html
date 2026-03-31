@@ -1,0 +1,45 @@
+<app-dashboard-panel>
+    <mat-card-header>
+        <mat-card-title>Status</mat-card-title>
+        <app-icon-button (click)="refresh()">refresh</app-icon-button>
+    </mat-card-header>
+    <mat-card-content>
+        @let status = backendStatus$ | async;
+        @let error = error$ | async;
+        <div class="status-panel">
+            <div class="status-row">
+        <span class="key">Dashboard</span>
+        <span class="value version">v{{ dashboardVersion }}</span>
+    </div>
+
+            <div class="status-row">
+                <span class="key">API</span>
+                @if (status) {
+                    <span class="value version">v{{ status.version }}</span>
+                } @else if (error) {
+                    <span class="value health unhealthy">
+                        <span class="dot"></span>
+                        <span class="desc">{{ error }}</span>
+                    </span>
+                } @else {
+                    <span class="value health offline">
+                        <span class="dot"></span>
+                        <span class="desc">loading...</span>
+                    </span>
+                }
+            </div>
+
+            @if (status) {
+                @for (svc of status.services; track svc.name) {
+                    <div class="status-row">
+                        <span class="key">{{ svc.name }}</span>
+                        <span class="value health" [class.healthy]="svc.healthy" [class.unhealthy]="!svc.healthy">
+                            <span class="dot"></span>
+                            <span class="desc">{{ svc.healthy ? 'healthy' : (svc.message ?? 'unhealthy') }}</span>
+                        </span>
+                    </div>
+                }
+            }
+        </div>
+    </mat-card-content>
+</app-dashboard-panel>
