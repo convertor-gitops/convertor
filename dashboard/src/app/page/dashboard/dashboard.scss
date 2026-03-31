@@ -9,6 +9,13 @@
     padding:        24px 120px;
     gap:            16px;
 
+    h1 .version {
+        font-size:   0.45em;
+        font-weight: 400;
+        opacity:     0.5;
+        vertical-align: middle;
+    }
+
     .dashboard-content {
         display:         flex;
         flex:            1 1 auto;

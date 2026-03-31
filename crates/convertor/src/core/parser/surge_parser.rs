@@ -3,8 +3,8 @@ use crate::core::profile::proxy::Proxy;
 use crate::core::profile::proxy_group::{ProxyGroup, ProxyGroupType};
 use crate::core::profile::rule::{Rule, RuleType};
 use crate::core::profile::surge_profile::SurgeProfile;
-use crate::error::ParseError;
-use std::collections::HashMap;
+use crate::error::{InternalError, ParseError};
+use std::collections::{BTreeMap, HashMap};
 use std::fmt::Write;
 use std::str::FromStr;
 use tracing::{instrument, trace};
@@ -27,23 +27,23 @@ impl SurgeParser {
         let header = sections
             .remove(MANAGED_CONFIG_HEADER)
             .map(Self::parse_header)
-            .ok_or(ParseError::SectionMissing(MANAGED_CONFIG_HEADER))??;
+            .ok_or(ParseError::MissingSection(MANAGED_CONFIG_HEADER))??;
         let general = sections
             .remove(GENERAL_SECTION)
             .map(Self::parse_general)
-            .ok_or(ParseError::SectionMissing(GENERAL_SECTION))??;
+            .ok_or(ParseError::MissingSection(GENERAL_SECTION))??;
         let proxies = sections
             .remove(PROXY_SECTION)
             .map(Self::parse_proxies)
-            .ok_or(ParseError::SectionMissing(PROXY_SECTION))??;
+            .ok_or(ParseError::MissingSection(PROXY_SECTION))??;
         let proxy_groups = sections
             .remove(PROXY_GROUP_SECTION)
             .map(Self::parse_proxy_groups)
-            .ok_or(ParseError::SectionMissing(PROXY_GROUP_SECTION))??;
+            .ok_or(ParseError::MissingSection(PROXY_GROUP_SECTION))??;
         let rules = sections
             .remove(RULE_SECTION)
             .map(Self::parse_rules)
-            .ok_or(ParseError::SectionMissing(RULE_SECTION))??;
+            .ok_or(ParseError::MissingSection(RULE_SECTION))??;
         let url_rewrite = sections
             .remove(URL_REWRITE_SECTION)
             .map(Self::parse_url_rewrite)
@@ -53,6 +53,7 @@ impl SurgeParser {
             .into_iter()
             .map(|(k, v)| (k.to_owned(), v.into_iter().map(str::to_owned).collect()))
             .collect();
+        let rule_providers = BTreeMap::new();
 
         Ok(SurgeProfile {
             header,
@@ -62,8 +63,7 @@ impl SurgeParser {
             rules,
             url_rewrite,
             misc,
-            policy_of_rules: HashMap::new(),
-            sorted_policy_list: Vec::new(),
+            rule_providers,
         })
     }
 
@@ -90,7 +90,9 @@ impl SurgeParser {
     pub fn parse_header(section: impl IntoIterator<Item = impl AsRef<str>>) -> Result<String> {
         let mut output = String::new();
         for line in section {
-            writeln!(output, "{}", line.as_ref())?;
+            writeln!(output, "{}", line.as_ref())
+                .map_err(InternalError::Fmt)
+                .map_err(ParseError::Unknown)?;
         }
         Ok(output)
     }
@@ -131,13 +133,10 @@ impl SurgeParser {
             line: 0,
             reason: format!("Proxy 缺失 server: {line}"),
         })?;
-        let port = fields
-            .next()
-            .and_then(|p| p.parse::<u16>().ok())
-            .ok_or_else(|| ParseError::Proxy {
-                line: 0,
-                reason: format!("Proxy 缺失 port 或格式错误: {line}"),
-            })?;
+        let port = fields.next().and_then(|p| p.parse::<u16>().ok()).ok_or_else(|| ParseError::Proxy {
+            line: 0,
+            reason: format!("Proxy 缺失 port 或格式错误: {line}"),
+        })?;
 
         // 避免 HashMap，直接解构
         let mut password = None;
@@ -198,22 +197,18 @@ impl SurgeParser {
             });
         };
         let mut fields = value.split(',');
-        let Some(r#type) = fields
-            .next()
-            .map(str::trim)
-            .and_then(|t| t.parse::<ProxyGroupType>().ok())
-        else {
+        let Some(r#type) = fields.next().map(str::trim).and_then(|t| t.parse::<ProxyGroupType>().ok()) else {
             return Err(ParseError::ProxyGroup {
                 line: 0,
                 reason: format!("Proxy Group 缺失 type 或格式错误: {line}"),
             });
         };
-        let proxies = fields.map(str::trim).map(str::to_string).collect::<Vec<_>>();
+        let proxies = Some(fields.map(str::trim).map(str::to_string).collect::<Vec<_>>());
         let proxy_group = ProxyGroup {
             name: name.trim().to_string(),
             r#type,
             proxies,
-            comment: None,
+            ..Default::default()
         };
         Ok(proxy_group)
     }
@@ -240,7 +235,7 @@ impl SurgeParser {
                     option: None,
                     is_subscription: false,
                 };
-                (None, policy)
+                (None, Some(policy))
             }
             _ => {
                 let value = fields[1].trim().to_string();
@@ -249,27 +244,24 @@ impl SurgeParser {
                     option: fields.get(3).map(|o| o.to_string()),
                     is_subscription: false,
                 };
-                (Some(value), policy)
+                (Some(value), Some(policy))
             }
         };
 
         let rule_type = RuleType::from_str(fields[0].trim())?;
+        let comment = None;
 
         let rule = Rule {
             rule_type,
             value,
             policy,
-            comment: None,
+            comment,
         };
         Ok(rule)
     }
 
     #[instrument(skip_all)]
-    fn parse_comment<R, F, C>(
-        contents: impl IntoIterator<Item = impl AsRef<str>>,
-        parse: F,
-        set_comment: C,
-    ) -> Result<Vec<R>>
+    fn parse_comment<R, F, C>(contents: impl IntoIterator<Item = impl AsRef<str>>, parse: F, set_comment: C) -> Result<Vec<R>>
     where
         F: Fn(&str) -> Result<R>,
         C: Fn(&mut R, Option<String>),
@@ -282,7 +274,9 @@ impl SurgeParser {
                 line if line.is_empty() || line.starts_with('#') || line.starts_with(';') || line.starts_with("//") => {
                     match comment.as_mut() {
                         None => comment = Some(line.to_string()),
-                        Some(comment) => write!(comment, "\n{line}")?,
+                        Some(comment) => write!(comment, "\n{line}")
+                            .map_err(InternalError::Fmt)
+                            .map_err(ParseError::Unknown)?,
                     }
                 }
                 _ => match parse(line) {
@@ -293,7 +287,9 @@ impl SurgeParser {
                     Err(e) => {
                         match comment.as_mut() {
                             None => comment = Some(line.to_string()),
-                            Some(comment) => writeln!(comment, "{line}")?,
+                            Some(comment) => writeln!(comment, "{line}")
+                                .map_err(InternalError::Fmt)
+                                .map_err(ParseError::Unknown)?,
                         }
                         trace!("{e}")
                     }
@@ -318,7 +314,7 @@ impl SurgeParser {
                         Ok(Rule {
                             rule_type,
                             value: Some(value),
-                            policy: Policy::default(),
+                            policy: Some(Policy::default()),
                             comment: None,
                         })
                     }

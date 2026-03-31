@@ -5,7 +5,9 @@ use convertor::telemetry::opentelemetry::propagation::Extractor;
 use convertor::telemetry::opentelemetry::trace::{SpanKind, TraceContextExt};
 use convertor::telemetry::tracing_opentelemetry::OpenTelemetrySpanExt;
 use std::net::SocketAddr;
+use std::sync::OnceLock;
 use std::time::Duration;
+use tower_http::classify::ServerErrorsFailureClass;
 use tower_http::trace::{DefaultOnBodyChunk, DefaultOnEos, HttpMakeClassifier, MakeSpan, TraceLayer};
 use tracing::{Level, Span, field, info_span};
 use uuid::Uuid;
@@ -14,10 +16,10 @@ use uuid::Uuid;
 pub fn convd_trace_layer()
 -> TraceLayer<HttpMakeClassifier, ConvdMakeSpan, HttpOnRequest, HttpOnResponse, DefaultOnBodyChunk, DefaultOnEos, HttpOnFailure> {
     TraceLayer::new_for_http()
-        .make_span_with(ConvdMakeSpan::default())
-        .on_request(HttpOnRequest::default())
-        .on_response(HttpOnResponse::default())
-        .on_failure(HttpOnFailure::default())
+        .make_span_with(ConvdMakeSpan)
+        .on_request(HttpOnRequest)
+        .on_response(HttpOnResponse)
+        .on_failure(HttpOnFailure)
 }
 
 // 让 HeaderMap 变成 OTel 的 Extractor
@@ -100,7 +102,7 @@ impl<B> MakeSpan<B> for ConvdMakeSpan {
         let cx = global::get_text_map_propagator(|p| p.extract(&HeaderExtractor(request.headers())));
         let parent_ctx = cx.span().span_context().clone();
         if parent_ctx.is_valid() {
-            span.record("parent_span_id", &field::display(parent_ctx.span_id()));
+            span.record("parent_span_id", field::display(parent_ctx.span_id()));
         }
         if let Err(e) = span.set_parent(cx) {
             tracing::warn!("Failed to extract trace context: {}", e);
@@ -141,12 +143,11 @@ impl<B> tower_http::trace::OnResponse<B> for HttpOnResponse {
         span.record("latency_ms", latency_ms);
 
         // 尝试获取响应体大小
-        if let Some(content_length) = response.headers().get("content-length") {
-            if let Ok(length_str) = content_length.to_str() {
-                if let Ok(length) = length_str.parse::<u64>() {
-                    span.record("bytes_sent", length);
-                }
-            }
+        if let Some(content_length) = response.headers().get("content-length")
+            && let Ok(length_str) = content_length.to_str()
+            && let Ok(length) = length_str.parse::<u64>()
+        {
+            span.record("bytes_sent", length);
         }
 
         // 根据状态码、路径和延迟决定日志级别和内容
@@ -208,30 +209,32 @@ impl<B> tower_http::trace::OnResponse<B> for HttpOnResponse {
 #[derive(Default, Clone)]
 pub struct HttpOnFailure;
 
-impl tower_http::trace::OnFailure<tower_http::classify::ServerErrorsFailureClass> for HttpOnFailure {
-    fn on_failure(&mut self, failure_classification: tower_http::classify::ServerErrorsFailureClass, latency: Duration, span: &Span) {
+impl tower_http::trace::OnFailure<ServerErrorsFailureClass> for HttpOnFailure {
+    fn on_failure(&mut self, failure_classification: ServerErrorsFailureClass, latency: Duration, span: &Span) {
         let latency_ms = latency.as_millis() as u64;
         span.record("latency_ms", latency_ms);
-
-        tracing::error!(
-            parent: span,
-            latency_ms = latency_ms,
-            failure_class = ?failure_classification,
-            "HTTP request failed"
-        );
+        if let ServerErrorsFailureClass::Error(error) = failure_classification {
+            tracing::error!(
+                parent: span,
+                latency_ms = latency_ms,
+                failure_class = %error,
+                "HTTP request failed"
+            );
+        }
     }
 }
 
 /// 获取服务实例ID，用于区分集群中的不同实例
-fn get_service_instance_id() -> String {
-    // 尝试从环境变量获取实例ID
-    std::env::var("SERVICE_INSTANCE_ID")
-        .or_else(|_| std::env::var("HOSTNAME"))
-        .or_else(|_| std::env::var("POD_NAME"))
-        .unwrap_or_else(|_| {
-            // 如果没有设置环境变量，生成基于主机名的实例ID
-            format!("convd-{}", Uuid::new_v4().to_string().split('-').next().unwrap_or("unknown"))
+fn get_service_instance_id() -> &'static str {
+    static SERVICE_INSTANCE_ID: OnceLock<String> = OnceLock::new();
+    SERVICE_INSTANCE_ID
+        .get_or_init(|| {
+            std::env::var("SERVICE_INSTANCE_ID")
+                .or_else(|_| std::env::var("HOSTNAME"))
+                .or_else(|_| std::env::var("POD_NAME"))
+                .unwrap_or_else(|_| format!("convd-{}", Uuid::new_v4().to_string().split('-').next().unwrap_or("unknown")))
         })
+        .as_str()
 }
 
 /// 根据状态码、延迟和路径确定日志级别和消息
@@ -289,7 +292,7 @@ fn record_trace_ids(span: &Span) {
     let ctx = span.context();
     let span_ctx = ctx.span().span_context().clone();
     if span_ctx.is_valid() {
-        span.record("trace_id", &field::display(span_ctx.trace_id()));
-        span.record("span_id", &field::display(span_ctx.span_id()));
+        span.record("trace_id", field::display(span_ctx.trace_id()));
+        span.record("span_id", field::display(span_ctx.span_id()));
     }
 }

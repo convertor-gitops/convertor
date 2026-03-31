@@ -1,0 +1,78 @@
+:host {
+    display: block;
+    width:   100%;
+
+    mat-card-header {
+        display:         flex;
+        align-items:     center;
+        justify-content: space-between;
+    }
+
+    .status-panel {
+        display:               grid;
+        grid-template-columns: auto 1fr;
+        gap:                   4px 8px;
+        align-items:           center;
+    }
+
+    .status-row {
+        display:               grid;
+        grid-template-columns: subgrid;
+        grid-column:           1 / -1;
+        align-items:           center;
+        font-size:             12px;
+        line-height:           18px;
+
+        .key {
+            min-width:      48px;
+            color:          var(--mat-sys-on-surface-variant);
+            opacity:        0.7;
+            text-transform: capitalize;
+        }
+
+        .value {
+            color: var(--mat-sys-on-surface);
+
+            &.version {
+                font-family: "JetBrains Mono", "Fira Code", monospace;
+                opacity:     0.9;
+            }
+
+            &.health {
+                display:     inline-flex;
+                align-items: center;
+                gap:         4px;
+
+                .dot {
+                    width:         6px;
+                    height:        6px;
+                    border-radius: 50%;
+                    display:       inline-block;
+                    flex-shrink:   0;
+                }
+
+                .desc {
+                    opacity: 0.9;
+                }
+            }
+
+            &.healthy .dot {
+                background: #4caf50;
+            }
+
+            &.unhealthy .dot {
+                background: #f44336;
+            }
+
+            &.offline {
+                .dot {
+                    background: #757575;
+                }
+
+                .desc {
+                    opacity: 0.5;
+                }
+            }
+        }
+    }
+}

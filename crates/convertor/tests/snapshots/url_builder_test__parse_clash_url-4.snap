@@ -1,0 +1,399 @@
+---
+source: crates/convertor/tests/url_builder_test.rs
+expression: rule_provider_urls
+---
+[
+    ConvUrl {
+        type: RuleProvider,
+        server: Url {
+            scheme: "http",
+            cannot_be_a_base: false,
+            username: "",
+            password: None,
+            host: Some(
+                Ipv4(
+                    127.0.0.1,
+                ),
+            ),
+            port: Some(
+                8080,
+            ),
+            path: "/",
+            query: None,
+            fragment: None,
+        },
+        query: Some(
+            ConvQuery {
+                server: Url {
+                    scheme: "http",
+                    cannot_be_a_base: false,
+                    username: "",
+                    password: None,
+                    host: Some(
+                        Ipv4(
+                            127.0.0.1,
+                        ),
+                    ),
+                    port: Some(
+                        8080,
+                    ),
+                    path: "/",
+                    query: None,
+                    fragment: None,
+                },
+                sub_url: "ezYMhGpX6Tv4eJs0tkRkH3Dat5ujCVYjw5EqiCAToCL6yoI4qQiREkk7Gphjk-TKoqguuW_mwJlrg5I37VcTzT2FezZkYEx9LTZBoez1QhQsrgI7ARSnVucnuBBsI5bqCZY",
+                client: Clash,
+                interval: 86400,
+                strict: Some(
+                    true,
+                ),
+                proxy_provider_name: None,
+                policy: Some(
+                    Policy {
+                        name: "DIRECT",
+                        option: None,
+                        is_subscription: true,
+                    },
+                ),
+            },
+        ),
+    },
+    ConvUrl {
+        type: RuleProvider,
+        server: Url {
+            scheme: "http",
+            cannot_be_a_base: false,
+            username: "",
+            password: None,
+            host: Some(
+                Ipv4(
+                    127.0.0.1,
+                ),
+            ),
+            port: Some(
+                8080,
+            ),
+            path: "/",
+            query: None,
+            fragment: None,
+        },
+        query: Some(
+            ConvQuery {
+                server: Url {
+                    scheme: "http",
+                    cannot_be_a_base: false,
+                    username: "",
+                    password: None,
+                    host: Some(
+                        Ipv4(
+                            127.0.0.1,
+                        ),
+                    ),
+                    port: Some(
+                        8080,
+                    ),
+                    path: "/",
+                    query: None,
+                    fragment: None,
+                },
+                sub_url: "g1kwJW_VNvSbKS6WrAGjF8byz5F-8QdOWl-thu_oo-nLONvXcGU07ywFjmVd5AQa-trPz8QFfROqbRvFZLhBWvtH-cTyi8S_A1kDcBCwiQXZH3KQpOHVfA8R9niaADvw8KY",
+                client: Clash,
+                interval: 86400,
+                strict: Some(
+                    true,
+                ),
+                proxy_provider_name: None,
+                policy: Some(
+                    Policy {
+                        name: "BosLife",
+                        option: None,
+                        is_subscription: false,
+                    },
+                ),
+            },
+        ),
+    },
+    ConvUrl {
+        type: RuleProvider,
+        server: Url {
+            scheme: "http",
+            cannot_be_a_base: false,
+            username: "",
+            password: None,
+            host: Some(
+                Ipv4(
+                    127.0.0.1,
+                ),
+            ),
+            port: Some(
+                8080,
+            ),
+            path: "/",
+            query: None,
+            fragment: None,
+        },
+        query: Some(
+            ConvQuery {
+                server: Url {
+                    scheme: "http",
+                    cannot_be_a_base: false,
+                    username: "",
+                    password: None,
+                    host: Some(
+                        Ipv4(
+                            127.0.0.1,
+                        ),
+                    ),
+                    port: Some(
+                        8080,
+                    ),
+                    path: "/",
+                    query: None,
+                    fragment: None,
+                },
+                sub_url: "8GBW8kJV4rJfYqnxtCfmqYLqFPQs1Wgk15xxomDSgVuUBZGnyRGqx045PuXnFI3X5Pp7PODNAfE3WOTflnHRK2IAs3id7U6FxpW3XOA9267NoWqN-v1naZGR6HlLYK5uwoU",
+                client: Clash,
+                interval: 86400,
+                strict: Some(
+                    true,
+                ),
+                proxy_provider_name: None,
+                policy: Some(
+                    Policy {
+                        name: "BosLife",
+                        option: Some(
+                            "no-resolve",
+                        ),
+                        is_subscription: false,
+                    },
+                ),
+            },
+        ),
+    },
+    ConvUrl {
+        type: RuleProvider,
+        server: Url {
+            scheme: "http",
+            cannot_be_a_base: false,
+            username: "",
+            password: None,
+            host: Some(
+                Ipv4(
+                    127.0.0.1,
+                ),
+            ),
+            port: Some(
+                8080,
+            ),
+            path: "/",
+            query: None,
+            fragment: None,
+        },
+        query: Some(
+            ConvQuery {
+                server: Url {
+                    scheme: "http",
+                    cannot_be_a_base: false,
+                    username: "",
+                    password: None,
+                    host: Some(
+                        Ipv4(
+                            127.0.0.1,
+                        ),
+                    ),
+                    port: Some(
+                        8080,
+                    ),
+                    path: "/",
+                    query: None,
+                    fragment: None,
+                },
+                sub_url: "hb5EfgFntmxwBP85w1jLlLQG6AMasTlcXZkLFlfvyAOyFzKfYhaACgLwzqLDMk0Rv7SRHJt4F9HLN4bxhZDeDf_WQpAhS1BKtKCt9RMVVfp4y_qkH3MDf70RR_0EDUC41G0",
+                client: Clash,
+                interval: 86400,
+                strict: Some(
+                    true,
+                ),
+                proxy_provider_name: None,
+                policy: Some(
+                    Policy {
+                        name: "BosLife",
+                        option: Some(
+                            "force-remote-dns",
+                        ),
+                        is_subscription: false,
+                    },
+                ),
+            },
+        ),
+    },
+    ConvUrl {
+        type: RuleProvider,
+        server: Url {
+            scheme: "http",
+            cannot_be_a_base: false,
+            username: "",
+            password: None,
+            host: Some(
+                Ipv4(
+                    127.0.0.1,
+                ),
+            ),
+            port: Some(
+                8080,
+            ),
+            path: "/",
+            query: None,
+            fragment: None,
+        },
+        query: Some(
+            ConvQuery {
+                server: Url {
+                    scheme: "http",
+                    cannot_be_a_base: false,
+                    username: "",
+                    password: None,
+                    host: Some(
+                        Ipv4(
+                            127.0.0.1,
+                        ),
+                    ),
+                    port: Some(
+                        8080,
+                    ),
+                    path: "/",
+                    query: None,
+                    fragment: None,
+                },
+                sub_url: "838LWMhjYKCayG-FrHVIn0IXp9yNzahvaneyIsQiYQBdPrXx9Tk9wFisJx_NQ-gR4GuxrMygy5iGFYSKkEnFTxKzfiq4bSpMqU_vGpMJ9Ws2j7B0rZIGI8Wz_qQr5-bKvfk",
+                client: Clash,
+                interval: 86400,
+                strict: Some(
+                    true,
+                ),
+                proxy_provider_name: None,
+                policy: Some(
+                    Policy {
+                        name: "DIRECT",
+                        option: None,
+                        is_subscription: false,
+                    },
+                ),
+            },
+        ),
+    },
+    ConvUrl {
+        type: RuleProvider,
+        server: Url {
+            scheme: "http",
+            cannot_be_a_base: false,
+            username: "",
+            password: None,
+            host: Some(
+                Ipv4(
+                    127.0.0.1,
+                ),
+            ),
+            port: Some(
+                8080,
+            ),
+            path: "/",
+            query: None,
+            fragment: None,
+        },
+        query: Some(
+            ConvQuery {
+                server: Url {
+                    scheme: "http",
+                    cannot_be_a_base: false,
+                    username: "",
+                    password: None,
+                    host: Some(
+                        Ipv4(
+                            127.0.0.1,
+                        ),
+                    ),
+                    port: Some(
+                        8080,
+                    ),
+                    path: "/",
+                    query: None,
+                    fragment: None,
+                },
+                sub_url: "5tnglcFMVhld81iEKbOEIDyGsfsJ1BvnuoXYXXWOo7qli8w_-IcVIaaK2yKb0E4XGLHn_OiBxCkLrd6TNHtcxHJDHVAlMCGFCF_9FTVYQpXg_QglHabpsSJwa8psdKisV8w",
+                client: Clash,
+                interval: 86400,
+                strict: Some(
+                    true,
+                ),
+                proxy_provider_name: None,
+                policy: Some(
+                    Policy {
+                        name: "DIRECT",
+                        option: Some(
+                            "no-resolve",
+                        ),
+                        is_subscription: false,
+                    },
+                ),
+            },
+        ),
+    },
+    ConvUrl {
+        type: RuleProvider,
+        server: Url {
+            scheme: "http",
+            cannot_be_a_base: false,
+            username: "",
+            password: None,
+            host: Some(
+                Ipv4(
+                    127.0.0.1,
+                ),
+            ),
+            port: Some(
+                8080,
+            ),
+            path: "/",
+            query: None,
+            fragment: None,
+        },
+        query: Some(
+            ConvQuery {
+                server: Url {
+                    scheme: "http",
+                    cannot_be_a_base: false,
+                    username: "",
+                    password: None,
+                    host: Some(
+                        Ipv4(
+                            127.0.0.1,
+                        ),
+                    ),
+                    port: Some(
+                        8080,
+                    ),
+                    path: "/",
+                    query: None,
+                    fragment: None,
+                },
+                sub_url: "x_x-GEVdgLCq_dOJ0R7FVzZTb79IkcSA2Hzr6dzkMoC5_Hj8lwR988yBURK7oDdPvYCk6qXyVsoujRKKY_0OeUlSiVK3e98oTlJfDC09BElblCwSZlCqzB55qfpMrmbDgxs",
+                client: Clash,
+                interval: 86400,
+                strict: Some(
+                    true,
+                ),
+                proxy_provider_name: None,
+                policy: Some(
+                    Policy {
+                        name: "DIRECT",
+                        option: Some(
+                            "force-remote-dns",
+                        ),
+                        is_subscription: false,
+                    },
+                ),
+            },
+        ),
+    },
+]

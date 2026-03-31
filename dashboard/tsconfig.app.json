@@ -6,6 +6,9 @@
         "outDir": "./out-tsc/app",
         "types": []
     },
+    "files": [
+        "../metadata.json"
+    ],
     "include": [
         "src/**/*.ts"
     ],

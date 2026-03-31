@@ -1,0 +1,25 @@
+---
+source: crates/convertor/tests/url_builder_test.rs
+expression: original_url
+---
+ConvUrl {
+    type: Original,
+    server: Url {
+        scheme: "https",
+        cannot_be_a_base: false,
+        username: "",
+        password: None,
+        host: Some(
+            Domain(
+                "convertor.bppleman.com",
+            ),
+        ),
+        port: None,
+        path: "/subscription",
+        query: Some(
+            "token=bppleman&flag=clash",
+        ),
+        fragment: None,
+    },
+    query: None,
+}

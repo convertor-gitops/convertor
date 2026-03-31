@@ -4,6 +4,7 @@ members = [
     "crates/convd",
     "crates/confly",
     "crates/convertor",
+    "crates/fetcher",
     "crates/builder",
     "crates/example",
 ]
@@ -13,12 +14,13 @@ description = "A profile converter for surge/clash."
 repository = "https://github.com/convertor-gitops/convertor"
 authors = ["BppleMan"]
 license = "Apache-2.0"
-version = "2.6.16"
+version = "2.6.17"
 edition = "2024"
 
 [workspace.dependencies]
 # 本地/工作区包
-convertor = { path = "crates/convertor", version = "2.6.12" }
+convertor = { path = "crates/convertor", version = "2.6.16" }
+fetcher = { path = "crates/fetcher", version = "2.6.17" }
 
 # 异步运行时 & 并发相关
 tokio = { version = "1.48.0", default-features = false }
@@ -35,11 +37,14 @@ tower-http = { version = "0.6.6", default-features = false }
 reqwest = { version = "0.12.24", default-features = false }
 http-body-util = { version = "0.1.3", default-features = false }
 headers = { version = "0.4.1", default-features = false }
+bytes = { version = "1.10.1", default-features = false }
 
 # 序列化/反序列化/配置
 serde = { version = "1.0.228", default-features = false }
 serde_json = { version = "1.0.145", default-features = false }
-serde_yaml = { version = "0.9.33", default-features = false }
+serde_yml = { version = "0.0.12", default-features = false }
+serde_qs = { version = "1.0.0", default-features = false }
+#serde_qs_ext = { version = "0.12.0", default-features = false }
 toml = { version = "0.9.8", default-features = false }
 jsonpath_lib = { version = "0.3.0", default-features = false }
 config = { version = "0.15.18", default-features = false }
@@ -57,12 +62,14 @@ axum-prometheus = { version = "0.9.0", default-features = false }
 metrics = { version = "0.24.2", default-features = false }
 
 # 加密/哈希/编码
-rand_chacha = { version = "0.9.0", default-features = false }
-rand_core = { version = "0.9.3", default-features = false }
+rand_chacha = { version = "0.10.0", default-features = false }
+rand_core = { version = "0.10.0", default-features = false }
 chacha20poly1305 = { version = "0.10.1", default-features = false }
 base64 = { version = "0.22.1", default-features = false }
 percent-encoding = { version = "2.3.2", default-features = false }
 uuid = { version = "1.18.1", default-features = false }
+getrandom = { version = "0.4.2", default-features = false }
+blake3 = { version = "1.8.3", default-features = false }
 
 # 缓存/存储/数据库
 redis = { version = "0.32.5", default-features = false }

@@ -1,7 +1,15 @@
 import { AsyncPipe } from "@angular/common";
-import { HttpErrorResponse } from "@angular/common/http";
-import { ChangeDetectionStrategy, Component, effect, inject, model } from "@angular/core";
-import { MatCardContent, MatCardHeader, MatCardTitle } from "@angular/material/card";
+import {
+    ChangeDetectionStrategy,
+    Component,
+    inject,
+    model,
+} from "@angular/core";
+import {
+    MatCardContent,
+    MatCardHeader,
+    MatCardTitle,
+} from "@angular/material/card";
 import { MatChip } from "@angular/material/chips";
 import { MatDivider } from "@angular/material/divider";
 import {
@@ -11,9 +19,13 @@ import {
     MatExpansionPanelHeader,
     MatExpansionPanelTitle,
 } from "@angular/material/expansion";
-import { combineLatest, filter, map, Observable, startWith, tap, withLatestFrom } from "rxjs";
-import { RequestSnapshot } from "../../../common/response/request";
-import { ApiResponse } from "../../../common/response/response";
+import {
+    filter,
+    map,
+    shareReplay,
+} from "rxjs";
+import { DashboardErrorResponse } from "../../../common/error/dashboard-http.error";
+import { ResponseBody } from "../../../common/response/response";
 import { DashboardService } from "../../../service/dashboard.service";
 import { DashboardPanel } from "../dashboard-panel/dashboard-panel";
 
@@ -41,88 +53,48 @@ import { DashboardPanel } from "../dashboard-panel/dashboard-panel";
 export class DashboardError {
     dashboardService: DashboardService = inject(DashboardService);
 
-    dashboardHttpError$ = this.dashboardService.error$;
-
-    httpErrorResponse$ = this.dashboardHttpError$.pipe(
-        map((error) => error?.cause),
+    /** 非 null 的错误对象流 */
+    dashboardError$ = this.dashboardService.error$.pipe(
+        filter((e): e is DashboardErrorResponse => e != null),
+        shareReplay(1),
     );
 
-    apiResponse$ = this.httpErrorResponse$.pipe(
-        map((error) => error?.error),
-        filter((error) => !!error),
-        map((error) => ApiResponse.deserialize(error)),
+    /** 客户端请求视角（ResponseBody：status=HTTP状态, request=客户端RequestBody） */
+    clientRequest$ = this.dashboardError$.pipe(
+        map((e) => e.clientRequest),
     );
 
-    test = combineLatest([]).pipe();
-
-    clientRequest$ = this.httpErrorResponse$.pipe(
-        filter((error) => !!(error?.url)),
-        map((error) => <[ HttpErrorResponse, string ]>[ error!, error!.url! ]),
-        withLatestFrom(this.dashboardHttpError$.pipe(
-            filter((error) => !!(error?.method)),
-            map((error) => error!.method!),
-        )),
-        map(([ [ error, url ], method ]) => {
-            const parsedUrl = new URL(url);
-            const headers = new Map<string, string>();
-            error.headers.keys().forEach(key => {
-                headers.set(key, error.headers.get(key) ?? "");
-            });
-            return new RequestSnapshot(
-                method,
-                parsedUrl.protocol,
-                parsedUrl.host,
-                parsedUrl.pathname + parsedUrl.search,
-                headers,
-            );
-        }),
-    );
-    serverRequest$ = this.apiResponse$.pipe(
-        map((response) => response.request),
-    );
-    requests$: Observable<Record<string, RequestSnapshot | null>> = combineLatest([
-        this.clientRequest$.pipe(startWith(null)),
-        this.serverRequest$.pipe(startWith(null)),
-    ]).pipe(
-        map(([ client, server ]) => {
-            return {
-                "客户端发出请求": client,
-                "服务端收到请求": server,
-            };
-        }),
+    /** 服务端响应（ResponseBody：status=业务状态, request=服务端RequestBody, messages=错误链） */
+    responseBody$ = this.dashboardError$.pipe(
+        map((e) => e.responseBody),
     );
 
-    errorMessage$ = this.httpErrorResponse$.pipe(
-        map((error) => error?.message ?? ""),
+    /** 请求对比列表：客户端 vs 服务端 */
+    requests$ = this.dashboardError$.pipe(
+        map((e) => <{ desc: string, body: ResponseBody<unknown> | null; }[]>[
+            { desc: "客户端发出请求", body: e.clientRequest },
+            { desc: "服务端收到请求", body: e.responseBody },
+        ]),
     );
 
-    // response messages
-    mainMessage$ = this.apiResponse$.pipe(
-        map((response) => response.messages[0] ?? ""),
-        tap(console.log),
+    /** 错误链主消息 */
+    mainMessage$ = this.dashboardError$.pipe(
+        map((e) => e.responseBody?.messages[0] ?? ""),
     );
-    causeMessages$ = this.apiResponse$.pipe(
-        map((response) => response.messages.slice(1)),
+
+    /** 错误链 cause */
+    causeMessages$ = this.dashboardError$.pipe(
+        map((e) => e.responseBody?.messages.slice(1) ?? []),
     );
 
     // ui
     clientRequestCollapsed = model(false);
 
-    constructor() {
-        effect(() => {
-            console.log(this.clientRequestCollapsed());
-        });
-    }
-
     afterCollapse() {
-        console.log("afterCollapse");
         this.clientRequestCollapsed.set(true);
     }
 
     afterExpand() {
-        console.log("afterExpand");
         this.clientRequestCollapsed.set(false);
     }
-
-    protected readonly Object = Object;
 }
