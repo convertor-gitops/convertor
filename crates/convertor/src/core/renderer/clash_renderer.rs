@@ -84,7 +84,7 @@ impl Renderer for ClashRenderer {
 
     fn render_proxy(proxy: &Proxy) -> Result<String> {
         let mut output = String::new();
-        write!(output, "{{ ")?;
+        write!(output, "- {{ ")?;
         write!(output, r#"name: "{}""#, &proxy.name)?;
         write!(output, r#", type: "{}""#, &proxy.r#type)?;
         write!(output, r#", server: "{}""#, &proxy.server)?;
@@ -111,7 +111,7 @@ impl Renderer for ClashRenderer {
 
     fn render_proxy_group(proxy_group: &ProxyGroup) -> Result<String> {
         let mut output = String::new();
-        write!(output, "{{ ")?;
+        write!(output, "- {{ ")?;
         write!(output, r#"name: "{}""#, proxy_group.name)?;
         write!(output, r#", type: "{}""#, proxy_group.r#type.as_str())?;
         if let Some(proxies) = proxy_group.proxies.as_ref()
@@ -122,7 +122,7 @@ impl Renderer for ClashRenderer {
         if let Some(uses) = proxy_group.uses.as_ref()
             && !uses.is_empty()
         {
-            write!(output, r#", uses: [ {} ]"#, uses.join(", "))?;
+            write!(output, r#", use: [ {} ]"#, uses.join(", "))?;
         }
         if let Some(filter) = proxy_group.filter.as_ref()
             && !filter.is_empty()
@@ -141,7 +141,7 @@ impl Renderer for ClashRenderer {
 
     fn render_rule(rule: &Rule) -> Result<String> {
         let mut output = String::new();
-        write!(output, "{}", rule.rule_type.as_str())?;
+        write!(output, "- {}", rule.rule_type.as_str())?;
         if let Some(value) = rule.value.as_ref() {
             write!(output, ",{}", value)?;
         }
@@ -198,7 +198,7 @@ impl ClashRenderer {
     #[instrument(skip_all)]
     pub fn render_proxy_provider_payload(proxies: &[Proxy]) -> Result<String> {
         let mut output = String::new();
-        writeln!(output, "payload:")?;
+        writeln!(output, "proxies:")?;
         writeln!(output, "{}", Self::render_lines(proxies, Self::render_proxy)?)?;
         Ok(output)
     }
