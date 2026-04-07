@@ -14,7 +14,7 @@ description = "A profile converter for surge/clash."
 repository = "https://github.com/convertor-gitops/convertor"
 authors = ["BppleMan"]
 license = "Apache-2.0"
-version = "2.6.17"
+version = "2.6.18"
 edition = "2024"
 
 [workspace.dependencies]
