@@ -99,7 +99,7 @@ impl ProfileTrait for SurgeProfile {
         let region_groups = region_map
             .into_iter()
             .map(|(region, proxies)| {
-                let name = format!("{} {}", region.icon, region.cn);
+                let name = region.policy_name();
                 let proxy_group_type = ProxyGroupType::Smart;
                 let proxies = proxies.into_iter().map(|p| p.name.to_string()).collect::<Vec<_>>();
                 ProxyGroup::use_proxies(name, proxy_group_type, proxies)
