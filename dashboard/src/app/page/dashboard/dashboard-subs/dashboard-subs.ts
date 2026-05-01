@@ -5,6 +5,7 @@ import {
     inject,
 } from "@angular/core";
 import { ReactiveFormsModule } from "@angular/forms";
+import { MatButton } from "@angular/material/button";
 import {
     MatCard,
     MatCardContent,
@@ -36,6 +37,7 @@ import { DashboardPanel } from "../dashboard-panel/dashboard-panel";
         MatDivider,
         IconButton,
         CdkCopyToClipboard,
+        MatButton,
     ],
     templateUrl: "./dashboard-subs.html",
     styleUrl: "./dashboard-subs.scss",

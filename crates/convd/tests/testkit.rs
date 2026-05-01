@@ -43,7 +43,7 @@ pub async fn start_server() -> Result<ServerContext> {
 
     let app = Arc::new(AppState::new(config, None, None));
     let router: Router = Router::new()
-        .nest(UrlType::prefix(), subscription::router())
+        .nest(UrlType::prefix(), subscription::router().into())
         .with_state(app.clone());
 
     Ok(ServerContext { router, app })

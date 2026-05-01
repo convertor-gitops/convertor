@@ -55,6 +55,11 @@ redis = { workspace = true, features = ["tokio-rustls-comp", "streams", "connect
 # CLI / 工具 / 键入
 clap = { workspace = true, features = ["cargo", "derive", "default"] }
 
+# API
+utoipa = { workspace = true, features = ["default", "axum_extras"] }
+utoipa-axum = { workspace = true }
+utoipa-scalar = { workspace = true, features = ["axum"] }
+
 # 其他 / 辅助
 mime_guess = { workspace = true }
 thiserror = { workspace = true }

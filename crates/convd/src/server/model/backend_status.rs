@@ -1,6 +1,7 @@
 use serde::Serialize;
+use utoipa::ToSchema;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct BackendStatus {
     /// 后端版本号，取自 env!("CARGO_PKG_VERSION")
     pub version: String,
@@ -8,7 +9,7 @@ pub struct BackendStatus {
     pub services: Vec<ServiceStatus>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct ServiceStatus {
     /// 服务名称，如 "redis", "loki", "tempo"
     pub name: String,

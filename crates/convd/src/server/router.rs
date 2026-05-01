@@ -7,16 +7,22 @@ pub mod subscription;
 
 use crate::server::AppState;
 use crate::server::layer::trace::convd_trace_layer;
+use axum::Json;
 use axum::Router;
 use axum::response::Redirect;
 use axum::routing::get;
 use axum_prometheus::PrometheusMetricLayer;
 use convertor::url::conv_url::UrlType;
 use std::sync::Arc;
+use utoipa::openapi::OpenApi;
+use utoipa_axum::router::OpenApiRouter;
+
+#[cfg(debug_assertions)]
+use utoipa_scalar::{Scalar, Servable};
 
 pub fn router(app_state: AppState) -> Router {
     let (prome_layer, prome_handle) = PrometheusMetricLayer::pair();
-    Router::new()
+    let router = OpenApiRouter::<Arc<AppState>>::new()
         .route("/", get(|| async { Redirect::permanent("/dashboard/") }))
         .route("/dashboard", get(|| async { Redirect::permanent("/dashboard/") }))
         .route("/index.html", get(|| async { Redirect::permanent("/dashboard/") }))
@@ -24,10 +30,37 @@ pub fn router(app_state: AppState) -> Router {
         .nest("/api", api::router())
         .nest("/download", download::router())
         .nest(UrlType::prefix(), subscription::router())
-        .nest("/dashboard/", frontend::router())
+        .nest("/dashboard/", frontend::router().into())
         .with_state(Arc::new(app_state))
         .layer(convd_trace_layer())
-        .layer(prome_layer)
+        .layer(prome_layer);
+
+    #[cfg(debug_assertions)]
+    {
+        let (router, openapi) = router.split_for_parts();
+        return router.merge(debug_docs_router(openapi));
+    }
+
+    #[cfg(not(debug_assertions))]
+    {
+        let (router, _) = router.split_for_parts();
+        router
+    }
+}
+
+#[cfg(debug_assertions)]
+fn debug_docs_router(openapi: OpenApi) -> Router {
+    let openapi_json = openapi.clone();
+
+    Router::new()
+        .route(
+            "/api/docs/openapi.json",
+            get(move || {
+                let openapi_json = openapi_json.clone();
+                async move { Json(openapi_json) }
+            }),
+        )
+        .merge(Scalar::with_url("/api/docs", openapi))
 }
 
 // pub struct ConvQueryExtractor(pub ConvQuery);

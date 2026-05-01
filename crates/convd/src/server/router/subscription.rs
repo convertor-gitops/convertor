@@ -1,25 +1,24 @@
 use crate::server::app_state::AppState;
 use crate::server::error::{AppError, AppStatus};
 use crate::server::extractor::{HeaderExtractor, RequestExtractor};
+use crate::server::openapi::ConvQueryParams;
 use crate::server::response::{RequestBody, SubscriptionError};
 use crate::server::router::helper::{build_original_url, gen_url_builder, get_original_profile};
-use axum::Router;
 use axum::extract::State;
-use axum::routing::get;
 use color_eyre::eyre::eyre;
 use convertor::config::proxy_client::ProxyClient;
 use convertor::url::conv_query::ConvQuery;
-use convertor::url::conv_url::UrlType;
 use serde_qs::web::QsQuery;
 use std::sync::Arc;
 use tracing::instrument;
+use utoipa_axum::{router::OpenApiRouter, routes};
 
-pub fn router() -> Router<Arc<AppState>> {
-    Router::new()
-        .route(UrlType::Raw.sub_path(), get(raw_profile))
-        .route(UrlType::Profile.sub_path(), get(profile))
-        .route(UrlType::ProxyProvider.sub_path(), get(proxy_provider))
-        .route(UrlType::RuleProvider.sub_path(), get(rule_provider))
+pub fn router() -> OpenApiRouter<Arc<AppState>> {
+    OpenApiRouter::new()
+        .routes(routes!(raw_profile))
+        .routes(routes!(profile))
+        .routes(routes!(proxy_provider))
+        .routes(routes!(rule_provider))
 }
 
 pub async fn into_subscription_error<F, Fut>(request: RequestBody, f: F) -> Result<String, SubscriptionError>
@@ -30,6 +29,16 @@ where
     f(&request).await.map_err(|err| SubscriptionError::from_app_error(err, request))
 }
 
+#[utoipa::path(
+    get,
+    path = "/raw",
+    params(ConvQueryParams),
+    responses(
+        (status = 200, description = "返回转换前的订阅文本", body = String, content_type = "text/plain"),
+        (status = 500, description = "订阅转换失败", body = String, content_type = "text/plain")
+    ),
+    tag = "subscription"
+)]
 #[instrument(skip_all)]
 async fn raw_profile(
     RequestExtractor(request): RequestExtractor,
@@ -52,6 +61,16 @@ async fn raw_profile(
     .await
 }
 
+#[utoipa::path(
+    get,
+    path = "/profile",
+    params(ConvQueryParams),
+    responses(
+        (status = 200, description = "返回转换后的订阅文本", body = String, content_type = "text/plain"),
+        (status = 500, description = "订阅转换失败", body = String, content_type = "text/plain")
+    ),
+    tag = "subscription"
+)]
 #[instrument(skip_all)]
 async fn profile(
     RequestExtractor(request): RequestExtractor,
@@ -74,6 +93,16 @@ async fn profile(
     .await
 }
 
+#[utoipa::path(
+    get,
+    path = "/proxy-provider",
+    params(ConvQueryParams),
+    responses(
+        (status = 200, description = "返回 Clash Proxy Provider 文本", body = String, content_type = "text/plain"),
+        (status = 500, description = "订阅转换失败", body = String, content_type = "text/plain")
+    ),
+    tag = "subscription"
+)]
 #[instrument(skip_all)]
 async fn proxy_provider(
     RequestExtractor(request): RequestExtractor,
@@ -110,6 +139,16 @@ async fn proxy_provider(
     .await
 }
 
+#[utoipa::path(
+    get,
+    path = "/rule-provider",
+    params(ConvQueryParams),
+    responses(
+        (status = 200, description = "返回 Rule Provider 文本", body = String, content_type = "text/plain"),
+        (status = 500, description = "订阅转换失败", body = String, content_type = "text/plain")
+    ),
+    tag = "subscription"
+)]
 #[instrument(skip_all)]
 async fn rule_provider(
     RequestExtractor(request): RequestExtractor,
