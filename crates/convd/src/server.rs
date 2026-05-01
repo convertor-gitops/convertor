@@ -14,6 +14,7 @@ mod error;
 pub mod extractor;
 pub mod layer;
 mod model;
+mod openapi;
 pub mod response;
 pub mod router;
 pub mod service;
