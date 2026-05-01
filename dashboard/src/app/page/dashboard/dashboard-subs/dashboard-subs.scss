@@ -10,6 +10,30 @@
         word-break: break-word;
     }
 
+    .panel-header {
+        align-items:     center;
+        justify-content: space-between;
+        gap:             12px;
+
+        .form-suffix {
+            width:       82.5px;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        mat-card-title {
+            display:     flex;
+            align-items: center;
+            margin:      0;
+        }
+    }
+
+    ::ng-deep .panel-header .mat-mdc-card-header-text {
+        display:     flex;
+        align-items: center;
+        margin:      0;
+    }
+
     .content-urls {
         display:  flex;
         overflow: hidden;
@@ -43,7 +67,7 @@
                 font-size:   12px;
                 font-weight: 500;
                 line-height: 25px;
-                height: 100%;
+                height:      100%;
                 color:       var(--mat-sys-primary);
             }
 

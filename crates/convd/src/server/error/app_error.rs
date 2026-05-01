@@ -1,6 +1,7 @@
 use color_eyre::Report;
 use serde::Serialize;
 use thiserror::Error;
+use utoipa::ToSchema;
 
 #[derive(Debug, Error)]
 #[error("[App] 错误({}): {}", .status.code, .status.status)]
@@ -16,7 +17,7 @@ impl AppError {
     }
 }
 
-#[derive(Debug, Copy, Clone, Serialize)]
+#[derive(Debug, Copy, Clone, Serialize, ToSchema)]
 pub struct AppStatus {
     pub code: isize,
     pub status: &'static str,

@@ -1,25 +1,39 @@
 use crate::server::app_state::AppState;
-use axum::Router;
 use axum::body::Body;
 use axum::extract::State;
 use axum::http::header::{CONNECTION, HOST, PROXY_AUTHENTICATE, PROXY_AUTHORIZATION, TE, TRAILER, TRANSFER_ENCODING, UPGRADE};
 use axum::http::{HeaderName, HeaderValue, Request, Response, StatusCode};
-use axum::routing::any;
 use futures_util::TryStreamExt;
 use reqwest::Url;
 use serde::Deserialize;
 use serde_qs::axum::QsQuery;
 use std::sync::Arc;
+use utoipa::IntoParams;
+use utoipa_axum::{router::OpenApiRouter, routes};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, IntoParams)]
+#[into_params(parameter_in = Query)]
 pub struct DownloadQuery {
+    #[param(example = "https://example.com/archive.tar.gz")]
     pub url: String,
 }
 
-pub fn router() -> Router<Arc<AppState>> {
-    Router::new().route("/", any(download))
+pub fn router() -> OpenApiRouter<Arc<AppState>> {
+    OpenApiRouter::new().routes(routes!(download))
 }
 
+#[utoipa::path(
+    method(get, options, post, put, patch, delete),
+    path = "/",
+    params(DownloadQuery),
+    responses(
+        (status = 200, description = "透传上游响应", body = String, content_type = "text/plain"),
+        (status = 400, description = "url 参数不合法", body = String, content_type = "text/plain"),
+        (status = 500, description = "构建响应失败", body = String, content_type = "text/plain"),
+        (status = 502, description = "上游请求失败", body = String, content_type = "text/plain")
+    ),
+    tag = "download"
+)]
 async fn download(State(state): State<Arc<AppState>>, QsQuery(q): QsQuery<DownloadQuery>, req: Request<Body>) -> Response<Body> {
     let url = match Url::parse(&q.url) {
         Ok(url) if matches!(url.scheme(), "http" | "https") => url,

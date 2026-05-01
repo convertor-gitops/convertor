@@ -2,8 +2,8 @@ use crate::server::app_state::AppState;
 use crate::server::error::{AppError, AppStatus};
 use crate::server::extractor::RequestExtractor;
 use crate::server::model::{BackendStatus, ServiceStatus};
+use crate::server::openapi::{BackendStatusApiResponseDoc, EmptyApiResponseDoc, ErrorResponseDoc, StringApiResponseDoc};
 use crate::server::response::{ApiError, ApiResponse};
-use axum::Router;
 use axum::extract::State;
 use axum::routing::get;
 use axum_prometheus::metrics_exporter_prometheus::PrometheusHandle;
@@ -11,13 +11,14 @@ use color_eyre::eyre::OptionExt;
 use redis::AsyncTypedCommands;
 use std::sync::Arc;
 use tracing::instrument;
+use utoipa_axum::{router::OpenApiRouter, routes};
 
-pub fn router(metrics_handle: PrometheusHandle) -> Router<Arc<AppState>> {
-    Router::new()
-        .route("/healthy", get(healthy))
+pub fn router(metrics_handle: PrometheusHandle) -> OpenApiRouter<Arc<AppState>> {
+    OpenApiRouter::new()
+        .routes(routes!(healthy))
+        .routes(routes!(redis))
+        .routes(routes!(status))
         .route("/ready", get(redis))
-        .route("/redis", get(redis))
-        .route("/status", get(status))
         .route(
             "/metrics",
             get(move || {
@@ -27,11 +28,28 @@ pub fn router(metrics_handle: PrometheusHandle) -> Router<Arc<AppState>> {
         )
 }
 
+#[utoipa::path(
+    get,
+    path = "/healthy",
+    responses(
+        (status = 200, description = "基础活性检查", body = EmptyApiResponseDoc)
+    ),
+    tag = "actuator"
+)]
 #[instrument(skip_all)]
 async fn healthy() -> Result<ApiResponse<()>, ApiError> {
     Ok(ApiResponse::ok(()))
 }
 
+#[utoipa::path(
+    get,
+    path = "/redis",
+    responses(
+        (status = 200, description = "Redis 连接正常", body = StringApiResponseDoc),
+        (status = 500, description = "Redis 不可用或未配置", body = ErrorResponseDoc)
+    ),
+    tag = "actuator"
+)]
 #[instrument(skip_all)]
 async fn redis(RequestExtractor(request): RequestExtractor, State(state): State<Arc<AppState>>) -> Result<ApiResponse<String>, ApiError> {
     let result: color_eyre::Result<_> = async move {
@@ -46,6 +64,14 @@ async fn redis(RequestExtractor(request): RequestExtractor, State(state): State<
         .map_err(|e| ApiError::internal_server(e, request))
 }
 
+#[utoipa::path(
+    get,
+    path = "/status",
+    responses(
+        (status = 200, description = "返回后端依赖状态", body = BackendStatusApiResponseDoc)
+    ),
+    tag = "actuator"
+)]
 #[instrument(skip_all)]
 async fn status(State(state): State<Arc<AppState>>) -> ApiResponse<BackendStatus> {
     let mut services = Vec::new();

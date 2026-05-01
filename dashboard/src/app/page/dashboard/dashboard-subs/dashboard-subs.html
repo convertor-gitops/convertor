@@ -1,12 +1,12 @@
 <app-dashboard-panel>
-    <mat-card-header>
+    <mat-card-header class = "panel-header">
         <mat-card-title>订阅链接</mat-card-title>
+        <button class = "form-suffix" matButton = "filled">Flush</button>
     </mat-card-header>
     <mat-card-content class = "content-urls">
         <section class = "scrollable urls">
             @for (url of (urls$ | async); track url.toUrl()) {
-                <mat-card class = "url"
-                          appearance = "outlined">
+                <mat-card class = "url" appearance = "outlined">
                     <mat-card-header>
                         <mat-card-title class = "desc">{{ url.type.label }}</mat-card-title>
                         <app-icon-button [cdkCopyToClipboard] = "url.toUrl().toString()">content_copy
@@ -14,11 +14,9 @@
                     </mat-card-header>
                     <mat-divider></mat-divider>
                     <mat-card-content>
-                        <code class = "url"><a target = "_blank"
-                                               rel = "noopener noreferrer"
-                                               href = "{{url.toUrl().toString()}}">{{
-                                url.toUrl().toString()
-                            }}</a></code>
+                        <code class = "url"><a target = "_blank" rel = "noopener noreferrer" href = "{{url.toUrl().toString()}}">
+                            {{ url.toUrl().toString() }}
+                        </a></code>
                     </mat-card-content>
                 </mat-card>
             }

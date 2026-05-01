@@ -94,3 +94,8 @@ thiserror = { version = "2.0.17", default-features = false }
 # MIME 与类型推断
 mime = { version = "0.3.17", default-features = false }
 mime_guess = { version = "2.0.5", default-features = true }
+
+# API
+utoipa = { version = "5.4.0", default-features = false }
+utoipa-axum = { version = "0.2.0", default-features = false }
+utoipa-scalar = "0.3.0"
