@@ -1,7 +1,13 @@
 #!/usr/bin/env just --justfile
 
-install-conv:
-    cargo install --path ./crates/conv
+install-builder:
+    cargo install --path ./crates/builder
+
+version-sync:
+    cargo run -p builder -- version sync
+
+dashboard-debug:
+    cargo run -p builder -- dashboard debug
 
 # build & push base image
 image-base:

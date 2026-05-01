@@ -132,6 +132,7 @@ impl ProfileTrait for ClashProfile {
             })
             .collect::<Vec<_>>();
 
+        // 订阅信息代理组, 包含了所有的订阅信息, 也使用 select 类型
         let sub_info_group = ProxyGroup::use_provider(
             "Subscription Info".to_string(),
             ProxyGroupType::Select,
@@ -144,7 +145,7 @@ impl ProfileTrait for ClashProfile {
         let region_groups = region_map
             .into_iter()
             .filter_map(|(region, proxies)| {
-                let name = format!("{} {}", region.icon, region.cn);
+                let name = region.policy_name();
                 let proxy_group_type = ProxyGroupType::UrlTest;
                 let proxies = proxies.into_iter().map(|p| p.name.to_string()).collect::<Vec<_>>();
                 let filter = best_filter_from_proxy_names(proxies.iter().map(|p| p.as_str()));
