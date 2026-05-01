@@ -15,7 +15,7 @@ pub struct Region {
 
 impl Region {
     pub fn policy_name(&self) -> String {
-        format!("{} {}", self.icon, self.cn)
+        format!("{} {}组", self.icon, self.cn)
     }
 
     pub fn detect(pattern: impl AsRef<str>) -> Option<&'static Self> {
