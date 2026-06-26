@@ -41,7 +41,7 @@ pub struct ServerContext {
 pub async fn start_server() -> Result<ServerContext> {
     let (config, _) = start_mock_provider_server().await?;
 
-    let app = Arc::new(AppState::new(config, None, None));
+    let app = Arc::new(AppState::new(config, None));
     let router: Router = Router::new()
         .nest(UrlType::prefix(), subscription::router())
         .with_state(app.clone());

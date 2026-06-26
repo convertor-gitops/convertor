@@ -27,4 +27,8 @@ pub enum RedisConfigError {
     MissingPort,
     #[error("[RedisConfig] TLS 配置错误: client_cert 和 client_key 必须同时提供")]
     MissingCertOrKey,
+    #[error("[RedisConfig] Sentinel 配置错误: nodes 不能为空")]
+    MissingSentinelNodes,
+    #[error("[RedisConfig] Sentinel 配置错误: master_name 不能为空")]
+    MissingSentinelMasterName,
 }

@@ -1,8 +1,8 @@
 use crate::common::cache::{Cache, CacheKey};
+use crate::common::redis_handle::RedisHandle;
 use crate::config::subscription_config::Headers;
 use crate::error::ProviderError;
 use fetcher::{FetchClient, FetchError, FetchRequest};
-use redis::aio::ConnectionManager;
 use reqwest::Method;
 use std::ops::Deref;
 use std::time::Duration;
@@ -16,7 +16,7 @@ pub struct SubsProvider {
 }
 
 impl SubsProvider {
-    pub fn new(redis: Option<ConnectionManager>, cache_prefix: Option<impl AsRef<str>>) -> Self {
+    pub fn new(redis: Option<RedisHandle>, cache_prefix: Option<impl AsRef<str>>) -> Self {
         let client = FetchClient::builder()
             .with_connect_timeout(Duration::from_millis(5000))
             .build()

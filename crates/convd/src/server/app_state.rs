@@ -1,14 +1,13 @@
 use crate::server::service::{BuildUrlService, ClashService, SurgeService};
+use convertor::common::redis_handle::RedisHandle;
 use convertor::config::Config;
 use convertor::provider::SubsProvider;
-use redis::aio::ConnectionManager;
 use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct AppState {
     pub config: Arc<Config>,
-    pub redis: Option<redis::Client>,
-    pub redis_connection: Option<ConnectionManager>,
+    pub redis_connection: Option<RedisHandle>,
     pub download_client: reqwest::Client,
     pub provider: SubsProvider,
     pub surge_service: SurgeService,
@@ -17,7 +16,7 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new(config: Config, redis: Option<redis::Client>, redis_connection: Option<ConnectionManager>) -> Self {
+    pub fn new(config: Config, redis_connection: Option<RedisHandle>) -> Self {
         let config = Arc::new(config);
         let download_client = reqwest::Client::new();
         let surge_service = SurgeService::new(config.clone());
@@ -26,7 +25,6 @@ impl AppState {
         let provider = SubsProvider::new(redis_connection.clone(), config.redis.as_ref().map(|r| r.prefix.as_str()));
         Self {
             config,
-            redis,
             redis_connection,
             download_client,
             provider,
