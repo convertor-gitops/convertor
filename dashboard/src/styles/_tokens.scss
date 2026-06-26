@@ -1,0 +1,30 @@
+// 应用级 design token —— 单一来源。
+// 颜色类一律用 light-dark()，随 body 的 color-scheme 自动适配暗/浅双主题。
+// 仅在 M3 system token（--mat-sys-*）缺失的语义处自定义，其余优先复用 --mat-sys-*。
+
+:root {
+    /* ---- 语义状态色（M3 无 success，自定义；unhealthy 复用 error 与 error-chip 保持一致）---- */
+    --app-success:    light-dark(#1b873f, #4caf50);
+    --app-on-success: light-dark(#ffffff, #07130a);
+    --app-unhealthy:  var(--mat-sys-error);
+    --app-offline:    light-dark(#9aa0a6, #757575);
+
+    /* ---- 间距刻度（替换散落的 4 / 8 / 12 / 16 / 24 魔法数字）---- */
+    --app-space-1: 4px;
+    --app-space-2: 8px;
+    --app-space-3: 12px;
+    --app-space-4: 16px;
+    --app-space-6: 24px;
+
+    /* ---- 圆角（两级层次：外层卡片 md，嵌套卡片 sm）---- */
+    --app-radius-sm: 6px;
+    --app-radius-md: 12px;
+
+    /* ---- 控件 ---- */
+    --app-control-w:     88px; // 表单后缀列宽（替换 82.5px）
+    --app-icon-btn-size: 24px; // icon-button 按钮尺寸
+    --app-icon-size:     16px; // icon-button 图标尺寸
+
+    /* ---- 页面横向内边距：流体平滑过渡，消除 120px → 24px 跳变 ---- */
+    --app-page-pad-inline: clamp(16px, 8vw, 120px);
+}

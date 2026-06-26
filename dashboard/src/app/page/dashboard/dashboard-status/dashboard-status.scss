@@ -11,7 +11,7 @@
     .status-panel {
         display:               grid;
         grid-template-columns: auto 1fr;
-        gap:                   4px 8px;
+        gap:                   var(--app-space-1) var(--app-space-2);
         align-items:           center;
     }
 
@@ -26,7 +26,6 @@
         .key {
             min-width:      48px;
             color:          var(--mat-sys-on-surface-variant);
-            opacity:        0.7;
             text-transform: capitalize;
         }
 
@@ -35,13 +34,12 @@
 
             &.version {
                 font-family: "JetBrains Mono", "Fira Code", monospace;
-                opacity:     0.9;
             }
 
             &.health {
                 display:     inline-flex;
                 align-items: center;
-                gap:         4px;
+                gap:         var(--app-space-1);
 
                 .dot {
                     width:         6px;
@@ -50,27 +48,23 @@
                     display:       inline-block;
                     flex-shrink:   0;
                 }
-
-                .desc {
-                    opacity: 0.9;
-                }
             }
 
             &.healthy .dot {
-                background: #4caf50;
+                background: var(--app-success);
             }
 
             &.unhealthy .dot {
-                background: #f44336;
+                background: var(--app-unhealthy);
             }
 
             &.offline {
                 .dot {
-                    background: #757575;
+                    background: var(--app-offline);
                 }
 
                 .desc {
-                    opacity: 0.5;
+                    color: var(--mat-sys-on-surface-variant);
                 }
             }
         }
