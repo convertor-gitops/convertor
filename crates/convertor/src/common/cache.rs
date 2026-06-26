@@ -35,7 +35,7 @@ where
     }
 
     pub async fn remove(&self, key: CacheKey<K>) -> Option<V> {
-        if let Some(mut redis) = self.redis.clone() {
+        if let Some(redis) = self.redis.clone() {
             let redis_key = key.as_redis_key();
             redis.del(redis_key).await.ok();
         }
