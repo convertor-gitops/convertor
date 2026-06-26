@@ -8,10 +8,23 @@
     div.no-content {
         display:         flex;
         flex-direction:  column;
+        align-items:     center;
         justify-content: center;
+        gap:             var(--app-space-2);
+
+        // 单色化占位插图：随主题色自动适配暗/浅
+        color: var(--mat-sys-on-surface-variant);
+
+        .icon {
+            width:   100px;
+            height:  100px;
+            fill:    currentColor;
+            opacity: 0.6;
+        }
 
         h3 {
             text-align: center;
+            color:      var(--mat-sys-on-surface-variant);
         }
     }
 }

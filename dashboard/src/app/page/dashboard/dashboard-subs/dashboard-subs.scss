@@ -13,10 +13,10 @@
     .panel-header {
         align-items:     center;
         justify-content: space-between;
-        gap:             12px;
+        gap:             var(--app-space-3);
 
         .form-suffix {
-            width:       82.5px;
+            width:       var(--app-control-w);
             margin-left: auto;
             flex-shrink: 0;
         }
@@ -44,23 +44,24 @@
         display:        flex;
         flex:           1;
         flex-direction: column;
-        gap:            8px;
+        gap:            var(--app-space-2);
 
         mat-card {
-            // overflow:      hidden;
             flex:          1;
-            border-radius: 6px;
+            border-radius: var(--app-radius-sm);
+            // 嵌套卡片比外层 panel 容器再浮起一级，内容区用 -low 形成微凹陷感
+            background:    var(--mat-sys-surface-container-high);
 
             mat-card-header {
                 justify-content: space-between;
-                padding:         8px 12px;
+                padding:         var(--app-space-2) var(--app-space-3);
             }
 
             mat-card-content {
-                padding:                    8px 12px;
+                padding:                    var(--app-space-2) var(--app-space-3);
                 border-bottom-right-radius: inherit;
                 border-bottom-left-radius:  inherit;
-                background:                 #0f1114;
+                background:                 var(--mat-sys-surface-container-low);
             }
 
             .desc {

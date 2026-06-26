@@ -4,6 +4,7 @@
 // Learn more about theming and how to use it for your application's
 // custom components at https://material.angular.dev/guide/theming
 @use "@angular/material" as mat;
+@use "./styles/tokens";
 
 
 $font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
@@ -25,13 +26,13 @@ $font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
         ),
         density: -2,
     ));
-    //noinspection SassScssUnresolvedMixin
+    // surface/on-surface 不再硬编码单值：M3 的 --mat-sys-* 颜色已是 light-dark()，
+    // 移除单值覆盖后可在暗/浅双主题下自动生成正确的 surface 高度分层与文本对比色。
+    // outline 改用基于 on-surface 的 color-mix：比 M3 默认描边更轻、更"无边框感"，
+    // 且双主题下都成立（不会像固定白描边一样在浅色模式下失效）。
     @include mat.theme-overrides((
-        surface: #15161a,
-        on-surface: #e0e0e0,
-        on-surface-variant: #afafaf,
-        outline: rgba(255, 255, 255, 0.04),
-        outline-variant: rgba(255, 255, 255, 0.04),
+        outline: color-mix(in srgb, var(--mat-sys-on-surface), transparent 88%),
+        outline-variant: color-mix(in srgb, var(--mat-sys-on-surface), transparent 92%),
     ));
     @include mat.form-field-overrides((
         container-height: 24px,
@@ -87,23 +88,6 @@ $font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
     ))
 }
 
-body {
-    font:             var(--mat-sys-body-medium);
-    margin:           0;
-    // Default the application to a light color theme. This can be changed to
-    // `dark` to enable the dark color theme, or to `light dark` to defer to the
-    // user's system settings.
-    color:            var(--mat-sys-on-surface);
-
-    // Set a default background, font and text colors for the application using
-    // Angular Material's system-level CSS variables. Learn more about these
-    // variables at https://material.angular.dev/guide/system-variables
-    background-color: var(--mat-sys-surface);
-
-    // Reset the user agent margin.
-    color-scheme:     dark;
-}
-
 /* You can add global styles to this file, and also import other style files */
 
 html, body {
@@ -113,8 +97,11 @@ html, body {
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-    margin:      0;
+    font:             var(--mat-sys-body-medium);
+    color:            var(--mat-sys-on-surface);
+    background-color: var(--mat-sys-surface);
+    // Defer to the user's system light/dark preference.
+    color-scheme:     light dark;
 }
 
 // reset base styles
@@ -126,7 +113,7 @@ p, h1, h2, h3, h4, h5, h6 {
 
 code {
     font-family: "JetBrains Mono", "Fira Code", "Source Code Pro", "SFMono-Regular", Menlo, Monaco, Consolas, "Courier New", monospace;
-    opacity:     0.7;
+    color:       var(--mat-sys-on-surface-variant);
 }
 
 .my-mat-option .mat-mdc-option {
@@ -135,28 +122,23 @@ code {
 
 .scrollable {
     overflow: auto;
+
+    // Firefox
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--mat-sys-primary), transparent 30%) transparent;
 }
 
-/* 轨道（Track） */
-// .scrollable::-webkit-scrollbar-track {
-//     background: transparent; /* 透明轨道 */
-// }
-
-
-/* 滚动条整体 */
+// WebKit
 .scrollable::-webkit-scrollbar {
-    width:  8px; /* 垂直滚动条宽度 */
-    height: 8px; /* 水平滚动条高度 */
+    width:  8px;
+    height: 8px;
 }
 
-/* 轨道（Track） */
 .scrollable::-webkit-scrollbar-track {
-    background: transparent; /* 透明轨道 */
+    background: transparent;
 }
 
-/* 滑块（Thumb） */
 .scrollable::-webkit-scrollbar-thumb {
-    opacity:          50%;
     border-radius:    4px;
     background-color: color-mix(in srgb, var(--mat-sys-primary), transparent 30%);
 }

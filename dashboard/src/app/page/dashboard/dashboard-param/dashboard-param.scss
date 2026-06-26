@@ -4,29 +4,30 @@
     display:        flex;
     flex-direction: column;
     width:          100%;
-    gap:            8px;
+    gap:            var(--app-space-2);
 
     form {
         display:        flex;
         flex-direction: column;
-        gap:            8px;
+        gap:            var(--app-space-2);
 
         .form-row {
             display:        flex;
             flex-direction: row;
-            gap:            12px;
+            flex-wrap:      wrap;
+            gap:            var(--app-space-3);
         }
 
         .form-suffix {
-            width: 82.5px;
+            flex: 0 0 var(--app-control-w);
         }
 
         mat-form-field {
-            flex: 1;
+            flex: 1 1 180px;
         }
 
         mat-slide-toggle {
-            padding-top: 4px;
+            padding-top: var(--app-space-1);
         }
 
         button[matButton="filled"] {
@@ -38,7 +39,7 @@
                 container-text-size: 12px,
                 outlined-label-text-color: color-mix(in srgb, var(--mat-sys-on-surface), transparent 30%),
                 outlined-hover-label-text-color: color-mix(in srgb, var(--mat-sys-on-surface), transparent 10%),
-                outlined-hover-outline-color: color-mix(in srgb, var(--mat-sys-on-surface), transparent 70%),
+                outlined-hover-outline-color: color-mix(in srgb, var(--mat-sys-on-surface), transparent 50%),
             ));
         }
 
@@ -60,6 +61,33 @@
                 min-height: 28px;
             }
         }
+    }
 
+    // 窄屏：表单行堆叠为单列，控件撑满，去掉仅在单行布局才有意义的对齐微调
+    @media (max-width: 600px) {
+        form {
+            .form-row {
+                flex-direction: column;
+                align-items:    stretch;
+            }
+
+            // column 方向下 flex-basis 会作用到高度轴，需复位为内容高度
+            mat-form-field {
+                flex: 0 0 auto;
+            }
+
+            .form-suffix {
+                flex:  none;
+                width: 100%;
+            }
+
+            mat-slide-toggle {
+                padding-top: 0;
+            }
+
+            button[matButton="filled"] {
+                margin-top: 0;
+            }
+        }
     }
 }
