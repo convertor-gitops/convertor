@@ -1,0 +1,4 @@
+interface:
+  display_name: "Convertor Deploy Builder"
+  short_description: "Maintain crates/builder release tooling"
+  default_prompt: "Use $convertor-deploy-builder to maintain the convertor crates/builder release tooling."

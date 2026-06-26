@@ -8,7 +8,6 @@ use axum::extract::State;
 use axum::routing::get;
 use axum_prometheus::metrics_exporter_prometheus::PrometheusHandle;
 use color_eyre::eyre::OptionExt;
-use redis::AsyncTypedCommands;
 use std::sync::Arc;
 use tracing::instrument;
 use utoipa_axum::{router::OpenApiRouter, routes};
@@ -53,7 +52,7 @@ async fn healthy() -> Result<ApiResponse<()>, ApiError> {
 #[instrument(skip_all)]
 async fn redis(RequestExtractor(request): RequestExtractor, State(state): State<Arc<AppState>>) -> Result<ApiResponse<String>, ApiError> {
     let result: color_eyre::Result<_> = async move {
-        let mut con = state.redis_connection.clone().ok_or_eyre("缺失 Redis 连接")?;
+        let con = state.redis_connection.clone().ok_or_eyre("缺失 Redis 连接")?;
         let pone = con.ping().await?;
         Ok(ApiResponse::ok(pone))
     }
@@ -78,7 +77,7 @@ async fn status(State(state): State<Arc<AppState>>) -> ApiResponse<BackendStatus
 
     // Redis
     match state.redis_connection.clone() {
-        Some(mut con) => match con.ping().await {
+        Some(con) => match con.ping().await {
             Ok(_) => services.push(ServiceStatus::healthy("redis")),
             Err(e) => services.push(ServiceStatus::unhealthy("redis", e.to_string())),
         },

@@ -1,7 +1,6 @@
+use crate::common::redis_handle::RedisHandle;
 use crate::config::proxy_client::ProxyClient;
 use moka::future::Cache as MokaCache;
-use redis::AsyncTypedCommands;
-use redis::aio::ConnectionManager;
 use std::fmt::{Debug, Display, Formatter};
 use std::future::Future;
 use std::hash::Hash;
@@ -21,7 +20,7 @@ where
     V: Clone + From<String> + ToString + Send + Sync + 'static,
 {
     memory: MokaCache<CacheKey<K>, V>,
-    redis: Option<ConnectionManager>,
+    redis: Option<RedisHandle>,
     redis_tty: Duration,
 }
 
@@ -30,7 +29,7 @@ where
     K: Hash + Eq + Clone + Debug + Display + Send + Sync + 'static,
     V: Clone + From<String> + ToString + Send + Sync + 'static,
 {
-    pub fn new(redis: Option<ConnectionManager>, capacity: u64, mem_tty: Duration, redis_tty: Duration) -> Self {
+    pub fn new(redis: Option<RedisHandle>, capacity: u64, mem_tty: Duration, redis_tty: Duration) -> Self {
         let memory = moka::future::Cache::builder().max_capacity(capacity).time_to_live(mem_tty).build();
         Self { memory, redis, redis_tty }
     }
@@ -60,7 +59,6 @@ where
         let Some(redis) = self.redis.as_ref() else {
             return init.await;
         };
-        let mut redis = redis.clone();
         let redis_key = key.as_redis_key();
         if let Ok(Some(raw)) = redis.get(&redis_key).await {
             debug!("命中 Redis 缓存: {}", redis_key);
