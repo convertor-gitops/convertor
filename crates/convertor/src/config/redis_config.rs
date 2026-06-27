@@ -16,6 +16,35 @@ pub struct RedisConfig {
     pub db: Option<u32>,
     #[serde(default)]
     pub tls: Option<TlsConfig>,
+    /// 可选：通过 Redis Sentinel 动态发现当前 master，而不是依赖一个固定的 host:port
+    /// （例如 k8s 里靠 pod 标签同步出来的 "master" Service，标签同步存在短暂不一致窗口，
+    /// 可能导致连接落在副本上触发 READONLY 错误）。配置后 host/port 会被忽略，仅用于满足
+    /// 非 Sentinel 场景下的字段必填要求。
+    #[serde(default)]
+    pub sentinel: Option<SentinelConfig>,
+}
+
+/// Redis Sentinel 接入配置。
+#[derive(Default, Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct SentinelConfig {
+    /// Sentinel 节点地址，英文逗号分隔，例如
+    /// "redis-sentinel-sentinel.redis.svc.cluster.local:26379"。
+    /// 可以只填一个 k8s Service 地址（Sentinel 副本之间地位对等，不存在 master 标签同步问题），
+    /// 也可以填多个具体节点地址（逗号分隔）以避免单点依赖该 Service。
+    pub nodes: String,
+    /// Sentinel 监控的 master 服务名，对应 `sentinel monitor <name> ...` 里的 name。
+    pub master_name: String,
+}
+
+impl SentinelConfig {
+    pub fn node_list(&self) -> Vec<String> {
+        self.nodes
+            .split(',')
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .map(str::to_string)
+            .collect()
+    }
 }
 
 #[derive(Default, Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
@@ -43,15 +72,29 @@ impl RedisConfig {
             db,
             prefix,
             mut tls,
+            sentinel,
         } = self.clone();
-        host = host.trim().to_string();
-        if host.is_empty() {
-            return Err(RedisConfigError::MissingHost(None));
-        } else if host.contains(':') {
-            return Err(RedisConfigError::MissingHost(Some(host)));
-        }
-        if self.port == 0 {
-            return Err(RedisConfigError::MissingPort);
+
+        match &sentinel {
+            Some(s) => {
+                if s.node_list().is_empty() {
+                    return Err(RedisConfigError::MissingSentinelNodes);
+                }
+                if s.master_name.trim().is_empty() {
+                    return Err(RedisConfigError::MissingSentinelMasterName);
+                }
+            }
+            None => {
+                host = host.trim().to_string();
+                if host.is_empty() {
+                    return Err(RedisConfigError::MissingHost(None));
+                } else if host.contains(':') {
+                    return Err(RedisConfigError::MissingHost(Some(host)));
+                }
+                if self.port == 0 {
+                    return Err(RedisConfigError::MissingPort);
+                }
+            }
         }
         username = username.trim().replace("default", "").to_string();
 
@@ -84,6 +127,7 @@ impl RedisConfig {
             db,
             prefix,
             tls,
+            sentinel,
         })
     }
 }
@@ -98,6 +142,7 @@ impl RedisConfig {
             prefix: "convertor:".to_string(),
             db: Some(0),
             tls: Some(TlsConfig::template()),
+            sentinel: None,
         }
     }
 
@@ -112,6 +157,10 @@ impl RedisConfig {
         vars.push((format!("{prefix}__PREFIX"), self.prefix.clone()));
         if let Some(db) = self.db {
             vars.push((format!("{prefix}__DB"), db.to_string()));
+        }
+        if let Some(sentinel) = &self.sentinel {
+            vars.push((format!("{prefix}__SENTINEL__NODES"), sentinel.nodes.clone()));
+            vars.push((format!("{prefix}__SENTINEL__MASTER_NAME"), sentinel.master_name.clone()));
         }
 
         if let Some(tls) = &self.tls {
@@ -174,8 +223,28 @@ ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=
     }
 }
 
+impl RedisConfig {
+    /// 提取与具体地址无关的 Redis 协议层连接信息（db/用户名/密码/协议版本）。
+    /// Sentinel 模式下用来构建 `SentinelNodeConnectionInfo`，复用同一份认证信息。
+    pub fn redis_connection_info(&self) -> RedisConnectionInfo {
+        RedisConnectionInfo {
+            db: self.db.unwrap_or(0) as i64,
+            username: match self.username {
+                ref u if u.is_empty() => None,
+                ref u => Some(u.clone()),
+            },
+            password: match self.password {
+                ref p if p.is_empty() => None,
+                ref p => Some(p.clone()),
+            },
+            protocol: ProtocolVersion::RESP3,
+        }
+    }
+}
+
 impl IntoConnectionInfo for RedisConfig {
     fn into_connection_info(self) -> RedisResult<ConnectionInfo> {
+        let redis = self.redis_connection_info();
         let connection_info = ConnectionInfo {
             addr: match self.tls {
                 None => ConnectionAddr::Tcp(self.host, self.port),
@@ -186,18 +255,7 @@ impl IntoConnectionInfo for RedisConfig {
                     tls_params: None,
                 },
             },
-            redis: RedisConnectionInfo {
-                db: self.db.unwrap_or(0) as i64,
-                username: match self.username {
-                    ref u if u.is_empty() => None,
-                    ref u => Some(u.clone()),
-                },
-                password: match self.password {
-                    ref p if p.is_empty() => None,
-                    ref p => Some(p.clone()),
-                },
-                protocol: ProtocolVersion::RESP3,
-            },
+            redis,
         };
 
         Ok(connection_info)

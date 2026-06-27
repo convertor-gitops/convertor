@@ -1,0 +1,4 @@
+interface:
+  display_name: "Convertor Core Dev"
+  short_description: "Maintain Rust core and backend crates"
+  default_prompt: "Use $convertor-dev-core to maintain convertor Rust core, backend, CLI, and fetcher code."

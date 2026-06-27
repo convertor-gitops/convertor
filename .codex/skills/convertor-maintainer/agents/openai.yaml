@@ -1,0 +1,4 @@
+interface:
+  display_name: "Convertor Maintainer"
+  short_description: "Route convertor maintenance work"
+  default_prompt: "Use $convertor-maintainer to orient and route convertor maintenance work."

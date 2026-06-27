@@ -13,7 +13,7 @@ use tower::ServiceExt;
 #[tokio::test]
 async fn exposes_openapi_json_in_debug() -> color_eyre::Result<()> {
     let config = testkit::test_config("https://provider.example.com/subscription")?;
-    let router = router::router(AppState::new(config, None, None));
+    let router = router::router(AppState::new(config, None));
 
     let request = Request::builder().uri("/api/docs/openapi.json").method("GET").body(Body::empty())?;
     let response = router.oneshot(request).await?;

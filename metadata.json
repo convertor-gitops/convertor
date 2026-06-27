@@ -4,7 +4,6 @@
     "description": "A profile converter for surge/clash.",
     "author": "BppleMan",
     "license": "Apache-2.0",
-    "version": "2.6.19",
+    "version": "2.6.20",
     "build": 1
 }
-

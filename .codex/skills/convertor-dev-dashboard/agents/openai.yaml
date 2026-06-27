@@ -1,0 +1,4 @@
+interface:
+  display_name: "Convertor Dashboard Dev"
+  short_description: "Maintain Angular dashboard features"
+  default_prompt: "Use $convertor-dev-dashboard to maintain the convertor Angular dashboard."

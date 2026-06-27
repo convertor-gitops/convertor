@@ -1,0 +1,4 @@
+interface:
+  display_name: "Homelab Network Doctor"
+  short_description: "Diagnose homelab network incidents"
+  default_prompt: "Use $homelab-network-doctor to diagnose this homelab network issue."
