@@ -1,0 +1,4 @@
+interface:
+  display_name: "Convertor CI/CD Deploy"
+  short_description: "Maintain convertor deployment pipelines"
+  default_prompt: "Use $convertor-deploy-cicd to maintain convertor CI/CD, Docker, compose, and release flows."

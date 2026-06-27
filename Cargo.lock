@@ -355,7 +355,7 @@ dependencies = [
 
 [[package]]
 name = "builder"
-version = "2.6.19"
+version = "2.6.20"
 dependencies = [
  "chrono",
  "clap",
@@ -552,7 +552,7 @@ dependencies = [
 
 [[package]]
 name = "confly"
-version = "2.6.19"
+version = "2.6.20"
 dependencies = [
  "clap",
  "color-eyre",
@@ -599,7 +599,7 @@ checksum = "3d52eff69cd5e647efe296129160853a42795992097e8af39800e1060caeea9b"
 
 [[package]]
 name = "convd"
-version = "2.6.19"
+version = "2.6.20"
 dependencies = [
  "anyhow",
  "axum",
@@ -641,7 +641,7 @@ dependencies = [
 
 [[package]]
 name = "convertor"
-version = "2.6.19"
+version = "2.6.20"
 dependencies = [
  "base64",
  "blake3",
@@ -670,6 +670,7 @@ dependencies = [
  "serde_qs",
  "serde_yml",
  "thiserror",
+ "tokio",
  "toml",
  "tracing",
  "tracing-loki",
@@ -828,7 +829,7 @@ dependencies = [
 
 [[package]]
 name = "example"
-version = "2.6.19"
+version = "2.6.20"
 dependencies = [
  "color-eyre",
  "convertor",
@@ -856,7 +857,7 @@ checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 
 [[package]]
 name = "fetcher"
-version = "2.6.19"
+version = "2.6.20"
 dependencies = [
  "bytes",
  "futures-util",
@@ -2236,6 +2237,7 @@ dependencies = [
  "num-bigint",
  "percent-encoding",
  "pin-project-lite",
+ "rand",
  "rustls",
  "rustls-native-certs",
  "ryu",

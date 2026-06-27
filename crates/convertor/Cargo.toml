@@ -30,6 +30,7 @@ blake3 = { workspace = true, features = [] }
 
 # 异步运行时 / 并发
 futures-util = { workspace = true }
+tokio = { workspace = true, features = ["sync"] }
 
 # 日志 / 追踪 / 遥测（可选 feature）
 tracing = { workspace = true, features = ["attributes"] }
@@ -50,7 +51,7 @@ rand_chacha = { workspace = true, features = ["default"] }
 
 # 缓存 / 存储 / 数据库
 moka = { workspace = true, features = ["future", "logging"] }
-redis = { workspace = true, features = ["tokio-rustls-comp", "streams", "connection-manager"] }
+redis = { workspace = true, features = ["tokio-rustls-comp", "streams", "connection-manager", "sentinel"] }
 
 # CLI / 工具 / 键入
 clap = { workspace = true, features = ["std", "derive"] }
