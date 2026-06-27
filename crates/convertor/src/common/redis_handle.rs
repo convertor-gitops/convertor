@@ -80,4 +80,11 @@ impl RedisHandle {
             Self::Sentinel(client) => Self::sentinel_connection(client).await?.ping().await,
         }
     }
+
+    pub async fn del(&self, key: String) -> RedisResult<usize> {
+        match self {
+            Self::Direct(manager) => manager.clone().del(key).await,
+            Self::Sentinel(client) => Self::sentinel_connection(client).await?.del(key).await,
+        }
+    }
 }

@@ -51,6 +51,12 @@ impl SubsProvider {
         Ok(raw_profile)
     }
 
+    pub async fn flush_cache(&self, sub_url: url::Url) -> Result<(), ProviderError> {
+        let cache_key = CacheKey::new(&self.cache_prefix, sub_url.to_string(), None);
+        self.cache.remove(cache_key).await;
+        Ok(())
+    }
+
     #[instrument(skip(self))]
     pub async fn fetch(&self, sub_url: url::Url, headers: &Headers) -> Result<String, ProviderError> {
         let request = FetchRequest::new(Method::GET, sub_url).with_headers(headers.deref().clone());

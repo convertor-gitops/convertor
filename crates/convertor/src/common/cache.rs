@@ -34,6 +34,14 @@ where
         Self { memory, redis, redis_tty }
     }
 
+    pub async fn remove(&self, key: CacheKey<K>) -> Option<V> {
+        if let Some(redis) = self.redis.clone() {
+            let redis_key = key.as_redis_key();
+            redis.del(redis_key).await.ok();
+        }
+        self.memory.remove(&key).await
+    }
+
     pub async fn try_get_with<F, E>(&self, key: CacheKey<K>, init: F) -> Result<V, Arc<E>>
     where
         F: Future<Output = Result<V, E>>,

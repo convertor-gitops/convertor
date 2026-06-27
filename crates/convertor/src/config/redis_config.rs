@@ -38,7 +38,12 @@ pub struct SentinelConfig {
 
 impl SentinelConfig {
     pub fn node_list(&self) -> Vec<String> {
-        self.nodes.split(',').map(str::trim).filter(|s| !s.is_empty()).map(str::to_string).collect()
+        self.nodes
+            .split(',')
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .map(str::to_string)
+            .collect()
     }
 }
 
