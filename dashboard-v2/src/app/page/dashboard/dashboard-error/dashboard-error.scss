@@ -1,0 +1,182 @@
+@use "@angular/material" as mat;
+
+:host {
+    overflow: hidden;
+    // display:        flex;
+    // flex-direction: column;
+    // width:          100%;
+
+    mat-panel-title {
+        flex-basis:  unset;
+        flex-grow:   unset;
+        flex-shrink: unset;
+    }
+
+    mat-expansion-panel {
+        border:     1px solid var(--mat-sys-outline);
+        background: var(--mat-sys-surface-container-high);
+    }
+
+    mat-panel-description {
+        overflow: hidden;
+        flex:     1;
+    }
+
+    mat-chip.error-chip {
+        @include mat.chips-overrides((
+            label-text-size: 10px,
+            label-text-weight: 500,
+            label-text-line-height: normal,
+            label-text-color: var(--mat-sys-on-error),
+            container-height: 18px,
+            container-shape-radius: 4px,
+        ));
+
+        background-color: var(--mat-sys-error);
+
+    }
+
+    ::ng-deep {
+        .mat-mdc-standard-chip .mdc-evolution-chip__action--primary {
+            padding-right: var(--app-space-2);
+            padding-left:  var(--app-space-2);
+        }
+    }
+
+    code {
+        font-size:   12px;
+        font-weight: 400;
+        line-height: normal;
+        overflow:    hidden;
+
+        text-wrap:   auto;
+        word-break:  break-word;
+    }
+
+    section {
+        display:        flex;
+        align-items:    start;
+        flex-direction: row;
+        margin:         var(--app-space-3) auto;
+
+        mat-panel-title {
+            font-size:      12px;
+            font-weight:    400;
+            line-height:    normal;
+            letter-spacing: normal;
+        }
+
+        mat-panel-description {
+            font-size:   12px;
+            font-weight: 400;
+            line-height: normal;
+        }
+    }
+
+    section.headers {
+        font-size:             12px;
+        font-weight:           500;
+        font-style:            normal;
+        line-height:           18px;
+
+        display:               grid;
+        grid-template-columns: max-content 1fr;
+        column-gap:            var(--app-space-3);
+        row-gap:               var(--app-space-2);
+
+        .name {
+            font-size:   inherit;
+            font-weight: inherit;
+            font-style:  inherit;
+            line-height: inherit;
+            text-align:  right;
+        }
+
+        .value {
+            font-size:   inherit;
+            font-weight: inherit;
+            font-style:  inherit;
+            line-height: inherit;
+            color:       var(--mat-sys-on-surface-variant);
+        }
+    }
+
+    mat-panel-description.error-status {
+        justify-content: end;
+        gap:             var(--app-space-2);
+    }
+
+    section.error-detail {
+        display:        flex;
+        flex-direction: row;
+
+        pre {
+            margin: 0;
+        }
+    }
+
+    section.error-chain {
+        flex-direction: column;
+
+        pre {
+            margin: 0;
+        }
+
+        .left {
+            display:         flex;
+            align-items:     center;
+            justify-content: center;
+            width:           56px;
+        }
+
+        .right {
+            flex: 1;
+        }
+
+        .v-dash {
+            background-image: linear-gradient(to bottom, var(--mat-sys-error) 50%, transparent 50%);
+            background-size:  1px 5px;
+        }
+
+        .h-dash {
+            background-image: linear-gradient(to right, var(--mat-sys-error) 50%, transparent 50%);
+            background-size:  5px 1px;
+        }
+
+        .main-message {
+            display:        flex;
+            flex-direction: row;
+            gap:            var(--app-space-2);
+
+            .left {
+                flex-direction: column;
+
+                .v-dash {
+                    flex:  1;
+                    width: 1px;
+                }
+            }
+        }
+
+        .cause-message {
+            display:        flex;
+            flex-direction: row;
+            gap:            var(--app-space-2);
+
+            .left {
+                flex-direction: row;
+
+                .v-dash {
+                    width:       1px;
+                    height:      100%;
+                    margin-left: 50%;
+                }
+
+                .h-dash {
+                    flex:   1;
+                    height: 1px;
+                }
+            }
+        }
+    }
+}

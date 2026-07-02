@@ -1,0 +1,53 @@
+<app-workbench-section index="02" title="生成链接" subtitle="Generated Links">
+    @if (hasResult()) {
+        <button section-actions class="flush" type="button">↻ Flush</button>
+    }
+    @if (hasResult()) {
+        <div class="subs-body">
+            <div class="generated-scroll">
+                <div class="group">
+                    <div class="group-head">
+                        <span>订阅配置</span>
+                        <i></i>
+                    </div>
+                    @for (row of rows(); track row.label) {
+                        <div class="link-row" [class.primary]="row.primary">
+                            <div class="meta">
+                                <div class="title-line">
+                                    <span class="name">{{ row.label }}</span>
+                                    <span class="tag">{{ row.tag }}</span>
+                                    @if (row.primary) {
+                                        <span class="star">◈ 用于 Managed Header</span>
+                                    }
+                                </div>
+                                <code>{{ row.url }}</code>
+                            </div>
+                            <app-copy-action [value]="row.url"></app-copy-action>
+                        </div>
+                    }
+                </div>
+
+                @for (g of groups(); track g.label) {
+                    <div class="group">
+                        <button class="group-head clickable" type="button" (click)="toggleGroup(g.label)">
+                            <span>{{ g.label }}</span>
+                            <em>× {{ g.items.length }}</em>
+                            <i></i>
+                        </button>
+                        @if (!isCollapsed(g.label)) {
+                            @for (item of g.items; track item.url) {
+                                <div class="rule-row">
+                                    <span class="rule-name">{{ item.label }}</span>
+                                    <code>{{ item.url }}</code>
+                                    <app-copy-action [value]="item.url"></app-copy-action>
+                                </div>
+                            }
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    } @else {
+        <app-workbench-empty text="尚未生成 — 填写参数后点击 Generate"></app-workbench-empty>
+    }
+</app-workbench-section>

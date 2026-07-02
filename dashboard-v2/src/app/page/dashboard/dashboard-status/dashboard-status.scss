@@ -1,0 +1,78 @@
+:host {
+    display: inline-flex;
+}
+
+.status {
+    display:     inline-flex;
+    align-items: center;
+    flex-wrap:   wrap;
+    gap:         12px;
+}
+
+.ver-chip {
+    font-family:   var(--app-mono);
+    font-size:     11px;
+    color:         #6b7284;
+
+    span {
+        color: var(--app-text-3);
+    }
+}
+
+.svc {
+    display:       inline-flex;
+    align-items:   center;
+    gap:           6px;
+    font-family:   var(--app-mono);
+    font-size:     11px;
+    color:         #6b7284;
+    cursor:        default;
+
+    .dot {
+        width:         6px;
+        height:        6px;
+        border-radius: 50%;
+        flex-shrink:   0;
+    }
+
+    &.ok .dot {
+        background: var(--app-success);
+        box-shadow: 0 0 6px rgba(74, 222, 128, .6);
+    }
+
+    &.bad {
+        color: var(--app-unhealthy);
+
+        .dot {
+            background: var(--app-unhealthy);
+        }
+    }
+
+    &.loading .dot {
+        background: var(--app-offline);
+    }
+}
+
+.refresh {
+    display:         inline-flex;
+    align-items:     center;
+    justify-content: center;
+    width:           24px;
+    height:          24px;
+    border:          none;
+    background:      transparent;
+    color:           var(--app-text-3);
+    border-radius:   var(--app-radius-sm);
+    cursor:          pointer;
+
+    mat-icon {
+        font-size: 15px;
+        width:     15px;
+        height:    15px;
+    }
+
+    &:hover {
+        background: var(--app-surface-2);
+        color:      var(--app-text);
+    }
+}
