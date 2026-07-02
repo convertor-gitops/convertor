@@ -1,0 +1,25 @@
+@let status = backendStatus$ | async;
+@let error = error$ | async;
+@let health = health$ | async;
+<div class="status">
+    @if (health !== null) {
+        <span class="svc" [class.ok]="health" [class.bad]="!health" [matTooltip]="healthTip(health)" matTooltipClass="status-tip">
+            <span class="dot"></span>health
+        </span>
+    } @else {
+        <span class="svc loading"><span class="dot"></span>health</span>
+    }
+    @if (status) {
+        <span class="ver-chip" [matTooltip]="tooltip(status)" matTooltipClass="status-tip">API <span>v{{ status.version }}</span></span>
+        @for (svc of status.services; track svc.name) {
+            <span class="svc" [class.ok]="svc.healthy" [class.bad]="!svc.healthy" [matTooltip]="svc.message ?? svc.name" matTooltipClass="status-tip">
+                <span class="dot"></span>{{ svc.name }}
+            </span>
+        }
+    } @else if (error) {
+        <span class="svc bad" [matTooltip]="error" matTooltipClass="status-tip"><span class="dot"></span>status</span>
+    } @else {
+        <span class="svc loading"><span class="dot"></span>status</span>
+    }
+    <button class="refresh" type="button" (click)="refresh()" aria-label="刷新"><mat-icon>refresh</mat-icon></button>
+</div>

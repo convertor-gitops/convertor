@@ -1,0 +1,69 @@
+// 应用级 design token —— 单一来源。
+// dashboard-v2 先按 mvp-demo 的深色工作台视觉落地，后续替代 dashboard 时再扩展主题。
+
+:root {
+    /* ---- 语义状态色 ---- */
+    --app-success:    #4ade80;
+    --app-on-success: #07130a;
+    --app-unhealthy:  var(--mat-sys-error);
+    --app-warning:    #f5b94b;
+    --app-offline:    #757575;
+
+    /* ---- 表面层次 ---- */
+    --app-bg:        #0b0c10;
+    --app-bar:       rgba(15, 17, 22, .75);
+    --app-surface:   #12141a;
+    --app-surface-2: #1d2230;
+    --app-surface-3: #0f1116;
+    --app-field:     #0d0f14;
+    --app-code:      #0a0c10;
+
+    /* ---- 边框 ---- */
+    --app-border:      rgba(255, 255, 255, .07);
+    --app-border-soft: rgba(255, 255, 255, .055);
+    --app-border-2:    rgba(255, 255, 255, .11);
+
+    /* ---- 文本层级 ---- */
+    --app-text:   #e8eaf0;
+    --app-text-2: #c6cbda;
+    --app-text-3: #9aa1b4;
+    --app-text-4: #565d70;
+    --app-text-5: #4c5265;
+
+    /* ---- 强调 ---- */
+    --app-accent:      #7c8cf8;
+    --app-accent-2:    #8a97ff;
+    --app-accent-bg:   rgba(124, 140, 248, .13);
+    --app-accent-bd:   rgba(124, 140, 248, .45);
+    --app-accent-glow: rgba(124, 140, 248, .35);
+    --app-on-accent:   #ffffff;
+
+    /* ---- diff 行内高亮（旧=删/红，新=增/绿）---- */
+    --app-del-bg: rgba(248, 113, 113, .15);
+    --app-del:    #fca5a5;
+    --app-add-bg: rgba(74, 222, 128, .14);
+    --app-add:    #8ce99a;
+
+    /* ---- 等宽字体（URL / 配置代码）---- */
+    --app-mono: "Geist Mono", "JetBrains Mono", "Fira Code", "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+
+    /* ---- 间距刻度（替换散落的 4 / 8 / 12 / 16 / 24 魔法数字）---- */
+    --app-space-1: 4px;
+    --app-space-2: 8px;
+    --app-space-3: 12px;
+    --app-space-4: 16px;
+    --app-space-6: 24px;
+
+    /* ---- 圆角（两级层次：外层卡片 md，嵌套卡片 sm）---- */
+    --app-radius-xs: 5px;
+    --app-radius-sm: 7px;
+    --app-radius-md: 12px;
+
+    /* ---- 控件 ---- */
+    --app-control-w:     88px; // 表单后缀列宽（替换 82.5px）
+    --app-icon-btn-size: 24px; // icon-button 按钮尺寸
+    --app-icon-size:     16px; // icon-button 图标尺寸
+
+    /* ---- 页面横向内边距：流体平滑过渡，消除 120px → 24px 跳变 ---- */
+    --app-page-pad-inline: clamp(18px, 2.5vw, 26px);
+}

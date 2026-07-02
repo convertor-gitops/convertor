@@ -1,0 +1,14 @@
+<section class="workbench-section">
+    <div class="section-head">
+        <span class="section-index">{{ index() }}</span>
+        <h2>{{ title() }}</h2>
+        @if (subtitle()) {
+            <span class="section-subtitle">{{ subtitle() }}</span>
+        }
+        <div class="head-spacer"></div>
+        <ng-content select="[section-actions]"></ng-content>
+    </div>
+    <div class="section-body">
+        <ng-content></ng-content>
+    </div>
+</section>

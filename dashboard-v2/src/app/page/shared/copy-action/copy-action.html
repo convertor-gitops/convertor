@@ -1,0 +1,8 @@
+<button
+    class="copy"
+    type="button"
+    [class.copied]="copied()"
+    [cdkCopyToClipboard]="value()"
+    (cdkCopyToClipboardCopied)="markCopied()">
+    {{ copied() ? "✓ 已复制" : "Copy" }}
+</button>

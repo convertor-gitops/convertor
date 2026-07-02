@@ -1,0 +1,311 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    width:   100%;
+    min-height: 0;
+}
+
+.auth {
+    display:     flex;
+    align-items: center;
+    gap:         6px;
+    color:       var(--app-success);
+    font-size:   11px;
+
+    span {
+        width:         6px;
+        height:        6px;
+        border-radius: 50%;
+        background:    var(--app-success);
+    }
+}
+
+.mode-chip {
+    display:       flex;
+    align-items:   center;
+    height:        20px;
+    padding:       0 8px;
+    border:        1px solid rgba(255, 255, 255, .09);
+    border-radius: 5px;
+    color:         #8a91a3;
+    font-family:   var(--app-mono);
+    font-size:     10px;
+}
+
+.warn {
+    display:       flex;
+    align-items:   center;
+    gap:           8px;
+    margin:        14px 18px 0;
+    padding:       9px 12px;
+    background:    rgba(245, 185, 75, .08);
+    border:        1px solid rgba(245, 185, 75, .22);
+    border-radius: 8px;
+    color:         var(--app-warning);
+    font-size:     11.5px;
+
+    span {
+        font-family: var(--app-mono);
+    }
+}
+
+.closed {
+    padding: 18px;
+}
+
+.open-dir {
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    gap:             12px;
+    width:           100%;
+    padding:         16px;
+    border:          1px dashed rgba(255, 255, 255, .16);
+    border-radius:   9px;
+    background:      rgba(255, 255, 255, .015);
+    color:           var(--app-text-2);
+    cursor:          pointer;
+    transition:      border-color 150ms ease, background 150ms ease, opacity 150ms ease;
+
+    &:hover:not(:disabled) {
+        border-color: rgba(255, 255, 255, .3);
+        background:    rgba(255, 255, 255, .025);
+    }
+
+    &:disabled {
+        cursor:  not-allowed;
+        opacity: .45;
+    }
+}
+
+.glyph {
+    font-size: 16px;
+}
+
+.open-copy {
+    display:        flex;
+    flex-direction: column;
+    align-items:    flex-start;
+    gap:            2px;
+
+    span {
+        color:       var(--app-text-2);
+        font-size:   12.5px;
+        font-weight: 600;
+    }
+
+    em {
+        color:      #6b7284;
+        font-size:  10.5px;
+        font-style: normal;
+    }
+}
+
+.closed-hint {
+    margin-top:  10px;
+    color:       var(--app-text-4);
+    font-size:   11px;
+    text-align:  center;
+}
+
+.sync-body {
+    display:        flex;
+    flex:           1 1 auto;
+    flex-direction: column;
+    min-height:     0;
+}
+
+.dir-line {
+    display:     flex;
+    align-items: center;
+    gap:         8px;
+    padding:     14px 18px 10px;
+
+    .path {
+        color:       var(--app-text-2);
+        font-family: var(--app-mono);
+        font-size:   11.5px;
+    }
+
+    .count,
+    .hint {
+        color:       var(--app-text-4);
+        font-family: var(--app-mono);
+        font-size:   10px;
+    }
+
+    .hint {
+        font-family: inherit;
+        font-size:   10.5px;
+    }
+
+    div {
+        flex: 1;
+    }
+}
+
+.reselect {
+    height:        23px;
+    padding:       0 9px;
+    border:        1px solid rgba(255, 255, 255, .1);
+    border-radius: 6px;
+    background:    transparent;
+    color:         #8a91a3;
+    font-size:     10.5px;
+    cursor:        pointer;
+}
+
+.file-list {
+    flex:          1 1 auto;
+    min-height:    120px;
+    margin:        0 18px;
+    overflow-y:    auto;
+    border:        1px solid rgba(255, 255, 255, .06);
+    border-radius: 9px;
+}
+
+.file-row {
+    display:     flex;
+    align-items: center;
+    gap:         10px;
+    min-height:  38px;
+    padding:     0 12px;
+    background:  var(--app-field);
+
+    &:nth-child(even) {
+        background: var(--app-surface-3);
+    }
+
+    &:not(:last-child) {
+        border-bottom: 1px solid rgba(255, 255, 255, .045);
+    }
+
+    &.tagged {
+        background: rgba(124, 140, 248, .05);
+    }
+
+    .icon {
+        width:       16px;
+        color:       var(--app-text-4);
+        font-family: var(--app-mono);
+        font-size:   11px;
+        text-align:  center;
+    }
+
+    .name {
+        min-width:     0;
+        overflow:      hidden;
+        color:         var(--app-text-2);
+        font-family:   var(--app-mono);
+        font-size:     11.5px;
+        text-overflow: ellipsis;
+        white-space:   nowrap;
+
+        &.muted {
+            color: var(--app-text-5);
+        }
+    }
+
+    .size {
+        color:       var(--app-text-4);
+        font-family: var(--app-mono);
+        font-size:   10px;
+    }
+
+    > div {
+        flex: 1;
+    }
+}
+
+.roles {
+    display: flex;
+    gap:     5px;
+
+    button {
+        flex:          none;
+        height:        22px;
+        padding:       0 9px;
+        border:        1px solid rgba(255, 255, 255, .1);
+        border-radius: 5px;
+        background:    transparent;
+        color:         #6b7284;
+        font-size:     10.5px;
+        cursor:        pointer;
+
+        &.on {
+            background: var(--app-accent-bg);
+            border-color: rgba(124, 140, 248, .5);
+            color: var(--app-accent);
+            font-weight: 600;
+        }
+
+        &:last-child.on {
+            background: rgba(94, 234, 212, .1);
+            border-color: rgba(94, 234, 212, .4);
+            color: #5eead4;
+        }
+    }
+}
+
+.ineligible {
+    color:     #3e4454;
+    font-size: 10px;
+}
+
+.marked {
+    display:     flex;
+    align-items: center;
+    gap:         8px;
+    padding:     10px 18px 0;
+    color:       var(--app-success);
+    font-size:   11.5px;
+}
+
+.foot {
+    padding: 14px 18px 18px;
+}
+
+.preview-btn {
+    width:         100%;
+    height:        36px;
+    border:        1px solid rgba(124, 140, 248, .4);
+    border-radius: 8px;
+    background:    var(--app-accent-bg);
+    color:         var(--app-accent);
+    font-size:     12.5px;
+    font-weight:   600;
+    cursor:        pointer;
+    transition:    background 150ms ease, opacity 150ms ease;
+
+    &:hover:not(:disabled) {
+        background: rgba(124, 140, 248, .2);
+    }
+
+    &:disabled {
+        cursor:  not-allowed;
+        opacity: .45;
+    }
+}
+
+.error {
+    margin:    10px 18px 18px;
+    color:     var(--app-unhealthy);
+    font-size: 12px;
+}
+
+@media (max-width: 640px) {
+    .dir-line {
+        align-items: flex-start;
+        flex-wrap:   wrap;
+    }
+
+    .file-row {
+        flex-wrap: wrap;
+        padding:   8px 12px;
+    }
+
+    .roles {
+        width: 100%;
+    }
+}

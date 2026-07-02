@@ -1,0 +1,73 @@
+@if (!supported) {
+    <app-workbench-empty symbol="⌥" text="本地目录访问仅桌面 Chromium 支持"></app-workbench-empty>
+} @else {
+    @let b = binding();
+    @if (!isSurge()) {
+        <div class="warn"><span>⚠</span>本地注入 V1 仅支持 Surge — 当前 Client 为 {{ client() }}，链接仍可生成与复制</div>
+    }
+    @if (!b) {
+        <div class="closed">
+            <button class="open-dir" [disabled]="!isSurge() || !urlResult()" (click)="pickDir()">
+                <span class="glyph">⌥</span>
+                <span class="open-copy">
+                    <span>打开本地目录</span>
+                    <em>通过浏览器授权访问 Surge 配置目录 · File System Access</em>
+                </span>
+            </button>
+            @if (!urlResult()) {
+                <div class="closed-hint">先生成链接，再连接本地目录</div>
+            }
+        </div>
+    } @else {
+        @if (needsAuth()) {
+            <div class="closed">
+                <button class="open-dir" (click)="reauthorize()">
+                    <span class="glyph">⌥</span>
+                    <span class="open-copy">
+                        <span>重新授权目录</span>
+                        <em>刷新或重启浏览器后，系统授权会失效</em>
+                    </span>
+                </button>
+            </div>
+        } @else {
+            <div class="sync-body">
+                <div class="dir-line">
+                    <span class="path">{{ b.dirName }}</span>
+                    <span class="count">{{ files().length }} files</span>
+                    <div></div>
+                    <span class="hint">标记 1 个主配置 + 1 个规则文件</span>
+                    <button class="reselect" type="button" (click)="pickDir()">重选</button>
+                </div>
+                <div class="file-list">
+                    @for (f of files(); track f) {
+                        @let role = roleOf(f);
+                        @let eligible = isEligible(f);
+                        <div class="file-row" [class.tagged]="role">
+                            <span class="icon">{{ eligible ? "≡" : "·" }}</span>
+                            <span class="name" [class.muted]="!eligible">{{ f }}</span>
+                            <span class="size">{{ fileSizeLabel(f) }}</span>
+                            <div></div>
+                            @if (eligible) {
+                                <span class="roles">
+                                    <button type="button" [class.on]="role === 'main'" (click)="toggleRole(f, 'main')">主配置</button>
+                                    <button type="button" [class.on]="role === 'rules'" (click)="toggleRole(f, 'rules')">规则文件</button>
+                                </span>
+                            } @else {
+                                <span class="ineligible">不适用</span>
+                            }
+                        </div>
+                    }
+                </div>
+                @if (b.mainProfile && b.rulesProfile) {
+                    <div class="marked"><span>✓</span>文件角色已标记 — 可进入注入预览</div>
+                }
+                <div class="foot">
+                    <button class="preview-btn" [disabled]="!canPreview()" (click)="preview()">Preview 生成注入预览</button>
+                </div>
+            </div>
+        }
+    }
+    @if (error(); as err) {
+        <p class="error">{{ err }}</p>
+    }
+}

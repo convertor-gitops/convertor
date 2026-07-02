@@ -1,0 +1,47 @@
+<app-workbench-section index="01" title="订阅参数" subtitle="Subscription Parameters">
+    <form [formGroup]="subscriptionForm">
+        <div class="param-body">
+            <label class="field wide">
+                <span>Subscription URL</span>
+                <input type="text" formControlName="url" placeholder="https://upstream.example/sub?token=… · 上游机场订阅地址" spellcheck="false">
+            </label>
+
+            <div class="param-grid">
+                <label class="field">
+                    <span>Secret</span>
+                    <input type="password" formControlName="secret" placeholder="访问密钥" spellcheck="false">
+                </label>
+
+                <div class="field">
+                    <span>Client</span>
+                    <div class="segmented" role="group" aria-label="Client">
+                        @for (c of clients; track c) {
+                            <button type="button" [class.active]="client() === c" (click)="selectClient(c)">{{ c }}</button>
+                        }
+                    </div>
+                </div>
+
+                <label class="field">
+                    <span>Interval</span>
+                    <span class="interval">
+                        <input type="number" formControlName="interval" title="更新间隔（秒）">
+                        <em>sec</em>
+                    </span>
+                </label>
+            </div>
+
+            <div class="action-row">
+                <button class="switch" type="button" [class.on]="subscriptionForm.controls.strict.value" (click)="toggleStrict()" aria-label="Strict 严格模式">
+                    <span></span>
+                </button>
+                <span class="strict-label">Strict <em>严格模式</em></span>
+                <div class="grow"></div>
+                @if (dashboardService.loading$ | async) {
+                    <button class="gen cancel" type="button" (click)="onCancel()">Cancel 取消</button>
+                } @else {
+                    <button class="gen" type="button" [disabled]="subscriptionForm.invalid" (click)="onSubmit()">Generate 生成订阅链接</button>
+                }
+            </div>
+        </div>
+    </form>
+</app-workbench-section>

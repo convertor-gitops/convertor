@@ -1,0 +1,29 @@
+<header class="topbar">
+    <div class="brand">
+        <div class="logo" aria-hidden="true">»</div>
+        <span class="name">Convertor</span>
+        <span class="divider"></span>
+        <span class="tagline">订阅转换 · 本地配置注入工作台</span>
+    </div>
+    <div class="bar-right">
+        <app-dashboard-status></app-dashboard-status>
+        <span class="dash-ver">Dashboard <span>v{{ version }}</span></span>
+    </div>
+</header>
+
+<div class="wrap scrollable">
+    <main class="workbench">
+        <div class="column">
+            <app-dashboard-param></app-dashboard-param>
+            <app-dashboard-subs></app-dashboard-subs>
+        </div>
+        @if (!isMobile()) {
+            <div class="column local-column">
+                <app-dashboard-local></app-dashboard-local>
+            </div>
+        }
+    </main>
+    @if (error$ | async) {
+        <app-dashboard-error></app-dashboard-error>
+    }
+</div>

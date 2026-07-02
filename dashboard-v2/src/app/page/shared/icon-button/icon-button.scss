@@ -1,0 +1,16 @@
+:host {
+    box-sizing: border-box;
+
+    button[matIconButton] {
+        font-size: var(--app-icon-size);
+        width:     var(--app-icon-btn-size);
+        height:    var(--app-icon-btn-size);
+        padding:   var(--app-space-1);
+
+        mat-icon {
+            font-size: var(--app-icon-size);
+            width:     var(--app-icon-size);
+            height:    var(--app-icon-size);
+        }
+    }
+}

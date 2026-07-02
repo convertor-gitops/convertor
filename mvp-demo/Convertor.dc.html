@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+    :root{--accent:#7C8CF8;--accent-dim:rgba(124,140,248,.13);--accent-glow:rgba(124,140,248,.35)}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{background:#0B0C10;color:#E8EAF0;min-height:100%}
+    body{font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+    ::selection{background:rgba(124,140,248,.32)}
+    ::-webkit-scrollbar{width:10px;height:10px}
+    ::-webkit-scrollbar-thumb{background:#232733;border-radius:5px;border:2px solid #0B0C10}
+    ::-webkit-scrollbar-track{background:transparent}
+    input::placeholder{color:#4C5265}
+    input:focus{outline:none;border-color:var(--accent) !important;box-shadow:0 0 0 3px var(--accent-dim)}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+  </style>
+</helmet>
+
+<div style="min-height:100vh;background:radial-gradient(1100px 480px at 50% -180px, rgba(124,140,248,.075), transparent 65%), #0B0C10">
+
+  <!-- ═══════════ 顶部状态栏 ═══════════ -->
+  <header data-screen-label="状态栏" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;min-height:46px;padding:8px 22px;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(15,17,22,.75);backdrop-filter:blur(12px);position:sticky;top:0;z-index:50">
+    <div style="display:flex;align-items:center;gap:9px">
+      <div style="width:19px;height:19px;border-radius:5px;background:linear-gradient(145deg,#8A97FF,#5E6AE8);box-shadow:0 0 14px var(--accent-glow);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:11px;font-weight:600;color:#0B0C10">»</div>
+      <span style="font-size:13.5px;font-weight:600;letter-spacing:.01em">Convertor</span>
+    </div>
+    <span style="width:1px;height:14px;background:rgba(255,255,255,.09)"></span>
+    <span style="font-size:11.5px;color:#6B7284">订阅转换 · 本地配置注入工作台</span>
+
+    <div style="flex:1"></div>
+
+    <div style="display:flex;align-items:center;gap:16px;font-family:'Geist Mono',monospace;font-size:11px;color:#6B7284">
+      <span>Dashboard <span style="color:#9AA1B4">v2.4.1</span></span>
+      <span>API <span style="color:#9AA1B4">v1.8.0</span></span>
+      <span style="width:1px;height:14px;background:rgba(255,255,255,.09)"></span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:#4ADE80;box-shadow:0 0 6px rgba(74,222,128,.6)"></span>Redis</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:#4ADE80;box-shadow:0 0 6px rgba(74,222,128,.6)"></span>Loki</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:#4ADE80;box-shadow:0 0 6px rgba(74,222,128,.6)"></span>Tempo</span>
+    </div>
+  </header>
+
+  <!-- ═══════════ 主工作区 ═══════════ -->
+  <main style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(430px,100%),1fr));gap:22px;max-width:1560px;margin:0 auto;padding:26px 26px 90px;align-items:start">
+
+    <!-- ──── 左列：转换 ──── -->
+    <div style="display:flex;flex-direction:column;gap:22px;min-width:0">
+
+      <!-- Section A · 订阅参数 -->
+      <section data-screen-label="A 订阅参数" style="background:#12141A;border:1px solid rgba(255,255,255,.07);border-radius:12px;box-shadow:0 12px 32px -18px rgba(0,0,0,.7)">
+        <div style="display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 10px;padding:15px 18px 13px;border-bottom:1px solid rgba(255,255,255,.055)">
+          <span style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--accent)">01</span>
+          <h2 style="font-size:13px;font-weight:600">订阅参数</h2>
+          <span style="font-size:11px;color:#565D70">Subscription Parameters</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:11px;padding:14px 16px 16px">
+
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label style="font-size:11px;font-weight:500;color:#9AA1B4">Subscription URL</label>
+            <input type="text" value="{{ subUrl }}" onChange="{{ onSubUrl }}" placeholder="https://upstream.example/sub?token=… · 上游机场订阅地址" spellCheck="false" style="height:32px;padding:0 11px;background:#0D0F14;border:1px solid rgba(255,255,255,.09);border-radius:7px;color:#E8EAF0;font-family:'Geist Mono',monospace;font-size:12px;transition:border-color .15s, box-shadow .15s">
+          </div>
+
+          <div style="display:grid;grid-template-columns:1.1fr 1fr .9fr;gap:10px">
+            <div style="display:flex;flex-direction:column;gap:5px;min-width:0">
+              <label style="font-size:11px;font-weight:500;color:#9AA1B4">Secret</label>
+              <input type="password" value="{{ secret }}" onChange="{{ onSecret }}" placeholder="访问密钥" spellCheck="false" style="height:32px;width:100%;padding:0 11px;background:#0D0F14;border:1px solid rgba(255,255,255,.09);border-radius:7px;color:#E8EAF0;font-family:'Geist Mono',monospace;font-size:12px;transition:border-color .15s, box-shadow .15s">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;min-width:0">
+              <label style="font-size:11px;font-weight:500;color:#9AA1B4">Client</label>
+              <div style="display:flex;height:32px;padding:3px;gap:2px;background:#0D0F14;border:1px solid rgba(255,255,255,.09);border-radius:7px">
+                <button onClick="{{ pickSurge }}" style="{{ surgeSegStyle }}">Surge</button>
+                <button onClick="{{ pickClash }}" style="{{ clashSegStyle }}">Clash</button>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;min-width:0">
+              <label style="font-size:11px;font-weight:500;color:#9AA1B4">Interval</label>
+              <div style="position:relative">
+                <input type="text" value="{{ interval }}" onChange="{{ onInterval }}" spellCheck="false" title="更新间隔（秒）" style="height:32px;width:100%;padding:0 34px 0 11px;background:#0D0F14;border:1px solid rgba(255,255,255,.09);border-radius:7px;color:#E8EAF0;font-family:'Geist Mono',monospace;font-size:12px;transition:border-color .15s, box-shadow .15s">
+                <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:#565D70">sec</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:10px;margin-top:3px">
+            <button onClick="{{ toggleStrict }}" style="{{ strictTrackStyle }}" title="Surge 严格模式：远端配置不可被本地修改覆盖">
+              <span style="{{ strictKnobStyle }}"></span>
+            </button>
+            <span style="font-size:11.5px;font-weight:500;color:#C6CBDA">Strict <span style="color:#565D70;font-weight:400">严格模式</span></span>
+            <div style="flex:1"></div>
+            <button onClick="{{ generate }}" style="height:33px;padding:0 18px;border:none;border-radius:8px;background:linear-gradient(180deg,#8A97FF,#6672EE);color:#fff;font-size:12px;font-weight:600;font-family:'Geist',sans-serif;cursor:pointer;box-shadow:0 0 0 1px rgba(124,140,248,.45), 0 10px 26px -10px var(--accent-glow);transition:filter .15s" style-hover="filter:brightness(1.08)">
+              Generate 生成订阅链接
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section B · 生成链接 -->
+      <section data-screen-label="B 生成链接" style="background:#12141A;border:1px solid rgba(255,255,255,.07);border-radius:12px;box-shadow:0 12px 32px -18px rgba(0,0,0,.7)">
+        <div style="display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 10px;padding:15px 18px 13px;border-bottom:1px solid rgba(255,255,255,.055)">
+          <span style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--accent)">02</span>
+          <h2 style="font-size:13px;font-weight:600">生成链接</h2>
+          <span style="font-size:11px;color:#565D70">Generated Links</span>
+          <div style="flex:1"></div>
+          <sc-if value="{{ generated }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ generate }}" style="height:23px;padding:0 9px;display:flex;align-items:center;gap:5px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:6px;color:#8A91A3;font-size:10.5px;font-family:'Geist Mono',monospace;cursor:pointer" style-hover="border-color:rgba(255,255,255,.25);color:#C6CBDA">↻ Flush</button>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ notGenerated }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:38px 18px;color:#565D70">
+            <div style="width:34px;height:34px;border-radius:9px;border:1px dashed rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:14px;color:#4C5265">∅</div>
+            <span style="font-size:12px">尚未生成 — 填写参数后点击 Generate</span>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ generated }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:16px;padding:16px 18px 18px;animation:fadeUp .3s ease both">
+
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:11px;font-weight:600;color:#9AA1B4;letter-spacing:.04em">订阅配置</span>
+                <span style="flex:1;height:1px;background:rgba(255,255,255,.05)"></span>
+              </div>
+              <sc-for list="{{ subLinks }}" as="lk" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:10px;padding:9px 11px;background:#0D0F14;border:1px solid rgba(255,255,255,.06);border-radius:8px" style-hover="border-color:rgba(255,255,255,.13)">
+                  <div style="display:flex;flex-direction:column;gap:3px;min-width:0;flex:1">
+                    <div style="display:flex;align-items:center;gap:7px">
+                      <span style="font-size:12px;font-weight:500">{{ lk.name }}</span>
+                      <span style="{{ lk.tagStyle }}">{{ lk.tag }}</span>
+                      <sc-if value="{{ lk.star }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:10px;color:var(--accent)">◈ 用于 Managed Header</span>
+                      </sc-if>
+                    </div>
+                    <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#6B7284;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ lk.url }}</span>
+                  </div>
+                  <button onClick="{{ lk.copy }}" style="{{ lk.copyBtnStyle }}">{{ lk.copyLabel }}</button>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:11px;font-weight:600;color:#9AA1B4;letter-spacing:.04em">Rule Provider</span>
+                <span style="font-family:'Geist Mono',monospace;font-size:10px;color:#565D70">{{ ruleCount }}</span>
+                <span style="flex:1;height:1px;background:rgba(255,255,255,.05)"></span>
+              </div>
+              <sc-for list="{{ ruleLinks }}" as="lk" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 11px;background:#0D0F14;border:1px solid rgba(255,255,255,.06);border-radius:8px" style-hover="border-color:rgba(255,255,255,.13)">
+                  <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:#C6CBDA;min-width:74px">{{ lk.name }}</span>
+                  <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#6B7284;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0">{{ lk.url }}</span>
+                  <button onClick="{{ lk.copy }}" style="{{ lk.copyBtnStyle }}">{{ lk.copyLabel }}</button>
+                </div>
+              </sc-for>
+            </div>
+
+          </div>
+        </sc-if>
+      </section>
+    </div>
+
+    <!-- ──── 右列：注入 ──── -->
+    <div style="display:flex;flex-direction:column;gap:22px;min-width:0">
+
+      <!-- Section C · 本地配置目录 -->
+      <section data-screen-label="C 本地配置" style="background:#12141A;border:1px solid rgba(255,255,255,.07);border-radius:12px;box-shadow:0 12px 32px -18px rgba(0,0,0,.7)">
+        <div style="display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 10px;padding:15px 18px 13px;border-bottom:1px solid rgba(255,255,255,.055)">
+          <span style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--accent)">03</span>
+          <h2 style="font-size:13px;font-weight:600">本地配置目录</h2>
+          <span style="font-size:11px;color:#565D70">Local Config Access</span>
+          <div style="flex:1"></div>
+          <sc-if value="{{ dirOpen }}" hint-placeholder-val="{{ false }}">
+            <span style="display:flex;align-items:center;gap:6px;font-size:11px;color:#4ADE80"><span style="width:6px;height:6px;border-radius:50%;background:#4ADE80"></span>已授权 · 读写</span>
+          </sc-if>
+          <span style="height:20px;padding:0 8px;display:flex;align-items:center;border:1px solid rgba(255,255,255,.09);border-radius:5px;font-family:'Geist Mono',monospace;font-size:10px;color:#8A91A3">Surge only</span>
+        </div>
+
+        <sc-if value="{{ clashWarn }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:8px;margin:14px 18px 0;padding:9px 12px;background:rgba(245,185,75,.08);border:1px solid rgba(245,185,75,.22);border-radius:8px;font-size:11.5px;color:#F5B94B">
+            <span style="font-family:'Geist Mono',monospace">⚠</span>
+            本地注入 V1 仅支持 Surge — 当前 Client 为 Clash，链接仍可生成与复制
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ dirClosed }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:18px">
+            <button onClick="{{ openDir }}" disabled="{{ notGenerated }}" style="{{ openDirBtnStyle }}">
+              <span style="font-size:16px">⌥</span>
+              <span style="display:flex;flex-direction:column;align-items:flex-start;gap:2px">
+                <span style="font-size:12.5px;font-weight:600">打开本地目录</span>
+                <span style="font-size:10.5px;color:#6B7284;font-weight:400">通过浏览器授权访问 Surge 配置目录 · File System Access</span>
+              </span>
+            </button>
+            <sc-if value="{{ notGenerated }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:10px;font-size:11px;color:#565D70;text-align:center">先生成链接，再连接本地目录</div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ dirOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px;padding:14px 18px 18px;animation:fadeUp .3s ease both">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:#C6CBDA">~/Library/…/Surge</span>
+              <span style="font-family:'Geist Mono',monospace;font-size:10px;color:#565D70">{{ fileCount }} files</span>
+              <div style="flex:1"></div>
+              <span style="font-size:10.5px;color:#565D70">标记 1 个主配置 + 1 个规则文件</span>
+            </div>
+
+            <div style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.06);border-radius:9px;overflow-y:auto;height:192px;flex:none">
+              <sc-for list="{{ files }}" as="f" hint-placeholder-count="5">
+                <div style="{{ f.rowStyle }}">
+                  <span style="font-family:'Geist Mono',monospace;font-size:11px;color:#565D70;width:16px;text-align:center">{{ f.icon }}</span>
+                  <span style="{{ f.nameStyle }}">{{ f.name }}</span>
+                  <span style="font-family:'Geist Mono',monospace;font-size:10px;color:#565D70">{{ f.size }}</span>
+                  <div style="flex:1"></div>
+                  <sc-if value="{{ f.eligible }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;gap:5px">
+                      <button onClick="{{ f.setMain }}" style="{{ f.mainChipStyle }}">主配置</button>
+                      <button onClick="{{ f.setRules }}" style="{{ f.rulesChipStyle }}">规则文件</button>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ f.ineligible }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:10px;color:#3E4454">不适用</span>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ marked }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:8px;font-size:11.5px;color:#4ADE80">
+                <span>✓</span>文件角色已标记 — 可进入注入预览
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+      </section>
+
+      <!-- Section D · 注入预览 -->
+      <section data-screen-label="D 注入预览" style="background:#12141A;border:1px solid rgba(255,255,255,.07);border-radius:12px;box-shadow:0 12px 32px -18px rgba(0,0,0,.7)">
+        <div style="display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 10px;padding:15px 18px 13px;border-bottom:1px solid rgba(255,255,255,.055)">
+          <span style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--accent)">04</span>
+          <h2 style="font-size:13px;font-weight:600">注入预览</h2>
+          <span style="font-size:11px;color:#565D70">Injection Preview</span>
+          <div style="flex:1"></div>
+          <sc-if value="{{ previewOpen }}" hint-placeholder-val="{{ false }}">
+            <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#8A91A3">{{ changeSummary }}</span>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ previewLocked }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:38px 18px;color:#565D70">
+            <div style="width:34px;height:34px;border-radius:9px;border:1px dashed rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:13px;color:#4C5265">▸</div>
+            <span style="font-size:12px">{{ previewLockHint }}</span>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ previewReady }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:18px">
+            <button onClick="{{ openPreview }}" style="width:100%;height:36px;border:1px solid rgba(124,140,248,.4);border-radius:8px;background:var(--accent-dim);color:var(--accent);font-size:12.5px;font-weight:600;font-family:'Geist',sans-serif;cursor:pointer;transition:background .15s" style-hover="background:rgba(124,140,248,.2)">
+              Preview 生成注入预览
+            </button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ previewOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:18px;padding:16px 18px 18px;animation:fadeUp .3s ease both">
+
+            <!-- Managed Header 决策 -->
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:11px;font-weight:600;color:#9AA1B4;letter-spacing:.04em">Managed Header</span>
+                <span style="font-family:'Geist Mono',monospace;font-size:10px;color:#565D70">surge.conf · line 1</span>
+                <span style="flex:1;height:1px;background:rgba(255,255,255,.05)"></span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;padding:11px 12px;background:#0D0F14;border:1px solid rgba(255,255,255,.06);border-radius:9px">
+                <button onClick="{{ pickHeaderOld }}" style="{{ headerOldRowStyle }}">
+                  <span style="height:16px;padding:0 5px;display:flex;align-items:center;border-radius:4px;background:rgba(255,255,255,.06);font-family:'Geist Mono',monospace;font-size:9px;color:#8A91A3;letter-spacing:.05em;flex:none;margin-top:1px">OLD</span>
+                  <span style="font-family:'Geist Mono',monospace;font-size:10.5px;line-height:1.65;color:#8A91A3;white-space:pre-wrap;word-break:break-all;text-align:left;min-width:0;flex:1"><sc-for list="{{ headerOldSegs }}" as="sg" hint-placeholder-count="1"><span style="{{ sg.style }}">{{ sg.text }}</span></sc-for></span>
+                </button>
+                <button onClick="{{ pickHeaderNew }}" style="{{ headerNewRowStyle }}">
+                  <span style="height:16px;padding:0 5px;display:flex;align-items:center;border-radius:4px;background:var(--accent-dim);font-family:'Geist Mono',monospace;font-size:9px;color:var(--accent);letter-spacing:.05em;flex:none;margin-top:1px">NEW</span>
+                  <span style="font-family:'Geist Mono',monospace;font-size:10.5px;line-height:1.65;color:#C6CBDA;white-space:pre-wrap;word-break:break-all;text-align:left;min-width:0;flex:1"><sc-for list="{{ headerNewSegs }}" as="sg" hint-placeholder-count="1"><span style="{{ sg.style }}">{{ sg.text }}</span></sc-for></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Rule Provider 决策 -->
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:11px;font-weight:600;color:#9AA1B4;letter-spacing:.04em">Rule Provider</span>
+                <span style="font-family:'Geist Mono',monospace;font-size:10px;color:#565D70">rules.conf · managed block</span>
+                <span style="flex:1;height:1px;background:rgba(255,255,255,.05)"></span>
+              </div>
+              <sc-for list="{{ rps }}" as="rp" hint-placeholder-count="4">
+                <div style="{{ rp.cardStyle }}">
+                  <div style="display:flex;align-items:center;gap:8px;padding:9px 12px 9px 14px;border-bottom:1px solid rgba(255,255,255,.055);background:rgba(255,255,255,.022)">
+                    <button onClick="{{ rp.toggle }}" style="{{ rp.checkStyle }}">{{ rp.checkMark }}</button>
+                    <span style="font-family:'Geist Mono',monospace;font-size:12px;font-weight:500;color:#E8EAF0">{{ rp.name }}</span>
+                    <span style="font-size:10px;color:#565D70">{{ rp.note }}</span>
+                    <div style="flex:1"></div>
+                    <sc-if value="{{ rp.disabled }}" hint-placeholder-val="{{ false }}">
+                      <span style="font-size:10px;color:#565D70">已停用 · 不写入</span>
+                    </sc-if>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:3px;padding:6px">
+                  <sc-if value="{{ rp.hasOld }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ rp.pickOld }}" disabled="{{ rp.disabled }}" style="{{ rp.oldRowStyle }}">
+                      <span style="height:16px;padding:0 5px;display:flex;align-items:center;border-radius:4px;background:rgba(255,255,255,.06);font-family:'Geist Mono',monospace;font-size:9px;color:#8A91A3;letter-spacing:.05em;flex:none;margin-top:1px">OLD</span>
+                      <span style="font-family:'Geist Mono',monospace;font-size:10.5px;line-height:1.65;color:#8A91A3;white-space:pre-wrap;word-break:break-all;text-align:left;min-width:0;flex:1"><sc-for list="{{ rp.oldSegs }}" as="sg" hint-placeholder-count="1"><span style="{{ sg.style }}">{{ sg.text }}</span></sc-for></span>
+                    </button>
+                  </sc-if>
+                  <sc-if value="{{ rp.noOld }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px dashed rgba(255,255,255,.07);border-radius:6px">
+                      <span style="height:16px;padding:0 5px;display:flex;align-items:center;border-radius:4px;background:rgba(255,255,255,.06);font-family:'Geist Mono',monospace;font-size:9px;color:#565D70;letter-spacing:.05em">OLD</span>
+                      <span style="font-size:10.5px;color:#565D70">文件中不存在 — 将作为新增项写入</span>
+                    </div>
+                  </sc-if>
+                  <button onClick="{{ rp.pickNew }}" disabled="{{ rp.disabled }}" style="{{ rp.newRowStyle }}">
+                    <span style="height:16px;padding:0 5px;display:flex;align-items:center;border-radius:4px;background:var(--accent-dim);font-family:'Geist Mono',monospace;font-size:9px;color:var(--accent);letter-spacing:.05em;flex:none;margin-top:1px">NEW</span>
+                    <span style="font-family:'Geist Mono',monospace;font-size:10.5px;line-height:1.65;color:#C6CBDA;white-space:pre-wrap;word-break:break-all;text-align:left;min-width:0;flex:1"><sc-for list="{{ rp.newSegs }}" as="sg" hint-placeholder-count="1"><span style="{{ sg.style }}">{{ sg.text }}</span></sc-for></span>
+                  </button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <!-- 最终预览 -->
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:11px;font-weight:600;color:#9AA1B4;letter-spacing:.04em">最终写入预览</span>
+                <span style="font-size:10.5px;color:#565D70">Final Preview · 应用前请确认</span>
+                <span style="flex:1;height:1px;background:rgba(255,255,255,.05)"></span>
+              </div>
+
+              <div style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:#0A0C10;overflow:hidden">
+                <div style="display:flex;align-items:center;gap:8px;height:30px;padding:0 12px;border-bottom:1px solid rgba(255,255,255,.06);background:#0E1016">
+                  <span style="width:8px;height:8px;border-radius:50%;background:#2A2E3B"></span>
+                  <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#8A91A3">surge.conf</span>
+                  <span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:#565D70">1 line replaced</span>
+                </div>
+                <div style="padding:10px 0;font-family:'Geist Mono',monospace;font-size:10.5px;line-height:1.8;overflow-x:auto">
+                  <div style="display:flex;gap:12px;padding:0 12px;background:var(--accent-dim)">
+                    <span style="color:#4C5265;width:14px;text-align:right;flex:none">1</span>
+                    <span style="color:#C6CBDA;white-space:pre-wrap;word-break:break-all">{{ finalHeaderLine }}</span>
+                  </div>
+                  <div style="display:flex;gap:12px;padding:0 12px"><span style="color:#4C5265;width:14px;text-align:right;flex:none">2</span><span style="color:#565D70;white-space:pre">[General]</span></div>
+                  <div style="display:flex;gap:12px;padding:0 12px"><span style="color:#4C5265;width:14px;text-align:right;flex:none">3</span><span style="color:#565D70;white-space:pre">loglevel = notify</span></div>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:#0A0C10;overflow:hidden">
+                <div style="display:flex;align-items:center;gap:8px;height:30px;padding:0 12px;border-bottom:1px solid rgba(255,255,255,.06);background:#0E1016">
+                  <span style="width:8px;height:8px;border-radius:50%;background:#2A2E3B"></span>
+                  <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#8A91A3">rules.conf</span>
+                  <span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:#565D70">managed block · {{ blockLineCount }} lines</span>
+                </div>
+                <div style="padding:10px 0;font-family:'Geist Mono',monospace;font-size:10.5px;line-height:1.8;overflow-x:auto">
+                  <sc-for list="{{ previewLines }}" as="ln" hint-placeholder-count="6">
+                    <div style="{{ ln.rowStyle }}">
+                      <span style="color:#4C5265;width:14px;text-align:right;flex:none">{{ ln.no }}</span>
+                      <span style="{{ ln.textStyle }}">{{ ln.text }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+
+            <!-- Apply -->
+            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:12px 16px;border-top:1px solid rgba(255,255,255,.055);padding-top:13px">
+              <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:240px">
+                <span style="font-size:10px;font-weight:600;color:#565D70;letter-spacing:.08em">变动摘要 · {{ changeCount }} 处变更</span>
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:5px 8px">
+                  <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#8A91A3">surge.conf</span>
+                  <span style="{{ mainSumStyle }}">{{ mainSumText }}</span>
+                  <span style="width:1px;height:12px;background:rgba(255,255,255,.09)"></span>
+                  <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:#8A91A3">rules.conf</span>
+                  <sc-for list="{{ sumChips }}" as="ch" hint-placeholder-count="2">
+                    <span style="{{ ch.style }}">{{ ch.text }}</span>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="flex:none"></div>
+
+              <sc-if value="{{ applyIdle }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ askApply }}" style="display:flex;align-items:center;gap:8px;height:29px;padding:0 12px;border:none;border-radius:7px;background:linear-gradient(180deg,#828FFA,#5F6BEC);color:#fff;font-size:11.5px;font-weight:600;letter-spacing:.01em;font-family:'Geist',sans-serif;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.22), 0 0 0 1px rgba(96,107,233,.9), 0 4px 14px -6px var(--accent-glow);transition:filter .15s" style-hover="filter:brightness(1.08)">Apply 应用注入<span style="display:flex;align-items:center;justify-content:center;height:15px;padding:0 4px;border-radius:4px;background:rgba(255,255,255,.16);font-family:'Geist Mono',monospace;font-size:9px;font-weight:500;color:rgba(255,255,255,.85)">⏎</span></button>
+              </sc-if>
+
+              <sc-if value="{{ applyConfirm }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:8px;animation:fadeUp .2s ease both;min-width:0">
+                  <span style="font-size:11.5px;color:#F5B94B;flex:1;min-width:200px;text-align:right;line-height:1.5">确认写入本地文件？此操作将直接修改 surge.conf 与 rules.conf</span>
+                  <button onClick="{{ cancelApply }}" style="height:29px;padding:0 11px;background:transparent;border:1px solid rgba(255,255,255,.12);border-radius:7px;color:#9AA1B4;font-size:11.5px;font-family:'Geist',sans-serif;cursor:pointer" style-hover="border-color:rgba(255,255,255,.3);color:#E8EAF0">取消</button>
+                  <button onClick="{{ doApply }}" style="height:29px;padding:0 13px;border:none;border-radius:7px;background:linear-gradient(180deg,#F7C35C,#E8A93A);color:#1A1305;font-size:11.5px;font-weight:600;font-family:'Geist',sans-serif;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.3), 0 0 0 1px rgba(214,155,48,.9)" style-hover="filter:brightness(1.06)">确认写入</button>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ applyWriting }}" hint-placeholder-val="{{ false }}">
+                <span style="font-family:'Geist Mono',monospace;font-size:11.5px;color:var(--accent);animation:blink 1s ease infinite">writing…</span>
+              </sc-if>
+
+              <sc-if value="{{ applyDone }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:10px;animation:fadeUp .2s ease both">
+                  <span style="display:flex;align-items:center;gap:7px;font-size:12px;color:#4ADE80"><span style="width:16px;height:16px;border-radius:50%;background:rgba(74,222,128,.15);display:flex;align-items:center;justify-content:center;font-size:10px">✓</span>已写入 surge.conf 与 rules.conf</span>
+                  <button onClick="{{ resetAll }}" style="height:32px;padding:0 13px;background:transparent;border:1px solid rgba(255,255,255,.12);border-radius:7px;color:#9AA1B4;font-size:12px;font-family:'Geist',sans-serif;cursor:pointer" style-hover="border-color:rgba(255,255,255,.3);color:#E8EAF0">完成</button>
+                </div>
+              </sc-if>
+            </div>
+
+          </div>
+        </sc-if>
+      </section>
+    </div>
+  </main>
+
+  <!-- 演示状态跳转 -->
+  <sc-if value="{{ demoBar }}" hint-placeholder-val="{{ true }}">
+    <div style="position:fixed;left:20px;bottom:18px;z-index:60;display:flex;align-items:center;gap:4px;padding:5px 7px 5px 11px;background:rgba(15,17,22,.85);border:1px solid rgba(255,255,255,.1);border-radius:9px;backdrop-filter:blur(10px);box-shadow:0 10px 30px -10px rgba(0,0,0,.8)">
+      <span style="font-family:'Geist Mono',monospace;font-size:9.5px;color:#565D70;letter-spacing:.08em;margin-right:5px">DEMO&nbsp;STATES</span>
+      <sc-for list="{{ demoStates }}" as="d" hint-placeholder-count="6">
+        <button onClick="{{ d.go }}" title="{{ d.label }}" style="{{ d.btnStyle }}">{{ d.n }}</button>
+      </sc-for>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;accentColor&quot;: { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#7C8CF8&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;#7C8CF8&quot;, &quot;#5EEAD4&quot;, &quot;#F0A05A&quot;, &quot;#8CE99A&quot;], &quot;section&quot;: &quot;外观&quot; },
+  &quot;showDemoBar&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;演示&quot; }
+}">
+class Component extends DCLogic {
+  state = {
+    secret: 's-9f2kc1',
+    subUrl: 'https://legacy.airport.example/sub?token=8821',
+    client: 'surge',
+    interval: '43200',
+    strict: true,
+    generated: false,
+    dirOpen: false,
+    mainFile: null,
+    rulesFile: null,
+    previewOpen: false,
+    headerChoice: 'new',
+    rpState: { reject: { enabled: true, choice: 'new' }, direct: { enabled: true, choice: 'new' }, proxy: { enabled: true, choice: 'new' }, cn: { enabled: true, choice: 'new' } },
+    applyStage: 0, // 0 idle, 1 confirm, 2 writing, 3 done
+    copiedKey: null,
+  };
+
+  applyAccent() {
+    const hex = this.props.accentColor ?? '#7C8CF8';
+    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+    const root = document.documentElement;
+    root.style.setProperty('--accent', hex);
+    root.style.setProperty('--accent-dim', `rgba(${r},${g},${b},.13)`);
+    root.style.setProperty('--accent-glow', `rgba(${r},${g},${b},.35)`);
+  }
+  componentDidMount() { this.applyAccent(); }
+  componentDidUpdate() { this.applyAccent(); }
+
+  // char-level LCS diff → {oldSegs, newSegs}, merged into runs
+  diffSegs(a, b) {
+    const SAME_OLD = 'color:#8A91A3;', DEL = 'color:#FCA5A5;background:rgba(248,113,113,.15);border-radius:3px;';
+    const SAME_NEW = 'color:#C6CBDA;', INS = 'color:#8CE99A;background:rgba(74,222,128,.14);border-radius:3px;';
+    const n = a.length, m = b.length;
+    // trim common prefix/suffix to keep DP small
+    let p = 0; while (p < n && p < m && a[p] === b[p]) p++;
+    let sfx = 0; while (sfx < n - p && sfx < m - p && a[n - 1 - sfx] === b[m - 1 - sfx]) sfx++;
+    const ca = a.slice(p, n - sfx), cb = b.slice(p, m - sfx);
+    let oldMid = [], newMid = [];
+    if (ca.length * cb.length > 400000 || !ca.length || !cb.length) {
+      if (ca.length) oldMid.push({ text: ca, style: DEL });
+      if (cb.length) newMid.push({ text: cb, style: INS });
+    } else {
+      const N = ca.length, M = cb.length;
+      const dp = [];
+      for (let i = 0; i <= N; i++) dp.push(new Uint16Array(M + 1));
+      for (let i = 1; i <= N; i++) for (let j = 1; j <= M; j++)
+        dp[i][j] = ca[i - 1] === cb[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1]);
+      let i = N, j = M; const ops = [];
+      while (i > 0 || j > 0) {
+        if (i > 0 && j > 0 && ca[i - 1] === cb[j - 1]) { ops.push(['=', ca[i - 1]]); i--; j--; }
+        else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) { ops.push(['+', cb[j - 1]]); j--; }
+        else { ops.push(['-', ca[i - 1]]); i--; }
+      }
+      ops.reverse();
+      const push = (arr, style, ch) => {
+        const last = arr[arr.length - 1];
+        if (last && last.style === style) last.text += ch; else arr.push({ text: ch, style });
+      };
+      for (const [op, ch] of ops) {
+        if (op === '=') { push(oldMid, SAME_OLD, ch); push(newMid, SAME_NEW, ch); }
+        else if (op === '-') push(oldMid, DEL, ch);
+        else push(newMid, INS, ch);
+      }
+    }
+    const pre = a.slice(0, p), sufA = sfx ? a.slice(n - sfx) : '';
+    const oldSegs = [], newSegs = [];
+    if (pre) { oldSegs.push({ text: pre, style: SAME_OLD }); newSegs.push({ text: pre, style: SAME_NEW }); }
+    oldSegs.push(...oldMid); newSegs.push(...newMid);
+    if (sufA) { oldSegs.push({ text: sufA, style: SAME_OLD }); newSegs.push({ text: sufA, style: SAME_NEW }); }
+    return { oldSegs, newSegs };
+  }
+
+  copy(key, text) {
+    try { navigator.clipboard.writeText(text); } catch (e) {}
+    this.setState({ copiedKey: key });
+    clearTimeout(this._ct);
+    this._ct = setTimeout(() => this.setState({ copiedKey: null }), 1400);
+  }
+
+  jump(n) {
+    const base = {
+      generated: false, dirOpen: false, mainFile: null, rulesFile: null,
+      previewOpen: false, applyStage: 0, headerChoice: 'new',
+      rpState: { reject: { enabled: true, choice: 'new' }, direct: { enabled: true, choice: 'new' }, proxy: { enabled: true, choice: 'new' }, cn: { enabled: true, choice: 'new' } },
+    };
+    if (n >= 2) base.generated = true;
+    if (n >= 3) base.dirOpen = true;
+    if (n >= 4) { base.mainFile = 'surge.conf'; base.rulesFile = 'rules.conf'; }
+    if (n >= 5) base.previewOpen = true;
+    if (n >= 6) { base.applyStage = 1; base.rpState.proxy = { enabled: true, choice: 'old' }; base.rpState.cn = { enabled: false, choice: 'new' }; }
+    this.setState(base);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const host = 'https://convertor.dev/api/v1';
+    const q = `secret=${s.secret || '…'}`;
+    const client = s.client;
+
+    const mono = "font-family:'Geist Mono',monospace;";
+    const seg = (active) => `flex:1;border:none;border-radius:5px;font-size:11.5px;font-weight:500;font-family:'Geist',sans-serif;cursor:pointer;transition:all .15s;` +
+      (active ? 'background:#1D2230;color:#E8EAF0;box-shadow:0 0 0 1px rgba(255,255,255,.08), 0 2px 6px rgba(0,0,0,.4);' : 'background:transparent;color:#6B7284;');
+
+    const copyBtn = (copied) => `height:24px;padding:0 9px;flex:none;border-radius:6px;font-size:10.5px;${mono}cursor:pointer;transition:all .15s;` +
+      (copied ? 'background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.35);color:#4ADE80;'
+              : 'background:transparent;border:1px solid rgba(255,255,255,.11);color:#8A91A3;');
+
+    // ---- generated links ----
+    const subLinksRaw = [
+      { key: 'raw', name: '原始订阅配置', tag: 'RAW', url: `${host}/sub/raw?${q}`, star: false, tagColor: '#8A91A3' },
+      { key: 'orig', name: '转换前订阅配置', tag: 'ORIGINAL', url: `${host}/sub/original?${q}&client=${client}`, star: false, tagColor: '#8A91A3' },
+      { key: 'profile', name: '转换后订阅配置', tag: 'PROFILE', url: `${host}/profile/${client}?${q}&interval=${s.interval}&strict=${s.strict}`, star: true, tagColor: 'accent' },
+    ];
+    const ruleNames = ['reject', 'direct', 'proxy', 'cn'];
+    const ruleLinksRaw = ruleNames.map(n => ({ key: 'rule-' + n, name: n + '.list', url: `${host}/rule/${client}/${n}.list?${q}` }));
+
+    const decorate = (lk) => ({
+      ...lk,
+      copyLabel: s.copiedKey === lk.key ? '✓ 已复制' : 'Copy',
+      copyBtnStyle: copyBtn(s.copiedKey === lk.key),
+      copy: () => this.copy(lk.key, lk.url),
+      tagStyle: `height:16px;padding:0 5px;display:flex;align-items:center;border-radius:4px;${mono}font-size:9px;letter-spacing:.05em;` +
+        (lk.tagColor === 'accent' ? 'background:var(--accent-dim);color:var(--accent);' : 'background:rgba(255,255,255,.06);color:#8A91A3;'),
+    });
+
+    // ---- files ----
+    const rawFiles = [
+      { name: 'surge.conf', size: '14.2 KB', ext: 'conf' },
+      { name: 'rules.conf', size: '3.1 KB', ext: 'conf' },
+      { name: 'backup_0619.conf', size: '14.0 KB', ext: 'conf' },
+      { name: 'mitm.sgmodule', size: '1.8 KB', ext: 'sgmodule' },
+      { name: 'notes.md', size: '0.4 KB', ext: 'md' },
+    ];
+    const chip = (assigned, kind) => `height:22px;padding:0 9px;border-radius:5px;font-size:10.5px;font-family:'Geist',sans-serif;cursor:pointer;transition:all .15s;flex:none;` +
+      (assigned
+        ? (kind === 'main'
+          ? 'background:var(--accent-dim);border:1px solid rgba(124,140,248,.5);color:var(--accent);font-weight:600;'
+          : 'background:rgba(94,234,212,.1);border:1px solid rgba(94,234,212,.4);color:#5EEAD4;font-weight:600;')
+        : 'background:transparent;border:1px solid rgba(255,255,255,.1);color:#6B7284;');
+
+    const files = rawFiles.map((f, i) => {
+      const eligible = f.ext === 'conf';
+      const isMain = s.mainFile === f.name;
+      const isRules = s.rulesFile === f.name;
+      return {
+        ...f,
+        icon: eligible ? '≡' : '·',
+        eligible, ineligible: !eligible,
+        rowStyle: `display:flex;align-items:center;gap:10px;height:38px;flex:none;padding:0 12px;background:${(isMain || isRules) ? 'rgba(124,140,248,.05)' : (i % 2 ? '#0F1116' : '#0D0F14')};` + (i < rawFiles.length - 1 ? 'border-bottom:1px solid rgba(255,255,255,.045);' : ''),
+        nameStyle: `${mono}font-size:11.5px;color:${eligible ? '#C6CBDA' : '#4C5265'};`,
+        mainChipStyle: chip(isMain, 'main') + (isMain ? '' : ''),
+        rulesChipStyle: chip(isRules, 'rules'),
+        setMain: () => this.setState(p => ({ mainFile: p.mainFile === f.name ? null : f.name, rulesFile: p.rulesFile === f.name ? null : p.rulesFile })),
+        setRules: () => this.setState(p => ({ rulesFile: p.rulesFile === f.name ? null : f.name, mainFile: p.mainFile === f.name ? null : p.mainFile })),
+      };
+    });
+
+    const marked = !!(s.mainFile && s.rulesFile);
+
+    // ---- preview decisions ----
+    const headerOld = '#!MANAGED-CONFIG https://legacy.airport.example/sub/surge?token=8821 interval=86400 strict=false';
+    const headerNew = `#!MANAGED-CONFIG ${host}/profile/surge?${q} interval=${s.interval} strict=${s.strict}`;
+
+    const radio = (on, disabled) => `width:14px;height:14px;border-radius:50%;flex:none;margin-top:2px;transition:all .15s;` +
+      (on ? 'border:4.5px solid var(--accent);background:#fff;box-shadow:0 0 8px var(--accent-glow);'
+          : `border:1.5px solid rgba(255,255,255,${disabled ? '.08' : '.2'});background:transparent;`);
+    const optRow = (on, disabled) => `display:flex;align-items:flex-start;gap:8px;padding:6px 8px;border-radius:6px;border:1px solid ${on ? 'rgba(124,140,248,.35)' : 'transparent'};background:${on ? 'rgba(124,140,248,.07)' : 'transparent'};cursor:${disabled ? 'default' : 'pointer'};opacity:${disabled ? '.4' : '1'};width:100%;text-align:left;transition:all .15s;min-width:0;`;
+
+    const rpDefs = [
+      { key: 'reject', name: 'reject.list', note: '广告与追踪拦截', old: 'RULE-SET,https://cdn.old-mirror.dev/surge/reject.list,REJECT' },
+      { key: 'direct', name: 'direct.list', note: '直连域名', old: 'RULE-SET,https://cdn.old-mirror.dev/surge/direct.list,DIRECT' },
+      { key: 'proxy', name: 'proxy.list', note: '代理域名', old: 'RULE-SET,https://cdn.old-mirror.dev/surge/proxy.list,PROXY' },
+      { key: 'cn', name: 'cn.list', note: '中国大陆直连', old: null },
+    ];
+
+    const rps = rpDefs.map(d => {
+      const st = s.rpState[d.key];
+      const enabled = st.enabled;
+      const newVal = `RULE-SET,${host}/rule/surge/${d.key}.list?${q},${d.key === 'reject' ? 'REJECT' : d.key === 'proxy' ? 'PROXY' : 'DIRECT'}`;
+      const setRp = (patch) => this.setState(p => ({ rpState: { ...p.rpState, [d.key]: { ...p.rpState[d.key], ...patch } } }));
+      const segs = d.old ? this.diffSegs(d.old, newVal) : { oldSegs: [], newSegs: [{ text: newVal, style: 'color:#C6CBDA;' }] };
+      return {
+        name: d.name, note: d.note,
+        hasOld: !!d.old, noOld: !d.old,
+        oldVal: d.old || '', newVal,
+        oldSegs: segs.oldSegs, newSegs: segs.newSegs,
+        enabled, disabled: !enabled,
+        checkMark: enabled ? '✓' : '',
+        checkStyle: `width:15px;height:15px;border-radius:4px;flex:none;cursor:pointer;font-size:9.5px;display:flex;align-items:center;justify-content:center;transition:all .15s;padding:0;` +
+          (enabled ? 'background:var(--accent);border:1px solid var(--accent);color:#fff;box-shadow:0 0 8px var(--accent-glow);' : 'background:transparent;border:1.5px solid rgba(255,255,255,.2);color:transparent;'),
+        cardStyle: `display:flex;flex-direction:column;background:#0D0F14;border:1px solid rgba(255,255,255,.06);border-radius:9px;overflow:hidden;transition:opacity .2s;` + (enabled ? '' : 'opacity:.55;'),
+        oldRowStyle: optRow(enabled && st.choice === 'old', !enabled),
+        newRowStyle: optRow(enabled && st.choice === 'new', !enabled),
+        oldRadioStyle: radio(enabled && st.choice === 'old', !enabled),
+        newRadioStyle: radio(enabled && st.choice === 'new', !enabled),
+        toggle: () => setRp({ enabled: !enabled }),
+        pickOld: () => setRp({ choice: 'old' }),
+        pickNew: () => setRp({ choice: 'new' }),
+      };
+    });
+
+    // ---- final preview ----
+    const finalHeaderLine = s.headerChoice === 'new' ? headerNew : headerOld;
+    const chosenLines = rpDefs
+      .filter(d => s.rpState[d.key].enabled)
+      .map(d => {
+        const isNew = s.rpState[d.key].choice === 'new' || !d.old;
+        const newVal = `RULE-SET,${host}/rule/surge/${d.key}.list?${q},${d.key === 'reject' ? 'REJECT' : d.key === 'proxy' ? 'PROXY' : 'DIRECT'}`;
+        return { text: isNew ? newVal : d.old, isNew };
+      });
+    const blockLines = [
+      { text: '# >>> CONVERTOR MANAGED >>>', kind: 'comment' },
+      { text: `# generated by convertor · ${chosenLines.length} providers`, kind: 'comment' },
+      ...chosenLines.map(l => ({ text: l.text, kind: l.isNew ? 'new' : 'old' })),
+      { text: '# <<< CONVERTOR MANAGED <<<', kind: 'comment' },
+    ];
+    const previewLines = blockLines.map((l, i) => ({
+      no: i + 1, text: l.text,
+      rowStyle: `display:flex;gap:12px;padding:0 12px;${l.kind === 'new' ? 'background:var(--accent-dim);' : ''}`,
+      textStyle: `white-space:pre-wrap;word-break:break-all;min-width:0;color:${l.kind === 'comment' ? '#565D70' : l.kind === 'new' ? '#C6CBDA' : '#8A91A3'};`,
+    }));
+
+    const changeCount = (s.headerChoice === 'new' ? 1 : 0) + rpDefs.filter(d => s.rpState[d.key].enabled && (s.rpState[d.key].choice === 'new' || !d.old)).length;
+
+    // ---- demo bar ----
+    const phase = s.applyStage >= 1 ? 6 : s.previewOpen ? 5 : marked ? 4 : s.dirOpen ? 3 : s.generated ? 2 : 1;
+    const demoLabels = ['默认状态', '已生成链接', '已打开目录', '已标记文件', '注入预览', '应用确认'];
+    const demoStates = demoLabels.map((label, i) => ({
+      n: String(i + 1), label,
+      btnStyle: `width:22px;height:22px;border-radius:6px;font-size:10.5px;${mono}cursor:pointer;transition:all .15s;` +
+        (phase === i + 1 ? 'background:var(--accent-dim);border:1px solid rgba(124,140,248,.5);color:var(--accent);font-weight:600;' : 'background:transparent;border:1px solid transparent;color:#565D70;'),
+      go: () => this.jump(i + 1),
+    }));
+
+    return {
+      // section A
+      secret: s.secret, subUrl: s.subUrl, interval: s.interval,
+      onSecret: e => this.setState({ secret: e.target.value }),
+      onSubUrl: e => this.setState({ subUrl: e.target.value }),
+      onInterval: e => this.setState({ interval: e.target.value.replace(/[^0-9]/g, '') }),
+      set6h: () => this.setState({ interval: '21600' }),
+      set12h: () => this.setState({ interval: '43200' }),
+      set24h: () => this.setState({ interval: '86400' }),
+      pickSurge: () => this.setState({ client: 'surge' }),
+      pickClash: () => this.setState({ client: 'clash' }),
+      surgeSegStyle: seg(client === 'surge'),
+      clashSegStyle: seg(client === 'clash'),
+      toggleStrict: () => this.setState(p => ({ strict: !p.strict })),
+      strictTrackStyle: `width:34px;height:20px;border-radius:10px;border:none;padding:2px;cursor:pointer;display:flex;transition:background .2s;flex:none;` +
+        (s.strict ? 'background:var(--accent);justify-content:flex-end;box-shadow:0 0 10px var(--accent-glow);' : 'background:#262B38;justify-content:flex-start;'),
+      strictKnobStyle: 'width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:all .2s;',
+      generate: () => this.setState({ generated: true, copiedKey: null }),
+
+      // section B
+      generated: s.generated, notGenerated: !s.generated,
+      subLinks: subLinksRaw.map(decorate),
+      ruleLinks: ruleLinksRaw.map(l => decorate({ ...l, tagColor: '' })),
+      ruleCount: '× ' + ruleLinksRaw.length,
+
+      // section C
+      clashWarn: client === 'clash',
+      dirOpen: s.dirOpen, dirClosed: !s.dirOpen,
+      openDir: () => this.setState({ dirOpen: true }),
+      openDirBtnStyle: `width:100%;display:flex;align-items:center;justify-content:center;gap:12px;padding:16px;border-radius:9px;border:1px dashed rgba(255,255,255,.16);background:rgba(255,255,255,.015);color:#C6CBDA;font-family:'Geist',sans-serif;transition:all .15s;` +
+        (s.generated ? 'cursor:pointer;' : 'cursor:not-allowed;opacity:.45;'),
+      files, fileCount: rawFiles.length, marked,
+
+      // section D
+      previewLocked: !marked && !s.previewOpen,
+      previewLockHint: !s.generated ? '生成链接后进入注入流程' : !s.dirOpen ? '连接本地目录后进入注入流程' : '标记主配置与规则文件后可预览',
+      previewReady: marked && !s.previewOpen,
+      previewOpen: s.previewOpen,
+      openPreview: () => this.setState({ previewOpen: true }),
+      headerOld, headerNew,
+      headerOldSegs: this.diffSegs(headerOld, headerNew).oldSegs,
+      headerNewSegs: this.diffSegs(headerOld, headerNew).newSegs,
+      pickHeaderOld: () => this.setState({ headerChoice: 'old' }),
+      pickHeaderNew: () => this.setState({ headerChoice: 'new' }),
+      headerOldRowStyle: optRow(s.headerChoice === 'old', false),
+      headerNewRowStyle: optRow(s.headerChoice === 'new', false),
+      headerOldRadioStyle: radio(s.headerChoice === 'old', false),
+      headerNewRadioStyle: radio(s.headerChoice === 'new', false),
+      rps,
+      finalHeaderLine, previewLines, blockLineCount: blockLines.length,
+      changeCount, changeSummary: `${changeCount} changes · 2 files`,
+      ...(() => {
+        const chipBase = `height:17px;padding:0 6px;display:inline-flex;align-items:center;border-radius:4px;font-family:'Geist Mono',monospace;font-size:9.5px;letter-spacing:.03em;`;
+        const cNew = chipBase + 'background:var(--accent-dim);color:var(--accent);';
+        const cOld = chipBase + 'background:rgba(255,255,255,.06);color:#8A91A3;';
+        const cOff = chipBase + 'background:transparent;border:1px dashed rgba(255,255,255,.14);color:#565D70;';
+        const nNew = rpDefs.filter(d => s.rpState[d.key].enabled && (s.rpState[d.key].choice === 'new' || !d.old)).length;
+        const nOld = rpDefs.filter(d => s.rpState[d.key].enabled && s.rpState[d.key].choice === 'old' && d.old).length;
+        const nOff = rpDefs.filter(d => !s.rpState[d.key].enabled).length;
+        const sumChips = [];
+        if (nNew) sumChips.push({ text: `${nNew} × NEW`, style: cNew });
+        if (nOld) sumChips.push({ text: `${nOld} × OLD`, style: cOld });
+        if (nOff) sumChips.push({ text: `${nOff} 停用`, style: cOff });
+        return {
+          mainSumText: s.headerChoice === 'new' ? 'Header → NEW' : 'Header 保留 OLD',
+          mainSumStyle: s.headerChoice === 'new' ? cNew : cOld,
+          sumChips,
+        };
+      })(),
+
+      applyIdle: s.applyStage === 0, applyConfirm: s.applyStage === 1,
+      applyWriting: s.applyStage === 2, applyDone: s.applyStage === 3,
+      askApply: () => this.setState({ applyStage: 1 }),
+      cancelApply: () => this.setState({ applyStage: 0 }),
+      doApply: () => {
+        this.setState({ applyStage: 2 });
+        setTimeout(() => this.setState({ applyStage: 3 }), 900);
+      },
+      resetAll: () => this.jump(2),
+
+      // demo bar
+      demoBar: this.props.showDemoBar ?? true,
+      demoStates,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use "@angular/material" as mat;
+@use "./styles/tokens";
+
+
+$font-stack: "Geist", -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+             "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+
+:root {
+    //noinspection SassScssUnresolvedMixin
+    @include mat.theme((
+        color: (
+            primary: mat.$blue-palette,
+            tertiary: mat.$azure-palette,
+        ),
+        typography: (
+            plain-family: $font-stack,
+            brand-family: $font-stack,
+            regular-weight: 400,
+            medium-weight: 500,
+            bold-weight: 700,
+        ),
+        density: -2,
+    ));
+    // surface/on-surface 不再硬编码单值：M3 的 --mat-sys-* 颜色已是 light-dark()，
+    // 移除单值覆盖后可在暗/浅双主题下自动生成正确的 surface 高度分层与文本对比色。
+    // outline 改用基于 on-surface 的 color-mix：比 M3 默认描边更轻、更"无边框感"，
+    // 且双主题下都成立（不会像固定白描边一样在浅色模式下失效）。
+    @include mat.theme-overrides((
+        outline: color-mix(in srgb, var(--mat-sys-on-surface), transparent 88%),
+        outline-variant: color-mix(in srgb, var(--mat-sys-on-surface), transparent 92%),
+    ));
+    @include mat.form-field-overrides((
+        container-height: 24px,
+        container-vertical-padding: 4px,
+        filled-with-label-container-padding-top: 4px,
+        filled-with-label-container-padding-bottom: 4px,
+        outlined-label-text-size: 12px,
+        filled-label-text-size: 12px,
+        // outlined-outline-color: rgba(255, 255, 255, 0.1),
+        // outlined-hover-outline-color: rgba(255, 255, 255, 0.5),
+    ));
+    @include mat.button-overrides((
+        filled-container-shape: 4px,
+        filled-horizontal-padding: 4px,
+        filled-touch-target-size: 8px,
+        filled-label-text-size: 12px,
+        filled-container-height: 28px,
+    ));
+    @include mat.slide-toggle-overrides((
+        track-shape: 4px,
+        handle-shape: 4px,
+        track-height: 24px,
+        track-width: 42px,
+        state-layer-size: 32px,
+        pressed-handle-size: 20px,
+        with-icon-handle-size: 18px,
+        selected-with-icon-handle-horizontal-margin: 0 calc(42px - 18px - 4px),
+        unselected-with-icon-handle-horizontal-margin: 0 4px,
+    ));
+    @include mat.card-overrides((
+        outlined-container-shape: 12px,
+        title-text-size: 16px,
+        title-text-line-height: normal,
+        title-text-weight: 500,
+    ));
+    @include mat.expansion-overrides((
+        header-text-size: 12px,
+        header-text-weight: 400,
+        header-text-tracking: normal,
+        header-collapsed-state-height: 34px,
+        header-expanded-state-height: 34px,
+        header-text-color: var(--mat-sys-on-surface),
+        container-text-color: var(--mat-sys-on-surface-variant),
+    ));
+    @include mat.option-overrides((
+        label-text-size: 12px,
+    ));
+    @include mat.icon-overrides((
+        // color: #505050,
+    ));
+    @include mat.select-overrides((
+        // enabled-arrow-color: #505050,
+    ))
+}
+
+/* You can add global styles to this file, and also import other style files */
+
+html, body {
+    height:  100vh;
+    margin:  0;
+    padding: 0;
+}
+
+body {
+    font:             var(--mat-sys-body-medium);
+    color:            var(--app-text);
+    background:       var(--app-bg);
+    color-scheme:     dark;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+::selection {
+    background: rgba(124, 140, 248, .32);
+}
+
+input::placeholder {
+    color: var(--app-text-5);
+}
+
+input:focus {
+    outline:      none;
+    border-color: var(--app-accent) !important;
+    box-shadow:   0 0 0 3px var(--app-accent-bg);
+}
+
+button {
+    font: inherit;
+}
+
+@keyframes fade-up {
+    from {
+        opacity:   0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity:   1;
+        transform: none;
+    }
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .35;
+    }
+}
+
+// reset base styles
+p, h1, h2, h3, h4, h5, h6 {
+    font-weight: normal;
+    margin:      0;
+    padding:     0;
+}
+
+code {
+    font-family: var(--app-mono);
+    color:       var(--app-text-2);
+}
+
+.my-mat-option .mat-mdc-option {
+    min-height: 28px;
+}
+
+.scrollable {
+    overflow: auto;
+
+    // Firefox
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--mat-sys-primary), transparent 30%) transparent;
+}
+
+// WebKit
+.scrollable::-webkit-scrollbar {
+    width:  8px;
+    height: 8px;
+}
+
+.scrollable::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+    border-radius:    4px;
+    background-color: color-mix(in srgb, var(--mat-sys-primary), transparent 30%);
+}
+
+// 顶部状态 pill 的 hover 详情：保留 \n 换行、等宽对齐服务列表
+.status-tip {
+    white-space: pre-line !important;
+    font-family: var(--app-mono) !important;
+    font-size:   11px !important;
+}
+
+// 统一卡片外壳：换皮只改 --app-surface / --app-border
+.app-card {
+    background:    var(--app-surface);
+    border:        1px solid var(--app-border);
+    border-radius: 12px;
+}
+
+.app-card-title {
+    margin:      0;
+    font-size:   13px;
+    font-weight: 500;
+    color:       var(--app-text);
+    display:     flex;
+    align-items: center;
+    gap:         var(--app-space-2);
+
+    mat-icon {
+        color:     var(--app-text-2);
+        font-size: 16px;
+        width:     16px;
+        height:    16px;
+    }
+}

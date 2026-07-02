@@ -1,0 +1,281 @@
+:host {
+    display: block;
+    width:   100%;
+}
+
+.merge {
+    overflow: hidden;
+}
+
+.m-head {
+    display:       flex;
+    align-items:   center;
+    gap:           11px;
+    padding:       12px 16px;
+    border-bottom: 0.5px solid var(--app-border);
+
+    .back {
+        display:         inline-flex;
+        align-items:     center;
+        justify-content: center;
+        width:           30px;
+        height:          30px;
+        border:          none;
+        border-radius:   var(--app-radius-sm);
+        background:      transparent;
+        color:           var(--app-text);
+        cursor:          pointer;
+
+        mat-icon {
+            font-size: 18px;
+            width:     18px;
+            height:    18px;
+        }
+
+        &:hover {
+            background: var(--app-surface-2);
+        }
+    }
+
+    .title {
+        font-size:   14px;
+        font-weight: 500;
+    }
+
+    .dir-chip {
+        margin-left:   auto;
+        font-family:   var(--app-mono);
+        font-size:     11px;
+        color:         var(--app-text-2);
+        background:    var(--app-surface-2);
+        border-radius: var(--app-radius-sm);
+        padding:       2px 9px;
+    }
+}
+
+.m-state {
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    gap:             var(--app-space-3);
+    padding:         var(--app-space-6);
+    color:           var(--app-text-2);
+
+    &.error {
+        flex-direction: column;
+        color:          var(--app-unhealthy);
+    }
+}
+
+.m-body {
+    display:        flex;
+    flex-direction: column;
+    gap:            var(--app-space-2);
+    padding:        14px 16px;
+}
+
+.entry {
+    border:        0.5px solid var(--app-border);
+    border-radius: 8px;
+    overflow:      hidden;
+}
+
+.e-head {
+    display:       flex;
+    align-items:   center;
+    gap:           var(--app-space-2);
+    padding:       8px 11px;
+    border-bottom: 0.5px solid var(--app-border);
+
+    .lbl {
+        font-family: var(--app-mono);
+        font-size:   12px;
+        color:       var(--app-text);
+    }
+
+    .sub {
+        font-size: 11px;
+        color:     var(--app-text-3);
+    }
+
+    .enable {
+        display:     flex;
+        align-items: center;
+        gap:         5px;
+        margin-left: auto;
+        font-size:   11px;
+        color:       var(--app-text-2);
+        cursor:      pointer;
+
+        input {
+            margin: 0;
+        }
+    }
+}
+
+.badge {
+    flex-shrink:   0;
+    font-size:     10px;
+    padding:       1px 7px;
+    border-radius: 5px;
+
+    &.changed {
+        background: var(--app-accent-bg);
+        color:      var(--app-accent);
+    }
+
+    &.added {
+        background: var(--app-add-bg);
+        color:      var(--app-add);
+    }
+
+    &.removed {
+        background: var(--app-del-bg);
+        color:      var(--app-del);
+    }
+
+    &.unchanged {
+        background: var(--app-surface-2);
+        color:      var(--app-text-3);
+    }
+}
+
+.diff {
+    font-family: var(--app-mono);
+    font-size:   10.5px;
+
+    .line {
+        display:     flex;
+        align-items: flex-start;
+        gap:         9px;
+        padding:     7px 11px;
+        cursor:      pointer;
+
+        &:not(:last-child) {
+            border-bottom: 0.5px solid var(--app-border);
+        }
+
+        .rad {
+            flex-shrink:   0;
+            width:         12px;
+            height:        12px;
+            margin-top:    2px;
+            border-radius: 50%;
+            border:        1.5px solid var(--app-text-3);
+        }
+
+        .tg {
+            flex-shrink: 0;
+            width:       26px;
+            font-size:   11px;
+            color:       var(--app-text-2);
+        }
+
+        code {
+            word-break:  break-all;
+            line-height: 1.5;
+        }
+
+        .sp.removed {
+            background:    var(--app-del-bg);
+            color:         var(--app-del);
+            border-radius: 2px;
+        }
+
+        .sp.added {
+            background:    var(--app-add-bg);
+            color:         var(--app-add);
+            border-radius: 2px;
+        }
+
+        &.on .rad {
+            border-color: var(--app-accent);
+            background:    var(--app-accent);
+            box-shadow:    inset 0 0 0 2px var(--app-surface);
+        }
+
+        &:not(.on) {
+            opacity: 0.5;
+        }
+
+        &.locked {
+            cursor: default;
+        }
+    }
+}
+
+.preview {
+    margin-top: var(--app-space-1);
+
+    .p-label {
+        font-size:     11px;
+        color:         var(--app-text-3);
+        margin-bottom: var(--app-space-1);
+    }
+
+    pre {
+        margin:        0;
+        padding:       10px 12px;
+        max-height:    220px;
+        overflow:      auto;
+        white-space:   pre-wrap;
+        word-break:    break-all;
+        font-family:   var(--app-mono);
+        font-size:     10.5px;
+        line-height:   1.55;
+        color:         var(--app-text-2);
+        background:    var(--app-field);
+        border:        0.5px solid var(--app-border);
+        border-radius: 8px;
+    }
+}
+
+.m-foot {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    padding:         13px 16px;
+    border-top:      0.5px solid var(--app-border);
+}
+
+.ghost {
+    height:        34px;
+    padding:       0 16px;
+    border:        0.5px solid var(--app-border-2);
+    border-radius: var(--app-radius-sm);
+    background:    transparent;
+    color:         var(--app-text-2);
+    font-family:   inherit;
+    font-size:     13px;
+    cursor:        pointer;
+
+    &:hover {
+        background: var(--app-surface-2);
+    }
+}
+
+.primary-btn {
+    display:       inline-flex;
+    align-items:   center;
+    gap:           6px;
+    height:        34px;
+    padding:       0 16px;
+    border:        none;
+    border-radius: var(--app-radius-sm);
+    background:    var(--app-accent);
+    color:         var(--app-on-accent);
+    font-family:   inherit;
+    font-size:     13px;
+    font-weight:   500;
+    cursor:        pointer;
+
+    mat-icon {
+        font-size: 15px;
+        width:     15px;
+        height:    15px;
+    }
+
+    &:disabled {
+        opacity: 0.4;
+    }
+}

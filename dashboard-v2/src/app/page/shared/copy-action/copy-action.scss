@@ -1,0 +1,28 @@
+:host {
+    display: inline-flex;
+}
+
+.copy {
+    flex:          none;
+    height:        24px;
+    padding:       0 9px;
+    border:        1px solid var(--app-border-2);
+    border-radius: var(--app-radius-sm);
+    background:    transparent;
+    color:         var(--app-text-2);
+    font-family:   var(--app-mono);
+    font-size:     10.5px;
+    cursor:        pointer;
+    transition:    border-color 150ms ease, color 150ms ease, background 150ms ease;
+
+    &:hover {
+        border-color: color-mix(in srgb, var(--app-text), transparent 70%);
+        color:        var(--app-text);
+    }
+
+    &.copied {
+        background:   rgba(74, 222, 128, .12);
+        border-color: rgba(74, 222, 128, .35);
+        color:        var(--app-success);
+    }
+}
