@@ -1,5 +1,6 @@
 import { AsyncPipe } from "@angular/common";
 import {
+    ChangeDetectionStrategy,
     Component,
     inject,
 } from "@angular/core";
@@ -10,28 +11,11 @@ import {
     ReactiveFormsModule,
     Validators,
 } from "@angular/forms";
-import { MatButton } from "@angular/material/button";
-import {
-    MatCardContent,
-    MatCardHeader,
-    MatCardTitle,
-} from "@angular/material/card";
-import {
-    MatFormField,
-    MatLabel,
-} from "@angular/material/form-field";
-import { MatInput } from "@angular/material/input";
-import {
-    MatOption,
-    MatSelect,
-} from "@angular/material/select";
-import { MatSlideToggle } from "@angular/material/slide-toggle";
 import { StorageMap } from "@ngx-pwa/local-storage";
 import {
     catchError,
     debounceTime,
     defer,
-    distinctUntilChanged,
     EMPTY,
     exhaustMap,
     filter,
@@ -40,45 +24,37 @@ import {
     map,
     merge,
     Observable,
-    shareReplay,
     Subject,
     switchMap,
     takeUntil,
 } from "rxjs";
 import { ProxyClient } from "../../../common/model/core/proxy-client";
+import { ClientContextService } from "../../../service/client-context.service";
 import { DashboardService } from "../../../service/dashboard.service";
 import {
     UrlParams,
     UrlService,
 } from "../../../service/url.service";
-import { DashboardPanel } from "../dashboard-panel/dashboard-panel";
+import { WorkbenchSection } from "../../shared/workbench-section/workbench-section";
 
 @Component({
     selector: "app-dashboard-param",
     imports: [
         ReactiveFormsModule,
-        DashboardPanel,
-        MatCardHeader,
-        MatCardContent,
-        MatFormField,
-        MatLabel,
-        MatInput,
-        MatSelect,
-        MatOption,
-        MatSlideToggle,
         AsyncPipe,
-        MatButton,
-        MatCardTitle,
+        WorkbenchSection,
     ],
     templateUrl: "./dashboard-param.html",
     styleUrl: "./dashboard-param.scss",
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardParam {
-    clients: ProxyClient[] = Object.values(ProxyClient);
-
+    private clientContext = inject(ClientContextService);
     urlService: UrlService = inject(UrlService);
     dashboardService: DashboardService = inject(DashboardService);
     storage: StorageMap = inject(StorageMap);
+    readonly client = this.clientContext.client;
+    readonly clients = Object.values(ProxyClient);
 
     subscriptionForm = new FormGroup({
         secret: new FormControl<string | null>(null, {
@@ -94,21 +70,11 @@ export class DashboardParam {
             validators: [Validators.required],
             updateOn: "blur",
         }),
-        client: new FormControl<string>(ProxyClient.Surge.toLowerCase(), { nonNullable: true }),
         strict: new FormControl<boolean>(true, { nonNullable: true }),
     });
 
     submit: Subject<void> = new Subject<void>();
     cancel: Subject<void> = new Subject<void>();
-
-    params$ = this.subscriptionForm.valueChanges.pipe(
-        debounceTime(300),
-        map(() => this.subscriptionForm.getRawValue()),
-        distinctUntilChanged(this.deepEqual),
-        filter(() => this.subscriptionForm.valid),
-        map(payload => this.toUrlParams(payload)),
-        shareReplay({ bufferSize: 1, refCount: true }),
-    );
 
     paramRestore$ = merge(
         this.storage.get("url").pipe(
@@ -122,12 +88,10 @@ export class DashboardParam {
     );
 
     paramStore$ = merge(
-        // 监听表单变化，debounce后保存
         this.subscriptionForm.valueChanges.pipe(
             debounceTime(300),
             map(() => this.subscriptionForm.getRawValue()),
         ),
-        // 手动提交时立即保存
         this.submit.pipe(
             map(() => this.subscriptionForm.getRawValue()),
         ),
@@ -152,17 +116,11 @@ export class DashboardParam {
         }),
     );
 
-    request$ = merge(
-        this.params$,
-        // 手动：点击提交时直接抓取当前 rawValue（不依赖 params$ 是否已发过值）
-        this.submit.pipe(
-            map(() => this.subscriptionForm.getRawValue()),
-            filter(() => this.subscriptionForm.valid),
-            map(payload => this.toUrlParams(payload)),
-        ),
-    ).pipe(
+    request$ = this.submit.pipe(
+        map(() => this.subscriptionForm.getRawValue()),
+        filter(() => this.subscriptionForm.valid),
+        map(payload => this.toUrlParams(payload)),
         exhaustMap((urlParams) => defer(() => {
-            // 请求开始：锁表单 & 开 loading
             this.subscriptionForm.disable({ emitEvent: false });
 
             const query = this.urlService.buildSubscriptionQuery(urlParams);
@@ -198,7 +156,6 @@ export class DashboardParam {
         this.request$.pipe(
             takeUntilDestroyed(),
         ).subscribe();
-
     }
 
     onSubmit() {
@@ -209,17 +166,25 @@ export class DashboardParam {
         this.cancel.next();
     }
 
+    selectClient(client: ProxyClient): void {
+        this.clientContext.setClient(client);
+    }
+
+    toggleStrict(): void {
+        const control = this.subscriptionForm.controls.strict;
+        control.setValue(!control.value);
+    }
+
     toUrlParams(payload: {
         secret: string | null,
         url: string | null,
-        client: string,
         interval: number,
         strict: boolean,
     }): UrlParams {
         return {
             secret: payload.secret!,
             url: payload.url!,
-            client: payload.client,
+            client: this.clientContext.client(),
             interval: payload.interval,
             strict: payload.strict,
         };

@@ -1,0 +1,39 @@
+<app-dashboard-panel>
+    <mat-card-header>
+        <mat-card-title>订阅参数</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+        <form (submit)="onSubmit()" [formGroup]="subscriptionForm">
+            <div class="form-row">
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>Secret</mat-label>
+                    <input formControlName="secret" matInput>
+                </mat-form-field>
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>Client</mat-label>
+                    <mat-select formControlName="client" panelClass="my-mat-option">
+                        @for (c of clients; track c) {
+                            <mat-option value="{{ c.toLowerCase() }}">{{ c }}</mat-option>
+                        }
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>Interval</mat-label>
+                    <input formControlName="interval" matInput type="number">
+                </mat-form-field>
+                <mat-slide-toggle class="form-suffix" formControlName="strict" labelPosition="before">Strict</mat-slide-toggle>
+            </div>
+            <div class="form-row">
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>Subscription URL</mat-label>
+                    <input formControlName="url" matInput>
+                </mat-form-field>
+                @if (dashboardService.loading$ | async) {
+                    <button class="form-suffix error" matButton="filled" type="button" (click)="onCancel()">Cancel</button>
+                } @else {
+                    <button class="form-suffix" matButton="filled">Gen</button>
+                }
+            </div>
+        </form>
+    </mat-card-content>
+</app-dashboard-panel>

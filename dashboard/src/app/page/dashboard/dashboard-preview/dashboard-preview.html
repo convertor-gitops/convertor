@@ -1,0 +1,129 @@
+@if (!ctx()) {
+    <app-workbench-empty symbol="▸" text="标记主配置与规则文件后可预览"></app-workbench-empty>
+} @else if (loading()) {
+    <app-workbench-empty symbol="…" text="读取本地文件…"></app-workbench-empty>
+} @else if (error(); as err) {
+    <div class="state error">
+        <span>{{ err }}</span>
+        @if (needsAuth()) {
+            <button class="preview-btn" type="button" (click)="load()">重新授权</button>
+        }
+    </div>
+} @else {
+    <div class="preview-body">
+        <div class="preview-scroll">
+            <div class="decision">
+                <div class="line-head">
+                    <span>Managed Header</span>
+                    <em>{{ mainName() }} · line 1</em>
+                    <i></i>
+                </div>
+                <div class="choice-box">
+                    <button class="choice" [class.on]="headerSide() === 'local'" type="button" (click)="headerSide.set('local')">
+                        <span class="tag old">OLD</span>
+                        <code>@for (s of headerDiff().old; track $index) {<span [class]="'sp ' + s.type">{{ s.text }}</span>}</code>
+                    </button>
+                    <button class="choice" [class.on]="headerSide() === 'new'" type="button" (click)="headerSide.set('new')">
+                        <span class="tag new">NEW</span>
+                        <code>@for (s of headerDiff().new; track $index) {<span [class]="'sp ' + s.type">{{ s.text }}</span>}</code>
+                    </button>
+                </div>
+            </div>
+
+            <div class="decision">
+                <div class="line-head">
+                    <span>Rule Provider</span>
+                    <em>{{ rulesName() }} · managed block</em>
+                    <i></i>
+                </div>
+                @for (c of choices(); track c.row.label) {
+                    <div class="provider" [class.off]="!c.enabled()">
+                        <div class="provider-head">
+                            <button class="check" type="button" [class.on]="c.enabled()" (click)="toggle(c)">{{ c.enabled() ? "✓" : "" }}</button>
+                            <code>{{ c.row.label }}</code>
+                            <span>{{ statusLabel(c.row.status) }}</span>
+                            <div></div>
+                            @if (!c.enabled()) {
+                                <span>已停用 · 不写入</span>
+                            } @else {
+                                <span>{{ enableLabel(c.row.status) }}</span>
+                            }
+                        </div>
+                        <div class="choice-box nested">
+                            @if (c.row.oldEntry && c.row.status !== 'added') {
+                                <button class="choice" [class.on]="c.side() === 'local'" [disabled]="!c.enabled() || c.row.status === 'removed'" type="button" (click)="setSide(c, 'local')">
+                                    <span class="tag old">OLD</span>
+                                    <code>@if (c.diff) {@for (s of c.diff.old; track $index) {<span [class]="'sp ' + s.type">{{ s.text }}</span>}} @else {{{ c.row.oldEntry.url }}}</code>
+                                </button>
+                            } @else {
+                                <div class="missing-old"><span class="tag old">OLD</span><span>文件中不存在 — 将作为新增项写入</span></div>
+                            }
+                            @if (c.row.newEntry) {
+                                <button class="choice" [class.on]="c.side() === 'new'" [disabled]="!c.enabled() || c.row.status === 'added'" type="button" (click)="setSide(c, 'new')">
+                                    <span class="tag new">NEW</span>
+                                    <code>@if (c.diff) {@for (s of c.diff.new; track $index) {<span [class]="'sp ' + s.type">{{ s.text }}</span>}} @else {{{ c.row.newEntry.url }}}</code>
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="decision">
+                <div class="line-head">
+                    <span>最终写入预览</span>
+                    <em>Final Preview · 应用前请确认</em>
+                    <i></i>
+                </div>
+                <div class="file-preview">
+                    <div class="file-title"><span></span><code>{{ mainName() }}</code><em>1 line replaced</em></div>
+                    <div class="code-lines">
+                        <div class="changed"><span>1</span><code>{{ headerSide() === "local" ? headerOld() : headerNew() }}</code></div>
+                        <div><span>2</span><code>[General]</code></div>
+                        <div><span>3</span><code>loglevel = notify</code></div>
+                    </div>
+                </div>
+                <div class="file-preview">
+                    <div class="file-title"><span></span><code>{{ rulesName() }}</code><em>managed block · {{ previewLines().length }} lines</em></div>
+                    <div class="code-lines">
+                        @for (ln of previewLines(); track ln.no) {
+                            <div [class.changed]="ln.kind === 'new'"><span>{{ ln.no }}</span><code [class.comment]="ln.kind === 'comment'">{{ ln.text }}</code></div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="apply-row">
+            <div class="apply-summary">
+                <span>变动摘要 · {{ changeCount() }} 处变更</span>
+                <div>
+                    <code>{{ mainName() }}</code>
+                    <em [class.new]="headerSide() === 'new'">{{ headerSide() === "new" ? "Header → NEW" : "Header 保留 OLD" }}</em>
+                    <i></i>
+                    <code>{{ rulesName() }}</code>
+                    @for (chip of summaryChips(); track chip.text) {
+                        <em [class]="chip.kind">{{ chip.text }}</em>
+                    }
+                </div>
+            </div>
+
+            @if (applyStage() === "idle") {
+                <button class="apply-btn" type="button" (click)="askApply()">Apply 应用注入<span>⏎</span></button>
+            } @else if (applyStage() === "confirm") {
+                <div class="confirm">
+                    <span>确认写入本地文件？此操作将直接修改 {{ mainName() }} 与 {{ rulesName() }}</span>
+                    <button class="cancel" type="button" (click)="cancelApply()">取消</button>
+                    <button class="write" type="button" (click)="doApply()">确认写入</button>
+                </div>
+            } @else if (applyStage() === "writing") {
+                <span class="writing">writing…</span>
+            } @else {
+                <div class="done">
+                    <span><i>✓</i>已写入 {{ mainName() }} 与 {{ rulesName() }}</span>
+                    <button type="button" (click)="finish()">完成</button>
+                </div>
+            }
+        </div>
+    </div>
+}

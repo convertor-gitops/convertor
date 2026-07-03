@@ -1,0 +1,53 @@
+<svg width="88" height="88" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 壳体底色 -->
+    <linearGradient id="shell" x1="0" y1="0" x2="88" y2="88" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#161927"/>
+      <stop offset="1" stop-color="#0C0E14"/>
+    </linearGradient>
+    <!-- 渐变描边 -->
+    <linearGradient id="stroke" x1="0" y1="0" x2="88" y2="88" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C7CEFF" stop-opacity=".75"/>
+      <stop offset=".45" stop-color="#7C8CF8" stop-opacity=".25"/>
+      <stop offset="1" stop-color="#5E6AE8" stop-opacity=".6"/>
+    </linearGradient>
+    <!-- 上箭头渐变 -->
+    <linearGradient id="arrowTop" x1="20" y1="33" x2="66" y2="33" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#DDE2FF"/>
+      <stop offset="1" stop-color="#9AA6FF"/>
+    </linearGradient>
+    <!-- 下箭头渐变 -->
+    <linearGradient id="arrowBottom" x1="68" y1="55" x2="22" y2="55" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8A97FF"/>
+      <stop offset="1" stop-color="#5E6AE8"/>
+    </linearGradient>
+    <!-- 箭头辉光 -->
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="0" stdDeviation="3.5" flood-color="#7C8CF8" flood-opacity=".55"/>
+    </filter>
+  </defs>
+
+  <!-- 壳体 -->
+  <rect x=".5" y=".5" width="87" height="87" rx="23.5" fill="url(#shell)"/>
+  <rect x=".5" y=".5" width="87" height="87" rx="23.5" stroke="url(#stroke)"/>
+
+  <!-- 内部极光 -->
+  <radialGradient id="aurora1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+    gradientTransform="translate(25 19) rotate(90) scale(40 60)">
+    <stop stop-color="#9AA6FF" stop-opacity=".22"/>
+    <stop offset="1" stop-color="#9AA6FF" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="aurora2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+    gradientTransform="translate(66 75) rotate(90) scale(50 70)">
+    <stop stop-color="#5E6AE8" stop-opacity=".25"/>
+    <stop offset="1" stop-color="#5E6AE8" stop-opacity="0"/>
+  </radialGradient>
+  <rect x="1" y="1" width="86" height="86" rx="23" fill="url(#aurora1)"/>
+  <rect x="1" y="1" width="86" height="86" rx="23" fill="url(#aurora2)"/>
+
+  <!-- 双向箭头（viewBox 32 → 座标 ×1.5625 后手调） -->
+  <g filter="url(#glow)" stroke-linecap="round" stroke-linejoin="round" stroke-width="4">
+    <path d="M22 33 H58 M49 23 L59 33 L49 43" stroke="url(#arrowTop)"/>
+    <path d="M66 55 H30 M39 45 L29 55 L39 65" stroke="url(#arrowBottom)"/>
+  </g>
+</svg>

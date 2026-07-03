@@ -1,0 +1,93 @@
+@use "@angular/material" as mat;
+
+:host {
+    display:        flex;
+    flex-direction: column;
+    width:          100%;
+    gap:            var(--app-space-2);
+
+    form {
+        display:        flex;
+        flex-direction: column;
+        gap:            var(--app-space-2);
+
+        .form-row {
+            display:        flex;
+            flex-direction: row;
+            flex-wrap:      wrap;
+            gap:            var(--app-space-3);
+        }
+
+        .form-suffix {
+            flex: 0 0 var(--app-control-w);
+        }
+
+        mat-form-field {
+            flex: 1 1 180px;
+        }
+
+        mat-slide-toggle {
+            padding-top: var(--app-space-1);
+        }
+
+        button[matButton="filled"] {
+            margin-top: 2px;
+        }
+
+        mat-form-field {
+            @include mat.form-field-overrides((
+                container-text-size: 12px,
+                outlined-label-text-color: color-mix(in srgb, var(--mat-sys-on-surface), transparent 30%),
+                outlined-hover-label-text-color: color-mix(in srgb, var(--mat-sys-on-surface), transparent 10%),
+                outlined-hover-outline-color: color-mix(in srgb, var(--mat-sys-on-surface), transparent 50%),
+            ));
+        }
+
+        mat-select {
+            @include mat.select-overrides((
+                trigger-text-size: 12px,
+            ));
+        }
+
+        button.error {
+            @include mat.button-overrides((
+                filled-label-text-color: var(--mat-sys-on-error),
+                filled-container-color: var(--mat-sys-error),
+            ))
+        }
+
+        ::ng-deep {
+            .mat-mdc-option {
+                min-height: 28px;
+            }
+        }
+    }
+
+    // 窄屏：表单行堆叠为单列，控件撑满，去掉仅在单行布局才有意义的对齐微调
+    @media (max-width: 600px) {
+        form {
+            .form-row {
+                flex-direction: column;
+                align-items:    stretch;
+            }
+
+            // column 方向下 flex-basis 会作用到高度轴，需复位为内容高度
+            mat-form-field {
+                flex: 0 0 auto;
+            }
+
+            .form-suffix {
+                flex:  none;
+                width: 100%;
+            }
+
+            mat-slide-toggle {
+                padding-top: 0;
+            }
+
+            button[matButton="filled"] {
+                margin-top: 0;
+            }
+        }
+    }
+}

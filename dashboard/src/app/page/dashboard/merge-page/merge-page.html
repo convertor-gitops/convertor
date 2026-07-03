@@ -1,0 +1,78 @@
+<section class="app-card merge">
+    <div class="m-head">
+        <button class="back" type="button" (click)="back()" aria-label="返回"><mat-icon>arrow_back</mat-icon></button>
+        <span class="title">预览改动</span>
+        <span class="dir-chip">{{ dirName }}</span>
+    </div>
+
+    @if (loading()) {
+        <div class="m-state">
+            <mat-progress-spinner mode="indeterminate" diameter="26"></mat-progress-spinner>
+            <span>读取本地文件…</span>
+        </div>
+    } @else if (error(); as err) {
+        <div class="m-state error">
+            <span>{{ err }}</span>
+            @if (needsAuth()) {
+                <button class="primary-btn" type="button" (click)="load()">重新授权</button>
+            }
+        </div>
+    } @else {
+        <div class="m-body">
+            <div class="entry">
+                <div class="e-head">
+                    <span class="badge changed">变更</span>
+                    <code class="lbl">{{ mainName }}</code>
+                    <span class="sub">主配置 · header</span>
+                </div>
+                <div class="diff">
+                    <div class="line" [class.on]="headerSide() === 'local'" (click)="headerSide.set('local')">
+                        <span class="rad"></span><span class="tg">本地</span>
+                        <code>@for (s of headerDiff().old; track $index) {<span [class]="'sp ' + s.type">{{ s.text }}</span>}</code>
+                    </div>
+                    <div class="line" [class.on]="headerSide() === 'new'" (click)="headerSide.set('new')">
+                        <span class="rad"></span><span class="tg">新版</span>
+                        <code>@for (s of headerDiff().new; track $index) {<span [class]="'sp ' + s.type">{{ s.text }}</span>}</code>
+                    </div>
+                </div>
+            </div>
+
+            @for (c of choices(); track c.row.label) {
+                <div class="entry">
+                    <div class="e-head">
+                        <span class="badge" [class]="c.row.status">{{ statusLabel(c.row.status) }}</span>
+                        <code class="lbl">{{ c.row.label }}</code>
+                        <label class="enable">
+                            <input type="checkbox" [checked]="c.enabled()" (change)="toggle(c)">
+                            {{ enableLabel(c.row.status) }}
+                        </label>
+                    </div>
+                    <div class="diff">
+                        @if (c.row.oldEntry && c.row.status !== 'added') {
+                            <div class="line" [class.on]="c.side() === 'local'" [class.locked]="c.row.status === 'removed'" (click)="setSide(c, 'local')">
+                                <span class="rad"></span><span class="tg">本地</span>
+                                <code>@if (c.diff) {@for (s of c.diff.old; track $index) {<span [class]="'sp ' + s.type">{{ s.text }}</span>}} @else {{{ c.row.oldEntry.url }}}</code>
+                            </div>
+                        }
+                        @if (c.row.newEntry) {
+                            <div class="line" [class.on]="c.side() === 'new'" [class.locked]="c.row.status === 'added'" (click)="setSide(c, 'new')">
+                                <span class="rad"></span><span class="tg">新版</span>
+                                <code>@if (c.diff) {@for (s of c.diff.new; track $index) {<span [class]="'sp ' + s.type">{{ s.text }}</span>}} @else {{{ c.row.newEntry.url }}}</code>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="preview">
+                <div class="p-label">合并预览 · 仅 START/END 受管辖块</div>
+                <pre>{{ mergedPreview() }}</pre>
+            </div>
+        </div>
+
+        <div class="m-foot">
+            <button class="ghost" type="button" (click)="back()">取消</button>
+            <button class="primary-btn" type="button" [disabled]="busy()" (click)="apply()"><mat-icon>check</mat-icon>应用 · 写 2 文件</button>
+        </div>
+    }
+</section>
