@@ -1,6 +1,11 @@
 <app-dashboard-panel>
     <mat-card-header>
-        <mat-card-title>错误响应详情</mat-card-title>
+        <div class="error-head">
+            <mat-card-title>错误响应详情</mat-card-title>
+            <button class="close" type="button" (click)="close()" aria-label="关闭错误详情">
+                <mat-icon>close</mat-icon>
+            </button>
+        </div>
     </mat-card-header>
     <mat-card-content class = "scrollable">
         <mat-accordion multi>

@@ -1,93 +1,189 @@
-@use "@angular/material" as mat;
-
 :host {
+    display: block;
+    width:   100%;
+}
+
+.param-body {
     display:        flex;
     flex-direction: column;
-    width:          100%;
-    gap:            var(--app-space-2);
+    gap:            11px;
+    padding:        14px 16px 16px;
+}
 
-    form {
-        display:        flex;
-        flex-direction: column;
-        gap:            var(--app-space-2);
+.field {
+    display:        flex;
+    flex-direction: column;
+    gap:            5px;
+    min-width:      0;
 
-        .form-row {
-            display:        flex;
-            flex-direction: row;
-            flex-wrap:      wrap;
-            gap:            var(--app-space-3);
-        }
-
-        .form-suffix {
-            flex: 0 0 var(--app-control-w);
-        }
-
-        mat-form-field {
-            flex: 1 1 180px;
-        }
-
-        mat-slide-toggle {
-            padding-top: var(--app-space-1);
-        }
-
-        button[matButton="filled"] {
-            margin-top: 2px;
-        }
-
-        mat-form-field {
-            @include mat.form-field-overrides((
-                container-text-size: 12px,
-                outlined-label-text-color: color-mix(in srgb, var(--mat-sys-on-surface), transparent 30%),
-                outlined-hover-label-text-color: color-mix(in srgb, var(--mat-sys-on-surface), transparent 10%),
-                outlined-hover-outline-color: color-mix(in srgb, var(--mat-sys-on-surface), transparent 50%),
-            ));
-        }
-
-        mat-select {
-            @include mat.select-overrides((
-                trigger-text-size: 12px,
-            ));
-        }
-
-        button.error {
-            @include mat.button-overrides((
-                filled-label-text-color: var(--mat-sys-on-error),
-                filled-container-color: var(--mat-sys-error),
-            ))
-        }
-
-        ::ng-deep {
-            .mat-mdc-option {
-                min-height: 28px;
-            }
-        }
+    > span:first-child {
+        font-size:   11px;
+        font-weight: 500;
+        color:       var(--app-text-3);
     }
 
-    // 窄屏：表单行堆叠为单列，控件撑满，去掉仅在单行布局才有意义的对齐微调
-    @media (max-width: 600px) {
-        form {
-            .form-row {
-                flex-direction: column;
-                align-items:    stretch;
-            }
+    input {
+        width:         100%;
+        height:        32px;
+        padding:       0 11px;
+        border:        1px solid rgba(255, 255, 255, .09);
+        border-radius: var(--app-radius-sm);
+        background:    var(--app-field);
+        color:         var(--app-text);
+        font-family:   var(--app-mono);
+        font-size:     12px;
+        transition:    border-color 150ms ease, box-shadow 150ms ease;
+    }
+}
 
-            // column 方向下 flex-basis 会作用到高度轴，需复位为内容高度
-            mat-form-field {
-                flex: 0 0 auto;
-            }
+.param-grid {
+    display:               grid;
+    grid-template-columns: 1.1fr 1fr .9fr;
+    gap:                   10px;
+}
 
-            .form-suffix {
-                flex:  none;
-                width: 100%;
-            }
+.segmented {
+    display:       flex;
+    height:        32px;
+    padding:       3px;
+    gap:           2px;
+    background:    var(--app-field);
+    border:        1px solid rgba(255, 255, 255, .09);
+    border-radius: var(--app-radius-sm);
 
-            mat-slide-toggle {
-                padding-top: 0;
-            }
+    button {
+        flex:          1;
+        border:        none;
+        border-radius: 5px;
+        background:    transparent;
+        color:         #6b7284;
+        font-size:     11.5px;
+        font-weight:   500;
+        cursor:        pointer;
+        transition:    background 150ms ease, color 150ms ease, box-shadow 150ms ease;
 
-            button[matButton="filled"] {
-                margin-top: 0;
-            }
+        &.active {
+            background: var(--app-surface-2);
+            color:      var(--app-text);
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, .08), 0 2px 6px rgba(0, 0, 0, .4);
         }
+    }
+}
+
+.interval {
+    position: relative;
+
+    input {
+        padding-right: 34px;
+    }
+
+    em {
+        position:   absolute;
+        right:      10px;
+        top:        50%;
+        transform:  translateY(-50%);
+        color:      var(--app-text-4);
+        font-size:  10px;
+        font-style: normal;
+    }
+}
+
+.action-row {
+    display:     flex;
+    align-items: center;
+    gap:         10px;
+    margin-top:  3px;
+}
+
+.switch {
+    display:         flex;
+    align-items:     center;
+    justify-content: flex-start;
+    flex:            none;
+    width:           34px;
+    height:          20px;
+    padding:         2px;
+    border:          none;
+    border-radius:   10px;
+    background:      #262b38;
+    cursor:          pointer;
+    transition:      background 200ms ease, box-shadow 200ms ease;
+
+    span {
+        width:         16px;
+        height:        16px;
+        border-radius: 50%;
+        background:    #fff;
+        box-shadow:    0 1px 3px rgba(0, 0, 0, .4);
+        transition:    transform 200ms ease;
+    }
+
+    &.on {
+        background: var(--app-accent);
+        box-shadow: 0 0 10px var(--app-accent-glow);
+
+        span {
+            transform: translateX(14px);
+        }
+    }
+}
+
+.strict-label {
+    font-size:   11.5px;
+    font-weight: 500;
+    color:       var(--app-text-2);
+
+    em {
+        color:       var(--app-text-4);
+        font-style:  normal;
+        font-weight: 400;
+    }
+}
+
+.grow {
+    flex: 1;
+}
+
+.gen {
+    height:        33px;
+    padding:       0 18px;
+    border:        none;
+    border-radius: 8px;
+    background:    linear-gradient(180deg, var(--app-accent-2), #6672ee);
+    color:         #fff;
+    font-size:     12px;
+    font-weight:   600;
+    cursor:        pointer;
+    box-shadow:    0 0 0 1px rgba(124, 140, 248, .45), 0 10px 26px -10px var(--app-accent-glow);
+    transition:    filter 150ms ease, opacity 150ms ease;
+
+    &:hover {
+        filter: brightness(1.08);
+    }
+
+    &:disabled {
+        cursor:  not-allowed;
+        opacity: .45;
+        filter:  none;
+    }
+
+    &.cancel {
+        background: #d95d5d;
+        box-shadow: none;
+    }
+}
+
+@media (max-width: 720px) {
+    .param-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .action-row {
+        align-items: flex-start;
+        flex-wrap:   wrap;
+    }
+
+    .gen {
+        width: 100%;
     }
 }

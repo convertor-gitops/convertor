@@ -58,6 +58,10 @@ export class DashboardService {
                    );
     }
 
+    public clearError(): void {
+        this.error.next(null);
+    }
+
     public getSubscription(query: ConvQuery): Observable<ResponseBody<UrlResult>> {
         const path = `${DashboardService.BUILD_URL}?${query.toString()}`;
         console.log("请求", query, path);

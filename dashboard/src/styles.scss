@@ -7,7 +7,7 @@
 @use "./styles/tokens";
 
 
-$font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+$font-stack: "Geist", -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
              "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 
 :root {
@@ -98,10 +98,53 @@ html, body {
 
 body {
     font:             var(--mat-sys-body-medium);
-    color:            var(--mat-sys-on-surface);
-    background-color: var(--mat-sys-surface);
-    // Defer to the user's system light/dark preference.
-    color-scheme:     light dark;
+    color:            var(--app-text);
+    background:       var(--app-bg);
+    color-scheme:     dark;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+::selection {
+    background: rgba(124, 140, 248, .32);
+}
+
+input::placeholder {
+    color: var(--app-text-5);
+}
+
+input:focus {
+    outline:      none;
+    border-color: var(--app-accent) !important;
+    box-shadow:   0 0 0 3px var(--app-accent-bg);
+}
+
+button {
+    font: inherit;
+}
+
+@keyframes fade-up {
+    from {
+        opacity:   0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity:   1;
+        transform: none;
+    }
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .35;
+    }
 }
 
 // reset base styles
@@ -112,8 +155,8 @@ p, h1, h2, h3, h4, h5, h6 {
 }
 
 code {
-    font-family: "JetBrains Mono", "Fira Code", "Source Code Pro", "SFMono-Regular", Menlo, Monaco, Consolas, "Courier New", monospace;
-    color:       var(--mat-sys-on-surface-variant);
+    font-family: var(--app-mono);
+    color:       var(--app-text-2);
 }
 
 .my-mat-option .mat-mdc-option {
@@ -141,4 +184,35 @@ code {
 .scrollable::-webkit-scrollbar-thumb {
     border-radius:    4px;
     background-color: color-mix(in srgb, var(--mat-sys-primary), transparent 30%);
+}
+
+// 顶部状态 pill 的 hover 详情：保留 \n 换行、等宽对齐服务列表
+.status-tip {
+    white-space: pre-line !important;
+    font-family: var(--app-mono) !important;
+    font-size:   11px !important;
+}
+
+// 统一卡片外壳：换皮只改 --app-surface / --app-border
+.app-card {
+    background:    var(--app-surface);
+    border:        1px solid var(--app-border);
+    border-radius: 12px;
+}
+
+.app-card-title {
+    margin:      0;
+    font-size:   13px;
+    font-weight: 500;
+    color:       var(--app-text);
+    display:     flex;
+    align-items: center;
+    gap:         var(--app-space-2);
+
+    mat-icon {
+        color:     var(--app-text-2);
+        font-size: 16px;
+        width:     16px;
+        height:    16px;
+    }
 }

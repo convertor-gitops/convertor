@@ -1,0 +1,91 @@
+@use "@angular/material" as mat;
+
+:host {
+    overflow: hidden;
+    flex:     1;
+    width:    100%;
+
+    code {
+        text-wrap:  auto;
+        word-break: break-word;
+    }
+
+    .panel-header {
+        align-items:     center;
+        justify-content: space-between;
+        gap:             var(--app-space-3);
+
+        .form-suffix {
+            width:       var(--app-control-w);
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        mat-card-title {
+            display:     flex;
+            align-items: center;
+            margin:      0;
+        }
+    }
+
+    ::ng-deep .panel-header .mat-mdc-card-header-text {
+        display:     flex;
+        align-items: center;
+        margin:      0;
+    }
+
+    .content-urls {
+        display:  flex;
+        overflow: hidden;
+        flex:     1;
+    }
+
+    section.urls {
+        display:        flex;
+        flex:           1;
+        flex-direction: column;
+        gap:            var(--app-space-2);
+
+        mat-card {
+            flex:          1;
+            border-radius: var(--app-radius-sm);
+            // 嵌套卡片比外层 panel 容器再浮起一级，内容区用 -low 形成微凹陷感
+            background:    var(--mat-sys-surface-container-high);
+
+            mat-card-header {
+                justify-content: space-between;
+                padding:         var(--app-space-2) var(--app-space-3);
+            }
+
+            mat-card-content {
+                padding:                    var(--app-space-2) var(--app-space-3);
+                border-bottom-right-radius: inherit;
+                border-bottom-left-radius:  inherit;
+                background:                 var(--mat-sys-surface-container-low);
+            }
+
+            .desc {
+                font-size:   12px;
+                font-weight: 500;
+                line-height: 25px;
+                height:      100%;
+                color:       var(--mat-sys-primary);
+            }
+
+            .url {
+                font-size:   12px;
+                font-weight: 400;
+                line-height: normal;
+
+                a {
+                    text-decoration: none;
+                    color:           inherit;
+                }
+
+                a:hover {
+                    text-decoration: underline;
+                }
+            }
+        }
+    }
+}

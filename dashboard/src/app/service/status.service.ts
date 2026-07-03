@@ -10,6 +10,7 @@ import {
 @Injectable({ providedIn: "root" })
 export class StatusService {
     private static readonly STATUS_ENDPOINT = `/actuator/status`;
+    private static readonly HEALTH_ENDPOINT = `/actuator/healthy`;
 
     constructor(private http: HttpClient) {
     }
@@ -21,6 +22,16 @@ export class StatusService {
                 return body?.data ?? null;
             }),
             catchError(() => of(null)),
+        );
+    }
+
+    healthCheck(): Observable<boolean> {
+        return this.http.get(StatusService.HEALTH_ENDPOINT).pipe(
+            map(response => {
+                const body = ResponseBody.deserialize(ResponseBodyScheme.parse(response), undefined);
+                return body?.isOk() ?? false;
+            }),
+            catchError(() => of(false)),
         );
     }
 }

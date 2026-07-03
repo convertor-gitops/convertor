@@ -1,12 +1,39 @@
-<h1>Convertor</h1>
-<app-dashboard-status></app-dashboard-status>
-<app-dashboard-param></app-dashboard-param>
-@let data = data$ | async;
-@let error = error$ | async;
-@if (error) {
-    <app-dashboard-error></app-dashboard-error>
-} @else if (data) {
-    <app-dashboard-subs></app-dashboard-subs>
-} @else {
-    <app-no-content></app-no-content>
+<header class="topbar">
+    <div class="brand">
+        <div class="logo" aria-hidden="true">
+            <svg viewBox="0 0 32 32" focusable="false">
+                <path class="logo-arrow logo-arrow-top"
+                      d="M7 12 H23 M19 7.5 L23.5 12 L19 16.5"></path>
+                <path class="logo-arrow logo-arrow-bottom"
+                      d="M25 20 H9 M13 15.5 L8.5 20 L13 24.5"></path>
+            </svg>
+        </div>
+        <span class="name">Convertor</span>
+        <span class="divider"></span>
+        <span class="tagline">订阅转换 · 本地配置注入工作台</span>
+    </div>
+    <div class="bar-right">
+        <app-dashboard-status></app-dashboard-status>
+        <span class="dash-ver">Dashboard <span>v{{ version }}</span></span>
+    </div>
+</header>
+
+<div class="wrap scrollable">
+    <main class="workbench">
+        <div class="column">
+            <app-dashboard-param></app-dashboard-param>
+            <app-dashboard-subs></app-dashboard-subs>
+        </div>
+        @if (!isMobile()) {
+            <div class="column local-column">
+                <app-dashboard-local></app-dashboard-local>
+            </div>
+        }
+    </main>
+</div>
+
+@if (error$ | async) {
+    <section class="error-layer" aria-live="polite" (click)="dismissError()">
+        <app-dashboard-error (click)="$event.stopPropagation()"></app-dashboard-error>
+    </section>
 }

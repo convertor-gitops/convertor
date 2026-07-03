@@ -19,6 +19,7 @@ import {
     MatExpansionPanelHeader,
     MatExpansionPanelTitle,
 } from "@angular/material/expansion";
+import { MatIcon } from "@angular/material/icon";
 import {
     filter,
     map,
@@ -44,6 +45,7 @@ import { DashboardPanel } from "../dashboard-panel/dashboard-panel";
         MatDivider,
         MatChip,
         MatCardTitle,
+        MatIcon,
 
     ],
     templateUrl: "./dashboard-error.html",
@@ -96,5 +98,9 @@ export class DashboardError {
 
     afterExpand() {
         this.clientRequestCollapsed.set(false);
+    }
+
+    close(): void {
+        this.dashboardService.clearError();
     }
 }
