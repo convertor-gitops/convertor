@@ -38,7 +38,9 @@ jobs:
       - name: 初始化 fnm 环境
         run: |
           eval "$(fnm env --shell bash)"
-          fnm use 24
+          fnm install 24.18.0
+          fnm use 24.18.0
+          node --version
           echo "$(dirname $(which node))" >> "$GITHUB_PATH"
 
       - name: 安装 Dashboard 依赖
