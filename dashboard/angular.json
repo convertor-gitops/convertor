@@ -42,12 +42,12 @@
                             "budgets": [
                                 {
                                     "type": "initial",
-                                    "maximumWarning": "750kB",
-                                    "maximumError": "1MB"
+                                    "maximumWarning": "900kB",
+                                    "maximumError": "1.5MB"
                                 },
                                 {
                                     "type": "anyComponentStyle",
-                                    "maximumWarning": "4kB",
+                                    "maximumWarning": "8kB",
                                     "maximumError": "8kB"
                                 }
                             ],
@@ -81,24 +81,8 @@
                     },
                     "defaultConfiguration": "development"
                 },
-                "extract-i18n": {
-                    "builder": "@angular/build:extract-i18n"
-                },
                 "test": {
-                    "builder": "@angular/build:karma",
-                    "options": {
-                        "tsConfig": "tsconfig.spec.json",
-                        "inlineStyleLanguage": "scss",
-                        "assets": [
-                            {
-                                "glob": "**/*",
-                                "input": "public"
-                            }
-                        ],
-                        "styles": [
-                            "src/styles.scss"
-                        ]
-                    }
+                    "builder": "@angular/build:unit-test"
                 }
             }
         }

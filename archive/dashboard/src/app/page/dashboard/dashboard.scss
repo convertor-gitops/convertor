@@ -1,0 +1,26 @@
+:host {
+    display:        flex;
+    overflow:       hidden;
+    align-items:    flex-start;
+    flex-direction: column;
+    box-sizing:     border-box;
+    height:         100%;
+
+    // 流体横向内边距：clamp(16px, 8vw, 120px)，消除宽屏 120px → 窄屏 24px 的跳变
+    padding-block:  var(--app-space-6);
+    padding-inline: var(--app-page-pad-inline);
+    gap:            var(--app-space-6);
+
+    h1 {
+        font:             var(--mat-sys-headline-large);
+        font-weight:      600;
+        margin-block-end: var(--app-space-2);
+    }
+}
+
+// 窄屏收紧纵向间距
+@media (max-width: 600px) {
+    :host {
+        gap: var(--app-space-3);
+    }
+}

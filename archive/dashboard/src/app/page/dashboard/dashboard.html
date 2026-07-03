@@ -1,0 +1,12 @@
+<h1>Convertor</h1>
+<app-dashboard-status></app-dashboard-status>
+<app-dashboard-param></app-dashboard-param>
+@let data = data$ | async;
+@let error = error$ | async;
+@if (error) {
+    <app-dashboard-error></app-dashboard-error>
+} @else if (data) {
+    <app-dashboard-subs></app-dashboard-subs>
+} @else {
+    <app-no-content></app-no-content>
+}

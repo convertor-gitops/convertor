@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dashboard-v2",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-c",
+        "cd /Users/bppleman/RustroverProjects/convertor/dashboard-v2 && export PATH=\"/Users/bppleman/.local/share/fnm/node-versions/v24.18.0/installation/bin:$PATH\" && exec node_modules/.bin/ng serve --host 127.0.0.1 --port 4300"
+      ],
+      "port": 4300
+    }
+  ]
+}

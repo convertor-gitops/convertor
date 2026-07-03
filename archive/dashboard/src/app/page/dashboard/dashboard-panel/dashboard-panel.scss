@@ -1,0 +1,18 @@
+:host {
+    overflow: hidden;
+    flex:     1;
+
+    mat-card {
+        max-height: 100%;
+        gap:        var(--app-space-4);
+        // 用比页面背景更高一级的 surface 容器色 + M3 elevation 阴影，
+        // 让卡片从背景中"浮起"，不再只靠描边制造存在感。
+        background: var(--mat-sys-surface-container);
+        box-shadow: var(--mat-sys-level1);
+        transition: box-shadow 200ms ease;
+
+        &:hover {
+            box-shadow: var(--mat-sys-level2);
+        }
+    }
+}

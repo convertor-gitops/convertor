@@ -1,0 +1,7 @@
+<app-workbench-section index="03" [title]="title()" [subtitle]="subtitle()">
+    @if (isPreview()) {
+        <button section-actions class="back" type="button" (click)="back()">← 返回目录</button>
+    }
+    <span section-actions class="mode-chip">Surge only</span>
+    <router-outlet></router-outlet>
+</app-workbench-section>
