@@ -412,23 +412,23 @@ proxy_groups:
   - name: BosLife
     type: select
     proxies:
-      - 🇭🇰 香港
-      - 🇸🇬 新加坡
-      - 🇨🇳🏳️‍🌈 台湾
-      - 🇯🇵 日本
-      - 🇺🇸 美国
-      - 🇨🇦 加拿大
-      - 🇰🇷 韩国
-      - 🇬🇧 英国
-      - 🇫🇷 法国
-      - 🇩🇪 德国
+      - 🇭🇰 香港组
+      - 🇸🇬 新加坡组
+      - 🇨🇳🏳️‍🌈 台湾组
+      - 🇯🇵 日本组
+      - 🇺🇸 美国组
+      - 🇨🇦 加拿大组
+      - 🇰🇷 韩国组
+      - 🇬🇧 英国组
+      - 🇫🇷 法国组
+      - 🇩🇪 德国组
   - name: Subscription Info
     type: select
     proxies:
       - 剩余流量：40.55 GB
       - 距离下次重置剩余：15 天
       - 套餐到期：2026-04-22
-  - name: 🇭🇰 香港
+  - name: 🇭🇰 香港组
     type: Smart
     proxies:
       - 🇭🇰 香港 01
@@ -441,7 +441,7 @@ proxy_groups:
       - 🇭🇰 香港 08
       - 🇭🇰 香港 09
       - 🇭🇰 香港 10
-  - name: 🇸🇬 新加坡
+  - name: 🇸🇬 新加坡组
     type: Smart
     proxies:
       - 🇸🇬 新加坡 01
@@ -450,21 +450,21 @@ proxy_groups:
       - 🇸🇬 新加坡 04
       - 🇸🇬 新加坡 05
       - 🇸🇬 新加坡 06
-  - name: 🇨🇳🏳️‍🌈 台湾
+  - name: 🇨🇳🏳️‍🌈 台湾组
     type: Smart
     proxies:
       - 🏳️‍🌈 台湾 01
       - 🏳️‍🌈 台湾 02
       - 🏳️‍🌈 台湾 03
       - 🏳️‍🌈 台湾 04
-  - name: 🇯🇵 日本
+  - name: 🇯🇵 日本组
     type: Smart
     proxies:
       - 🇯🇵 日本 01
       - 🇯🇵 日本 02
       - 🇯🇵 日本 03
       - 🇯🇵 日本 04
-  - name: 🇺🇸 美国
+  - name: 🇺🇸 美国组
     type: Smart
     proxies:
       - 🇺🇸 美国 01
@@ -474,23 +474,23 @@ proxy_groups:
       - 🇺🇸 美国 05
       - 🇺🇸 美国 06
       - 🇺🇸 美国 07 - OnlyAI
-  - name: 🇨🇦 加拿大
+  - name: 🇨🇦 加拿大组
     type: Smart
     proxies:
       - 🇨🇦 加拿大 01
-  - name: 🇰🇷 韩国
+  - name: 🇰🇷 韩国组
     type: Smart
     proxies:
       - 🇰🇷 韩国 01
-  - name: 🇬🇧 英国
+  - name: 🇬🇧 英国组
     type: Smart
     proxies:
       - 🇬🇧 英国 01
-  - name: 🇫🇷 法国
+  - name: 🇫🇷 法国组
     type: Smart
     proxies:
       - 🇫🇷 法国 01
-  - name: 🇩🇪 德国
+  - name: 🇩🇪 德国组
     type: Smart
     proxies:
       - 🇩🇪 德国 01

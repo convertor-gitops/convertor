@@ -422,67 +422,67 @@ proxy-groups:
   - name: BosLife
     type: select
     proxies:
-      - 🇭🇰 香港
-      - 🇸🇬 新加坡
-      - 🇨🇳🏳️‍🌈 台湾
-      - 🇯🇵 日本
-      - 🇺🇸 美国
-      - 🇨🇦 加拿大
-      - 🇰🇷 韩国
-      - 🇬🇧 英国
-      - 🇫🇷 法国
-      - 🇩🇪 德国
+      - 🇭🇰 香港组
+      - 🇸🇬 新加坡组
+      - 🇨🇳🏳️‍🌈 台湾组
+      - 🇯🇵 日本组
+      - 🇺🇸 美国组
+      - 🇨🇦 加拿大组
+      - 🇰🇷 韩国组
+      - 🇬🇧 英国组
+      - 🇫🇷 法国组
+      - 🇩🇪 德国组
   - name: Subscription Info
     type: select
     use:
       - convertor
     filter: (?i)(剩余流量：43.9 GB|距离下次重置剩余：15 天|套餐到期：2026-04-22)
-  - name: 🇭🇰 香港
+  - name: 🇭🇰 香港组
     type: url-test
     use:
       - convertor
     filter: (?i)🇭🇰 香港
-  - name: 🇸🇬 新加坡
+  - name: 🇸🇬 新加坡组
     type: url-test
     use:
       - convertor
     filter: (?i)🇸🇬 新加坡
-  - name: 🇨🇳🏳️‍🌈 台湾
+  - name: 🇨🇳🏳️‍🌈 台湾组
     type: url-test
     use:
       - convertor
     filter: (?i)🏳️‍🌈 台湾
-  - name: 🇯🇵 日本
+  - name: 🇯🇵 日本组
     type: url-test
     use:
       - convertor
     filter: (?i)🇯🇵 日本
-  - name: 🇺🇸 美国
+  - name: 🇺🇸 美国组
     type: url-test
     use:
       - convertor
     filter: (?i)🇺🇸 美国
-  - name: 🇨🇦 加拿大
+  - name: 🇨🇦 加拿大组
     type: url-test
     use:
       - convertor
     filter: (?i)🇨🇦 加拿大 01
-  - name: 🇰🇷 韩国
+  - name: 🇰🇷 韩国组
     type: url-test
     use:
       - convertor
     filter: (?i)🇰🇷 韩国 01
-  - name: 🇬🇧 英国
+  - name: 🇬🇧 英国组
     type: url-test
     use:
       - convertor
     filter: (?i)🇬🇧 英国 01
-  - name: 🇫🇷 法国
+  - name: 🇫🇷 法国组
     type: url-test
     use:
       - convertor
     filter: (?i)🇫🇷 法国 01
-  - name: 🇩🇪 德国
+  - name: 🇩🇪 德国组
     type: url-test
     use:
       - convertor

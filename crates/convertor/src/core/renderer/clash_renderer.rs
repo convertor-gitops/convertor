@@ -15,6 +15,10 @@ type Result<T> = core::result::Result<T, RenderError>;
 
 pub struct ClashRenderer;
 
+fn quote_yaml_single_quoted_scalar(value: &str) -> String {
+    format!("'{}'", value.replace('\'', "''"))
+}
+
 impl Renderer for ClashRenderer {
     type PROFILE = ClashProfile;
 
@@ -127,13 +131,13 @@ impl Renderer for ClashRenderer {
         if let Some(filter) = proxy_group.filter.as_ref()
             && !filter.is_empty()
         {
-            write!(output, r#", filter: "{}""#, filter)?;
+            write!(output, ", filter: {}", quote_yaml_single_quoted_scalar(filter))?;
         }
 
         if let Some(exclude_filter) = proxy_group.exclude_filter.as_ref()
             && !exclude_filter.is_empty()
         {
-            write!(output, r#", exclude-filter: "{}""#, exclude_filter)?;
+            write!(output, ", exclude-filter: {}", quote_yaml_single_quoted_scalar(exclude_filter))?;
         }
         write!(output, " }}")?;
         Ok(output)
