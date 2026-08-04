@@ -20,7 +20,9 @@
                                         <span class="star">◈ 用于 Managed Header</span>
                                     }
                                 </div>
-                                <code>{{ row.url }}</code>
+                                <code>
+                                    <a [href]="row.url" target="_blank" rel="noopener noreferrer">{{ row.url }}</a>
+                                </code>
                             </div>
                             <app-copy-action [value]="row.url"></app-copy-action>
                         </div>
@@ -38,7 +40,9 @@
                             @for (item of g.items; track item.url) {
                                 <div class="rule-row">
                                     <span class="rule-name">{{ item.label }}</span>
-                                    <code>{{ item.url }}</code>
+                                    <code>
+                                        <a [href]="item.url" target="_blank" rel="noopener noreferrer">{{ item.url }}</a>
+                                    </code>
                                     <app-copy-action [value]="item.url"></app-copy-action>
                                 </div>
                             }
