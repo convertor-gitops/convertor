@@ -10,5 +10,17 @@
         "changeOrigin": true,
         "secure": false,
         "logLevel": "debug"
+    },
+    "/subscription": {
+        "target": "http://127.0.0.1:8080",
+        "changeOrigin": true,
+        "secure": false,
+        "logLevel": "debug"
+    },
+    "/download": {
+        "target": "http://127.0.0.1:8080",
+        "changeOrigin": true,
+        "secure": false,
+        "logLevel": "debug"
     }
 }

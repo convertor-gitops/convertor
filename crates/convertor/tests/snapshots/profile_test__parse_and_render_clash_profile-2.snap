@@ -422,18 +422,18 @@ proxy-providers:
           skip-cert-verify: true
 
 proxy-groups:
-    { name: "BosLife", type: "select", proxies: [ 🇭🇰 香港, 🇸🇬 新加坡, 🇨🇳🏳️‍🌈 台湾, 🇯🇵 日本, 🇺🇸 美国, 🇨🇦 加拿大, 🇰🇷 韩国, 🇬🇧 英国, 🇫🇷 法国, 🇩🇪 德国 ] }
-    { name: "Subscription Info", type: "select", uses: [ convertor ], filter: "(?i)(剩余流量：43.9 GB|距离下次重置剩余：15 天|套餐到期：2026-04-22)" }
-    { name: "🇭🇰 香港", type: "url-test", uses: [ convertor ], filter: "(?i)🇭🇰 香港" }
-    { name: "🇸🇬 新加坡", type: "url-test", uses: [ convertor ], filter: "(?i)🇸🇬 新加坡" }
-    { name: "🇨🇳🏳️‍🌈 台湾", type: "url-test", uses: [ convertor ], filter: "(?i)🏳️‍🌈 台湾" }
-    { name: "🇯🇵 日本", type: "url-test", uses: [ convertor ], filter: "(?i)🇯🇵 日本" }
-    { name: "🇺🇸 美国", type: "url-test", uses: [ convertor ], filter: "(?i)🇺🇸 美国" }
-    { name: "🇨🇦 加拿大", type: "url-test", uses: [ convertor ], filter: "(?i)🇨🇦 加拿大 01" }
-    { name: "🇰🇷 韩国", type: "url-test", uses: [ convertor ], filter: "(?i)🇰🇷 韩国 01" }
-    { name: "🇬🇧 英国", type: "url-test", uses: [ convertor ], filter: "(?i)🇬🇧 英国 01" }
-    { name: "🇫🇷 法国", type: "url-test", uses: [ convertor ], filter: "(?i)🇫🇷 法国 01" }
-    { name: "🇩🇪 德国", type: "url-test", uses: [ convertor ], filter: "(?i)🇩🇪 德国 01" }
+    - { name: "BosLife", type: "select", proxies: [ 🇭🇰 香港组, 🇸🇬 新加坡组, 🇨🇳🏳️‍🌈 台湾组, 🇯🇵 日本组, 🇺🇸 美国组, 🇨🇦 加拿大组, 🇰🇷 韩国组, 🇬🇧 英国组, 🇫🇷 法国组, 🇩🇪 德国组 ] }
+    - { name: "Subscription Info", type: "select", use: [ convertor ], filter: '(?i)(剩余流量：43.9 GB|距离下次重置剩余：15 天|套餐到期：2026-04-22)' }
+    - { name: "🇭🇰 香港组", type: "url-test", use: [ convertor ], filter: '(?i)🇭🇰 香港' }
+    - { name: "🇸🇬 新加坡组", type: "url-test", use: [ convertor ], filter: '(?i)🇸🇬 新加坡' }
+    - { name: "🇨🇳🏳️‍🌈 台湾组", type: "url-test", use: [ convertor ], filter: '(?i)🏳️‍🌈 台湾' }
+    - { name: "🇯🇵 日本组", type: "url-test", use: [ convertor ], filter: '(?i)🇯🇵 日本' }
+    - { name: "🇺🇸 美国组", type: "url-test", use: [ convertor ], filter: '(?i)🇺🇸 美国' }
+    - { name: "🇨🇦 加拿大组", type: "url-test", use: [ convertor ], filter: '(?i)🇨🇦 加拿大 01' }
+    - { name: "🇰🇷 韩国组", type: "url-test", use: [ convertor ], filter: '(?i)🇰🇷 韩国 01' }
+    - { name: "🇬🇧 英国组", type: "url-test", use: [ convertor ], filter: '(?i)🇬🇧 英国 01' }
+    - { name: "🇫🇷 法国组", type: "url-test", use: [ convertor ], filter: '(?i)🇫🇷 法国 01' }
+    - { name: "🇩🇪 德国组", type: "url-test", use: [ convertor ], filter: '(?i)🇩🇪 德国 01' }
 
 rule-providers:
     Subscription_policy: { type: "http", url: "http://127.0.0.1:8080/subscription/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D&policy%5Bis_subscription%5D=true&sub_url=NS-q46AsavtH9tx_SmdYHDEqLnL-cRQmeo_nKZmtDZp-jwfLX3WJLANf4bRkS46JeGeqCsNWWN-6qWxzd-y_dKGlasoDLQnLNMArszXBXLomqvNo7boL8sbg9rDA_ECbgHs", path: "./rule_providers/Subscription_policy.yaml", interval: 86400, size-limit: 0, format: "yaml", behavior: "classical" }
@@ -445,12 +445,12 @@ rule-providers:
     DIRECT_force_remote_dns: { type: "http", url: "http://127.0.0.1:8080/subscription/rule-provider?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&policy%5Bname%5D=DIRECT&policy%5Boption%5D=force-remote-dns&policy%5Bis_subscription%5D=false&sub_url=1FYNuEuqWPakcQu-1GdglBrxgydGyIPpOi8u__3tSe6pvFLwbeBPwF9bXA4NO1WUAIPeTRyxhFMzUc58XZ47CDECezn-y2TxUbpCNV88ADGJVRpRPhGpOZxIB3ClIM72eKk", path: "./rule_providers/DIRECT_force_remote_dns.yaml", interval: 86400, size-limit: 0, format: "yaml", behavior: "classical" }
 
 rules:
-    RULE-SET,Subscription_policy,DIRECT
-    RULE-SET,BosLife_policy,BosLife
-    RULE-SET,BosLife_no_resolve,BosLife,no-resolve
-    RULE-SET,BosLife_force_remote_dns,BosLife,force-remote-dns
-    RULE-SET,DIRECT_policy,DIRECT
-    RULE-SET,DIRECT_no_resolve,DIRECT,no-resolve
-    RULE-SET,DIRECT_force_remote_dns,DIRECT,force-remote-dns
-    GEOIP,CN,DIRECT
-    MATCH,DIRECT
+    - RULE-SET,Subscription_policy,DIRECT
+    - RULE-SET,BosLife_policy,BosLife
+    - RULE-SET,BosLife_no_resolve,BosLife,no-resolve
+    - RULE-SET,BosLife_force_remote_dns,BosLife,force-remote-dns
+    - RULE-SET,DIRECT_policy,DIRECT
+    - RULE-SET,DIRECT_no_resolve,DIRECT,no-resolve
+    - RULE-SET,DIRECT_force_remote_dns,DIRECT,force-remote-dns
+    - GEOIP,CN,DIRECT
+    - MATCH,DIRECT

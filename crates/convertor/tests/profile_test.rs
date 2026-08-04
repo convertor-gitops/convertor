@@ -7,6 +7,7 @@ use color_eyre::Result;
 use convertor::config::proxy_client::ProxyClient;
 use convertor::core::profile::ProfileTrait;
 use convertor::core::profile::clash_profile::ClashProfile;
+use convertor::core::profile::proxy_group::{ProxyGroup, ProxyGroupType};
 use convertor::core::profile::surge_profile::SurgeProfile;
 use convertor::core::renderer::Renderer;
 use convertor::core::renderer::clash_renderer::ClashRenderer;
@@ -57,6 +58,30 @@ fn test_parse_and_render_clash_profile() -> Result<()> {
     insta::assert_yaml_snapshot!(profile);
     let rendered = ClashRenderer::render_profile(&profile)?;
     insta::assert_snapshot!(rendered);
+
+    Ok(())
+}
+
+#[test]
+fn test_render_clash_proxy_group_preserves_regex_scalars() -> Result<()> {
+    let filter = r"(?i)🇨🇦 加拿大 \- John's Proxy";
+    let exclude_filter = r"(?i)测试\+节点 '备用'";
+    let proxy_group = ProxyGroup {
+        name: "加拿大组".to_string(),
+        r#type: ProxyGroupType::UrlTest,
+        uses: Some(vec!["convertor".to_string()]),
+        filter: Some(filter.to_string()),
+        exclude_filter: Some(exclude_filter.to_string()),
+        ..Default::default()
+    };
+
+    let rendered = ClashRenderer::render_proxy_group(&proxy_group)?;
+    let value: serde_yml::Value = serde_yml::from_str(&rendered)?;
+
+    assert_eq!(value[0]["filter"].as_str(), Some(filter));
+    assert_eq!(value[0]["exclude-filter"].as_str(), Some(exclude_filter));
+    assert!(rendered.contains("filter: '(?i)🇨🇦 加拿大 \\- John''s Proxy'"));
+    assert!(!rendered.contains('\n'));
 
     Ok(())
 }
