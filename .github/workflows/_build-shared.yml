@@ -51,8 +51,22 @@ jobs:
         run: pnpm install
         working-directory: dashboard
 
+      - name: 初始化 CI Docker 配置
+        run: |
+          docker_config="$(mktemp -d "$RUNNER_TEMP/docker-config.XXXXXX")"
+          docker_home="$RUNNER_TEMP/docker-home"
+          install -d -m 700 "$docker_home/.docker"
+          printf '{"auths":{"%s":{}}}\n' "$REGISTRY" > "$docker_config/config.json"
+          printf '{"auths":{"%s":{}}}\n' "$REGISTRY" > "$docker_home/.docker/config.json"
+          chmod 600 "$docker_config/config.json"
+          chmod 600 "$docker_home/.docker/config.json"
+          echo "DOCKER_CONFIG=$docker_config" >> "$GITHUB_ENV"
+
       - name: 登录到 Harbor
         uses: docker/login-action@v4
+        env:
+          # Isolate Docker's fallback config lookup from the macOS login keychain.
+          HOME: ${{ runner.temp }}/docker-home
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ env.REGISTRY_USERNAME }}
