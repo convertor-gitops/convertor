@@ -6,6 +6,17 @@ use crate::core::renderer::INDENT;
 use regex::{Regex, escape};
 use std::collections::{HashMap, HashSet};
 
+pub struct GroupedProxies<'a> {
+    pub regions: Vec<RegionalProxies<'a>>,
+    pub infos: Vec<&'a Proxy>,
+}
+
+pub struct RegionalProxies<'a> {
+    pub region: &'static Region,
+    pub proxies: Vec<&'a Proxy>,
+    pub home_broadband_proxies: Vec<&'a Proxy>,
+}
+
 #[inline]
 pub fn indent_line(line: impl AsRef<str>) -> String {
     format!("{:indent$}{}", "", line.as_ref(), indent = INDENT)
@@ -16,25 +27,33 @@ pub fn indent_lines(lines: impl AsRef<str>) -> String {
     lines.as_ref().lines().map(indent_line).collect::<Vec<_>>().join("\n")
 }
 
-pub fn group_by_region(proxies: Vec<&Proxy>) -> (Vec<(&'static Region, Vec<&Proxy>)>, Vec<&Proxy>) {
+pub fn group_by_region<'a>(proxies: Vec<&'a Proxy>) -> GroupedProxies<'a> {
     let match_number = Regex::new(r"^\d+$").unwrap();
     let mut infos = vec![];
     let mut indexes = HashMap::new();
-    let mut regions = HashMap::<&Region, Vec<&Proxy>>::new();
+    let mut regions = HashMap::<&Region, RegionalProxies>::new();
     for (index, proxy) in proxies.into_iter().enumerate() {
         let mut parts = proxy.name.split(' ').collect::<Vec<_>>();
         parts.retain(|part| !match_number.is_match(part));
         match parts.iter().find_map(Region::detect) {
             Some(region) => {
-                regions.entry(region).or_default().push(proxy);
+                let regional_proxies = regions.entry(region).or_insert_with(|| RegionalProxies {
+                    region,
+                    proxies: vec![],
+                    home_broadband_proxies: vec![],
+                });
+                regional_proxies.proxies.push(proxy);
+                if proxy.is_home_broadband() {
+                    regional_proxies.home_broadband_proxies.push(proxy);
+                }
                 indexes.entry(region).or_insert(index);
             }
             None => infos.push(proxy),
         }
     }
-    let mut groups = regions.drain().collect::<Vec<_>>();
-    groups.sort_by_key(|(r, _)| indexes.get(r).cloned().unwrap_or(usize::MAX));
-    (groups, infos)
+    let mut regions = regions.drain().map(|(_, proxies)| proxies).collect::<Vec<_>>();
+    regions.sort_by_key(|group| indexes.get(group.region).cloned().unwrap_or(usize::MAX));
+    GroupedProxies { regions, infos }
 }
 
 /// 用于提取非内置策略, 以确定需要创建的代理组
