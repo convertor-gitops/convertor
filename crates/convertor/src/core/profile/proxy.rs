@@ -22,4 +22,11 @@ impl Proxy {
     pub fn set_comment(&mut self, comment: Option<String>) {
         self.comment = comment;
     }
+
+    pub fn is_home_broadband(&self) -> bool {
+        let name = self.name.to_lowercase();
+        ["home", "broadband", "bell", "家宽", "宽带"]
+            .iter()
+            .any(|keyword| name.contains(keyword))
+    }
 }
