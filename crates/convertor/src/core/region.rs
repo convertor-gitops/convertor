@@ -18,6 +18,10 @@ impl Region {
         format!("{} {}组", self.icon, self.cn)
     }
 
+    pub fn policy_name_for_home_broadband(&self) -> String {
+        format!("{} 家宽", self.policy_name())
+    }
+
     pub fn detect(pattern: impl AsRef<str>) -> Option<&'static Self> {
         let pattern = pattern.as_ref();
         REGIONS.iter().find(|r| {

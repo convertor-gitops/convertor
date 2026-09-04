@@ -115,57 +115,130 @@ impl ProfileTrait for ClashProfile {
 
         let proxies = self.proxy_providers.values().flat_map(|p| &p.proxies).collect::<Vec<_>>();
         // 先按地区分组
-        let (region_map, infos) = group_by_region(proxies);
+        let grouped_proxies = group_by_region(proxies);
 
         // 一个包含了所有地区组的大型代理组
-        let region_list = region_map.iter().map(|(r, _)| r.policy_name()).collect::<Vec<_>>();
-
-        // 提取非内置策略, 以确定需要创建的代理组
-        let policies = extract_policies(self.rules());
-
-        // 策略组, 通过提取到的策略名, 为其创建代理组, 都使用 select 类型
-        let policy_groups = policies
+        let mut region_list = grouped_proxies
+            .regions
             .iter()
-            .map(|policy| {
-                let name = policy.name.clone();
-                ProxyGroup::use_proxies(name, ProxyGroupType::Select, region_list.clone())
-            })
+            .map(|group| group.region.policy_name())
             .collect::<Vec<_>>();
+        let home_broadband_region_names = grouped_proxies
+            .regions
+            .iter()
+            .filter(|group| !group.home_broadband_proxies.is_empty())
+            .map(|group| group.region.policy_name_for_home_broadband())
+            .collect::<Vec<_>>();
+        // 家宽组追加到候选末尾, 避免改变已有策略的默认选项
+        if !home_broadband_region_names.is_empty() {
+            region_list.push("家宽组".to_string());
+        }
 
-        // 订阅信息代理组, 包含了所有的订阅信息, 也使用 select 类型
+        // 1. 策略组
+        // provider 节点不能被规则直接引用, 为单节点策略创建 exact-filter 包装组
+        let policy_groups = {
+            let fixed_policy_targets = region_list
+                .iter()
+                .chain(home_broadband_region_names.iter())
+                .map(String::as_str)
+                .chain(std::iter::once("Subscription Info"))
+                .collect::<std::collections::HashSet<_>>();
+            let proxy_names = grouped_proxies
+                .regions
+                .iter()
+                .flat_map(|group| group.proxies.iter())
+                .map(|proxy| proxy.name.as_str())
+                .chain(grouped_proxies.infos.iter().map(|proxy| proxy.name.as_str()))
+                .collect::<std::collections::HashSet<_>>();
+            extract_policies(self.rules())
+                .into_iter()
+                .filter_map(|policy| {
+                    if fixed_policy_targets.contains(policy.name.as_str()) {
+                        None
+                    } else if proxy_names.contains(policy.name.as_str()) {
+                        Some(ProxyGroup::use_provider(
+                            policy.name.clone(),
+                            ProxyGroupType::Select,
+                            vec![proxy_provider_name.to_string()],
+                            format!("^({})$", regex::escape(&policy.name)),
+                        ))
+                    } else {
+                        Some(ProxyGroup::use_proxies(policy.name, ProxyGroupType::Select, region_list.clone()))
+                    }
+                })
+                .collect::<Vec<_>>()
+        };
+
+        // 2. 订阅信息代理组,
+        // 包含了所有的订阅信息, 都使用 select 类型
         let sub_info_group = ProxyGroup::use_provider(
             "Subscription Info".to_string(),
             ProxyGroupType::Select,
             vec![proxy_provider_name.to_string()],
-            format!("(?i)({})", infos.iter().map(|p| p.name.clone()).collect::<Vec<_>>().join("|")),
+            format!(
+                "(?i)({})",
+                grouped_proxies.infos.iter().map(|p| p.name.clone()).collect::<Vec<_>>().join("|")
+            ),
         );
 
+        // 3. 家宽代理组
+        let home_broadband_group = if home_broadband_region_names.is_empty() {
+            None
+        } else {
+            Some(ProxyGroup::use_proxies(
+                "家宽组".to_string(),
+                ProxyGroupType::Select,
+                home_broadband_region_names,
+            ))
+        };
+
+        // 4. 地区组
         let mut best_filters = vec![];
-        // 地区组, 每个地区对应一个包含该地区所有代理的代理组, 使用 smart/url-test 类型
-        let region_groups = region_map
-            .into_iter()
-            .filter_map(|(region, proxies)| {
-                let name = region.policy_name();
-                let proxy_group_type = ProxyGroupType::UrlTest;
-                let proxies = proxies.into_iter().map(|p| p.name.to_string()).collect::<Vec<_>>();
-                let filter = best_filter_from_proxy_names(proxies.iter().map(|p| p.as_str()));
-                if let Some(filter) = filter {
-                    best_filters.push(filter.clone());
-                    Some(ProxyGroup::use_provider(
-                        name,
-                        proxy_group_type,
-                        vec![proxy_provider_name.to_string()],
-                        filter,
-                    ))
-                } else {
-                    None
-                }
-            })
-            .collect::<Vec<_>>();
+        let mut region_groups = vec![];
+        for group in grouped_proxies.regions {
+            let region_name = group.region.policy_name();
+            let home_broadband_region_name = group.region.policy_name_for_home_broadband();
+            let home_broadband_filter = if group.home_broadband_proxies.is_empty() {
+                None
+            } else {
+                // 使用精确名称过滤, 避免家宽关键词匹配到其他地区
+                Some(format!(
+                    "(?i)^({})$",
+                    group
+                        .home_broadband_proxies
+                        .iter()
+                        .map(|proxy| regex::escape(&proxy.name))
+                        .collect::<Vec<_>>()
+                        .join("|")
+                ))
+            };
+            let proxies = group.proxies.into_iter().map(|proxy| proxy.name.to_string()).collect::<Vec<_>>();
+            if let Some(filter) = best_filter_from_proxy_names(proxies.iter().map(|proxy| proxy.as_str())) {
+                best_filters.push(filter.clone());
+                region_groups.push(ProxyGroup::use_provider(
+                    region_name.clone(),
+                    ProxyGroupType::UrlTest,
+                    vec![proxy_provider_name.to_string()],
+                    filter,
+                ));
+            }
+            // 家宽代理保留在原地区组, 这里只额外创建家宽子组
+            if let Some(filter) = home_broadband_filter {
+                region_groups.push(ProxyGroup::use_provider(
+                    home_broadband_region_name,
+                    ProxyGroupType::Select,
+                    vec![proxy_provider_name.to_string()],
+                    filter,
+                ));
+            }
+        }
 
         self.proxy_groups_mut().clear();
         self.proxy_groups_mut().extend(policy_groups);
         self.proxy_groups_mut().push(sub_info_group);
+        if let Some(group) = home_broadband_group {
+            self.proxy_groups_mut().push(group);
+        }
         self.proxy_groups_mut().extend(region_groups);
 
         Ok(())
