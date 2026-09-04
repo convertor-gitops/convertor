@@ -76,7 +76,7 @@ jobs:
         uses: docker/setup-buildx-action@v4
         with:
           driver-opts: network=host
-          config-inline: |
+          buildkitd-config-inline: |
             [registry."${{ env.REGISTRY }}"]
               [registry."${{ env.REGISTRY }}".auth]
                 username = "${{ env.REGISTRY_USERNAME }}"
