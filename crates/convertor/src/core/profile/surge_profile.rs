@@ -88,7 +88,7 @@ impl ProfileTrait for SurgeProfile {
             .collect::<Vec<_>>();
         // 家宽组追加到候选末尾, 避免改变已有策略的默认选项
         if !home_broadband_region_names.is_empty() {
-            region_list.push("家宽组".to_string());
+            region_list.push("🏠 家宽组".to_string());
         }
 
         // 规则策略也可以直接指向固定代理组或单个代理, 只为尚不存在的策略创建代理组
@@ -140,9 +140,18 @@ impl ProfileTrait for SurgeProfile {
             None
         } else {
             Some(ProxyGroup::use_proxies(
-                "家宽组".to_string(),
+                "🏠 家宽组".to_string(),
                 ProxyGroupType::Select,
-                home_broadband_region_names,
+                home_broadband_region_names
+                    .into_iter()
+                    .chain(
+                        grouped_proxies
+                            .regions
+                            .iter()
+                            .filter(|group| !group.home_broadband_proxies.is_empty())
+                            .map(|group| group.region.policy_name()),
+                    )
+                    .collect(),
             ))
         };
 
@@ -162,7 +171,7 @@ impl ProfileTrait for SurgeProfile {
                     .collect::<Vec<_>>();
                 region_groups.push(ProxyGroup::use_proxies(
                     home_broadband_region_name,
-                    ProxyGroupType::Select,
+                    ProxyGroupType::Smart,
                     home_broadband_proxies,
                 ));
             }

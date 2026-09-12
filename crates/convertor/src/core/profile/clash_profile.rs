@@ -131,7 +131,7 @@ impl ProfileTrait for ClashProfile {
             .collect::<Vec<_>>();
         // 家宽组追加到候选末尾, 避免改变已有策略的默认选项
         if !home_broadband_region_names.is_empty() {
-            region_list.push("家宽组".to_string());
+            region_list.push("🏠 家宽组".to_string());
         }
 
         // 1. 策略组
@@ -186,9 +186,18 @@ impl ProfileTrait for ClashProfile {
             None
         } else {
             Some(ProxyGroup::use_proxies(
-                "家宽组".to_string(),
+                "🏠 家宽组".to_string(),
                 ProxyGroupType::Select,
-                home_broadband_region_names,
+                home_broadband_region_names
+                    .into_iter()
+                    .chain(
+                        grouped_proxies
+                            .regions
+                            .iter()
+                            .filter(|group| !group.home_broadband_proxies.is_empty())
+                            .map(|group| group.region.policy_name()),
+                    )
+                    .collect(),
             ))
         };
 
@@ -226,7 +235,7 @@ impl ProfileTrait for ClashProfile {
             if let Some(filter) = home_broadband_filter {
                 region_groups.push(ProxyGroup::use_provider(
                     home_broadband_region_name,
-                    ProxyGroupType::Select,
+                    ProxyGroupType::UrlTest,
                     vec![proxy_provider_name.to_string()],
                     filter,
                 ));
