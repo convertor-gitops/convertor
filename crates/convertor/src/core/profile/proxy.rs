@@ -1,5 +1,8 @@
 use serde::{Deserialize, Serialize};
 
+// 临时兼容 BosLife 当前订阅命名；供应商调整节点编号后需同步更新
+const BOSLIFE_UNNAMED_HOME_BROADBAND_NAMES: [&str; 4] = ["🇺🇸 美国 07", "🇺🇸 美国 08", "🇺🇸 美国 09", "🇺🇸 美国 10"];
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Proxy {
     pub name: String,
@@ -25,8 +28,39 @@ impl Proxy {
 
     pub fn is_home_broadband(&self) -> bool {
         let name = self.name.to_lowercase();
-        ["home", "broadband", "bell", "家宽", "宽带"]
-            .iter()
-            .any(|keyword| name.contains(keyword))
+        BOSLIFE_UNNAMED_HOME_BROADBAND_NAMES.contains(&name.trim())
+            || ["home", "broadband", "bell", "家宽", "宽带"]
+                .iter()
+                .any(|keyword| name.contains(keyword))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn proxy(name: &str) -> Proxy {
+        Proxy {
+            name: name.to_string(),
+            r#type: "trojan".to_string(),
+            server: "example.com".to_string(),
+            port: 443,
+            password: "password".to_string(),
+            udp: None,
+            tfo: None,
+            cipher: None,
+            sni: None,
+            skip_cert_verify: None,
+            comment: None,
+        }
+    }
+
+    #[test]
+    fn detects_current_boslife_home_broadband_names() {
+        for name in BOSLIFE_UNNAMED_HOME_BROADBAND_NAMES {
+            assert!(proxy(name).is_home_broadband(), "{name}");
+        }
+        assert!(!proxy("🇺🇸 美国 06").is_home_broadband());
+        assert!(!proxy("🇺🇸 美国 11").is_home_broadband());
     }
 }

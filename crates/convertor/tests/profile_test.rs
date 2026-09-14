@@ -19,7 +19,7 @@ use regex::Regex;
 fn profile_with_home_broadband(content: &str) -> String {
     content
         .replace("🇺🇸 美国 06", "🇺🇸 美国 06 家宽")
-        .replace("🇺🇸 美国 07 - OnlyAI", "🇺🇸 美国 07 - OnlyAI 宽带")
+        .replace("🇺🇸 美国 07 - OnlyAI", "🇺🇸 美国 07")
         .replace("🇨🇦 加拿大 01", "🇨🇦 加拿大 01 Bell")
 }
 
@@ -141,13 +141,13 @@ fn test_organize_surge_home_broadband_groups() -> Result<()> {
 
     let us_group = proxy_group(&profile.proxy_groups, "🇺🇸 美国组");
     assert!(us_group.proxies.as_ref().unwrap().contains(&"🇺🇸 美国 06 家宽".to_string()));
-    assert!(us_group.proxies.as_ref().unwrap().contains(&"🇺🇸 美国 07 - OnlyAI 宽带".to_string()));
+    assert!(us_group.proxies.as_ref().unwrap().contains(&"🇺🇸 美国 07".to_string()));
 
     let us_home_broadband_group = proxy_group(&profile.proxy_groups, "🇺🇸 美国组 家宽");
     assert!(matches!(&us_home_broadband_group.r#type, ProxyGroupType::Smart));
     assert_eq!(
         us_home_broadband_group.proxies.as_ref().unwrap(),
-        &vec!["🇺🇸 美国 06 家宽".to_string(), "🇺🇸 美国 07 - OnlyAI 宽带".to_string()]
+        &vec!["🇺🇸 美国 06 家宽".to_string(), "🇺🇸 美国 07".to_string()]
     );
 
     let canada_group = proxy_group(&profile.proxy_groups, "🇨🇦 加拿大组");
@@ -185,7 +185,7 @@ fn test_organize_clash_home_broadband_groups() -> Result<()> {
     assert_eq!(single_proxy_group.uses.as_ref().unwrap(), &vec!["convertor".to_string()]);
     let single_proxy_filter = Regex::new(single_proxy_group.filter.as_deref().unwrap())?;
     assert!(single_proxy_filter.is_match("🇺🇸 美国 06 家宽"));
-    assert!(!single_proxy_filter.is_match("🇺🇸 美国 07 - OnlyAI 宽带"));
+    assert!(!single_proxy_filter.is_match("🇺🇸 美国 07"));
 
     let policy_group = proxy_group(&profile.proxy_groups, "BosLife");
     assert_eq!(policy_group.proxies.as_ref().unwrap().last().map(String::as_str), Some("🏠 家宽组"));
@@ -205,13 +205,13 @@ fn test_organize_clash_home_broadband_groups() -> Result<()> {
 
     let us_group_filter = Regex::new(proxy_group(&profile.proxy_groups, "🇺🇸 美国组").filter.as_deref().unwrap())?;
     assert!(us_group_filter.is_match("🇺🇸 美国 06 家宽"));
-    assert!(us_group_filter.is_match("🇺🇸 美国 07 - OnlyAI 宽带"));
+    assert!(us_group_filter.is_match("🇺🇸 美国 07"));
 
     let us_home_broadband_group = proxy_group(&profile.proxy_groups, "🇺🇸 美国组 家宽");
     assert!(matches!(&us_home_broadband_group.r#type, ProxyGroupType::UrlTest));
     let us_home_broadband_filter = Regex::new(us_home_broadband_group.filter.as_deref().unwrap())?;
     assert!(us_home_broadband_filter.is_match("🇺🇸 美国 06 家宽"));
-    assert!(us_home_broadband_filter.is_match("🇺🇸 美国 07 - OnlyAI 宽带"));
+    assert!(us_home_broadband_filter.is_match("🇺🇸 美国 07"));
     assert!(!us_home_broadband_filter.is_match("🇺🇸 美国 05"));
     assert!(!us_home_broadband_filter.is_match("🇨🇦 加拿大 01 Bell"));
 
