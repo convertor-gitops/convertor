@@ -81,16 +81,16 @@ fn test_build_download_url() -> color_eyre::Result<()> {
     let geox_url = GeoxUrl::default();
 
     let geoip_download = url_builder.build_download_url(&geox_url.geoip)?;
-    insta::assert_snapshot!(geoip_download, @"http://127.0.0.1:8080/download?0%5B0%5D=url&0%5B1%5D=https%3A%2F%2Ftestingcf.jsdelivr.net%2Fgh%2FMetaCubeX%2Fmeta-rules-dat%40release%2Fgeoip.dat");
+    insta::assert_snapshot!(geoip_download, @"http://127.0.0.1:8080/download?url=https%3A%2F%2Ftestingcf.jsdelivr.net%2Fgh%2FMetaCubeX%2Fmeta-rules-dat%40release%2Fgeoip.dat");
 
     let geosite_download = url_builder.build_download_url(&geox_url.geosite)?;
-    insta::assert_snapshot!(geosite_download, @"http://127.0.0.1:8080/download?0%5B0%5D=url&0%5B1%5D=https%3A%2F%2Ftestingcf.jsdelivr.net%2Fgh%2FMetaCubeX%2Fmeta-rules-dat%40release%2Fgeosite.dat");
+    insta::assert_snapshot!(geosite_download, @"http://127.0.0.1:8080/download?url=https%3A%2F%2Ftestingcf.jsdelivr.net%2Fgh%2FMetaCubeX%2Fmeta-rules-dat%40release%2Fgeosite.dat");
 
     let mmdb_download = url_builder.build_download_url(&geox_url.mmdb)?;
-    insta::assert_snapshot!(mmdb_download, @"http://127.0.0.1:8080/download?0%5B0%5D=url&0%5B1%5D=https%3A%2F%2Ftestingcf.jsdelivr.net%2Fgh%2FMetaCubeX%2Fmeta-rules-dat%40release%2Fcountry.mmdb");
+    insta::assert_snapshot!(mmdb_download, @"http://127.0.0.1:8080/download?url=https%3A%2F%2Ftestingcf.jsdelivr.net%2Fgh%2FMetaCubeX%2Fmeta-rules-dat%40release%2Fcountry.mmdb");
 
     let asn_download = url_builder.build_download_url(&geox_url.asn)?;
-    insta::assert_snapshot!(asn_download, @"http://127.0.0.1:8080/download?0%5B0%5D=url&0%5B1%5D=https%3A%2F%2Fgithub.com%2Fxishang0128%2Fgeoip%2Freleases%2Fdownload%2Flatest%2FGeoLite2-ASN.mmdb");
+    insta::assert_snapshot!(asn_download, @"http://127.0.0.1:8080/download?url=https%3A%2F%2Fgithub.com%2Fxishang0128%2Fgeoip%2Freleases%2Fdownload%2Flatest%2FGeoLite2-ASN.mmdb");
 
     Ok(())
 }

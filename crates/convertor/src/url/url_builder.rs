@@ -2,7 +2,7 @@ use crate::common::encrypt::Encryptor;
 use crate::config::proxy_client::ProxyClient;
 use crate::core::profile::policy::Policy;
 use crate::core::profile::surge_header::SurgeHeader;
-use crate::error::{InternalError, UrlBuilderError};
+use crate::error::UrlBuilderError;
 use crate::url::conv_query::ConvQuery;
 use crate::url::conv_url::{ConvUrl, UrlType};
 use serde::{Deserialize, Serialize};
@@ -108,13 +108,9 @@ impl UrlBuilder {
     pub fn build_download_url(&self, url: impl ToString) -> Result<url::Url, UrlBuilderError> {
         let mut download_url = self.server.clone();
         download_url.set_path("/download");
-        let query = [("url", url.to_string())];
-        download_url.set_query(Some(
-            serde_qs::to_string(&query)
-                .map_err(InternalError::Qs)
-                .map_err(|e| UrlBuilderError::BuildDownloadUrl(url.to_string(), e))?
-                .as_str(),
-        ));
+        let url = url.to_string();
+        download_url.set_query(None);
+        download_url.query_pairs_mut().append_pair("url", &url);
         Ok(download_url)
     }
 }
