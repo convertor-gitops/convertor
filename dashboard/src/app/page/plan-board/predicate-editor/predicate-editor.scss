@@ -1,0 +1,82 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.predicate {
+  padding: 8px;
+  border: 1px solid var(--app-border, #d7d9df);
+  border-radius: var(--ui-radius-md, 8px);
+  background: color-mix(in srgb, var(--app-surface, #fff), transparent 8%);
+}
+
+.predicate-head,
+.atom-row,
+.child {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.predicate-head mat-form-field,
+.atom-row mat-form-field {
+  width: 132px;
+}
+
+.atom-row {
+  flex-wrap: wrap;
+}
+
+.atom-row .value {
+  flex: 1 1 180px;
+  width: auto;
+}
+
+.hint {
+  color: var(--app-text-4, #717784);
+  font-size: 12px;
+}
+
+.children {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 0 12px;
+  padding-left: 10px;
+}
+
+.children.single {
+  margin-top: 6px;
+}
+
+.child > app-predicate-editor {
+  flex: 1;
+  min-width: 0;
+}
+
+.remove {
+  flex: none;
+  color: var(--mat-sys-error, #ba1a1a);
+}
+
+@media (max-width: 720px) {
+  .child {
+    align-items: flex-start;
+  }
+
+  .children {
+    margin-left: 4px;
+    padding-left: 6px;
+  }
+}
+
+.predicate-head,
+.child {
+  flex-wrap: wrap;
+}
+mat-form-field {
+  min-width: 0;
+  max-width: 100%;
+}
+.child > app-predicate-editor {
+  flex-basis: 180px;
+}

@@ -1,0 +1,209 @@
+<header class="drawer-header">
+  <div>
+    <h2>来源管理</h2>
+    <p>添加、加载和刷新订阅来源</p>
+  </div>
+  <app-ui-close-button (closed)="closeRequested.emit()" />
+</header>
+
+<section class="client-section">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-label>目标客户端</mat-label>
+    <mat-select [ngModel]="board.plan().client" (ngModelChange)="setClient($event)">
+      @for (client of clientOptions; track client) {
+        <mat-option [value]="client">{{ client }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  <span>用于来源加载和最终配置输出。切换 Surge / Clash 后，将重新加载来源并更新编排结果。</span>
+</section>
+
+<mat-expansion-panel class="create-panel" expanded>
+  <mat-expansion-panel-header>
+    <mat-panel-title>添加来源</mat-panel-title>
+    <mat-panel-description>提交前不会写入方案</mat-panel-description>
+  </mat-expansion-panel-header>
+  <div class="create-form">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>来源名称</mat-label>
+      <input matInput [ngModel]="draftName()" (ngModelChange)="draftName.set($event)" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>来源类型</mat-label>
+      <mat-select [ngModel]="draftKind()" (ngModelChange)="draftKind.set($event)">
+        <mat-option value="remote">远程 URL</mat-option>
+        <mat-option value="inline">内嵌配置</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field class="wide" appearance="outline" subscriptSizing="dynamic">
+      <mat-label>{{ draftKind() === 'remote' ? '订阅 URL' : '配置内容' }}</mat-label>
+      @if (draftKind() === 'remote') {
+        <input matInput [ngModel]="draftContent()" (ngModelChange)="draftContent.set($event)" />
+      } @else {
+        <textarea
+          matInput
+          rows="6"
+          [ngModel]="draftContent()"
+          (ngModelChange)="draftContent.set($event)"
+        ></textarea>
+      }
+    </mat-form-field>
+    <button
+      mat-flat-button
+      type="button"
+      [disabled]="!draftContent().trim()"
+      (click)="addAndLoad()"
+    >
+      添加并加载
+    </button>
+  </div>
+</mat-expansion-panel>
+
+<mat-accordion multi class="source-list">
+  @for (source of board.plan().sources; track source.id; let index = $index) {
+    @let profile = board.sourceProfiles().get(source.id);
+    @let loading = board.loadingSourceIds().has(source.id);
+    @let sourceError = board.sourceErrors().get(source.id);
+    <mat-expansion-panel
+      [id]="'source-' + source.id"
+      [expanded]="board.selectedSourceId() === source.id"
+      (opened)="board.selectSource(source.id)"
+    >
+      <mat-expansion-panel-header>
+        <mat-panel-title>{{ index + 1 }}. {{ source.name || '未命名来源' }}</mat-panel-title>
+        <mat-panel-description>
+          @if (loading) {
+            正在加载
+          } @else if (sourceError) {
+            加载失败
+          } @else if (profile) {
+            已加载 · {{ profile.input_nodes.length }} 个输入节点
+          } @else {
+            尚未加载
+          }
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      @if (loading) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+      <div class="source-form">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>来源名称</mat-label>
+          <input matInput [ngModel]="source.name" (ngModelChange)="updateName(source, $event)" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>来源类型</mat-label>
+          <mat-select [ngModel]="source.input.kind" (ngModelChange)="updateKind(source, $event)">
+            <mat-option value="remote">远程 URL</mat-option>
+            <mat-option value="inline">内嵌配置</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="wide" appearance="outline" subscriptSizing="dynamic">
+          <mat-label>{{
+            source.input.kind === 'remote' ? '当前保存的 URL' : '当前保存的配置'
+          }}</mat-label>
+          @if (source.input.kind === 'remote') {
+            <input
+              matInput
+              [ngModel]="inputValue(source.input)"
+              (ngModelChange)="updateInput(source, $event)"
+            />
+          } @else {
+            <textarea
+              matInput
+              rows="7"
+              [ngModel]="inputValue(source.input)"
+              (ngModelChange)="updateInput(source, $event)"
+            ></textarea>
+          }
+        </mat-form-field>
+
+        @if (inputChangedSinceLoad(source)) {
+          <div class="snapshot wide">
+            <strong>上次加载的输入</strong><code>{{ loadedInput(source) }}</code>
+            <span>当前保存内容已修改，需要重新加载。</span>
+          </div>
+        }
+
+        <div class="actions wide">
+          <button
+            mat-flat-button
+            type="button"
+            [disabled]="loading || !inputValue(source.input).trim()"
+            (click)="load(source, false)"
+          >
+            {{ sourceError ? '重试加载' : profile ? '重新加载' : '加载来源' }}
+          </button>
+          <button
+            mat-stroked-button
+            type="button"
+            [disabled]="loading || !inputValue(source.input).trim()"
+            (click)="load(source, true)"
+          >
+            强制刷新
+          </button>
+          <button
+            mat-button
+            class="danger"
+            type="button"
+            [disabled]="loading"
+            (click)="remove(source)"
+          >
+            删除来源
+          </button>
+        </div>
+
+        @if (sourceError) {
+          <div class="message error wide">{{ sourceError }}</div>
+        }
+        @if (profile) {
+          <div class="stats wide">
+            <span
+              ><strong>{{ profile.input_nodes.length }}</strong> 输入节点</span
+            >
+            <span
+              ><strong>{{ profile.profile.proxy_groups.length }}</strong> 策略组条目</span
+            >
+            <span
+              ><strong>{{ profile.profile.rules.length }}</strong> 规则条目</span
+            >
+            <span>加载于 {{ loadedAt(source.id) }}</span>
+          </div>
+          @if (profile.input_diagnostics.length || profile.diagnostics.length) {
+            <div class="diagnostics wide">
+              <strong>来源诊断</strong>
+              @for (diagnostic of profile.input_diagnostics; track $index) {
+                <div [class.error]="diagnostic.severity === 'error'">
+                  {{ diagnostic.message }} <code>{{ diagnostic.path }}</code>
+                </div>
+              }
+              @for (diagnostic of profile.diagnostics; track $index) {
+                <div [class.error]="diagnostic.severity === 'error'">
+                  {{ diagnostic.message }} <code>{{ diagnostic.path }}</code>
+                </div>
+              }
+            </div>
+          }
+        }
+
+        <div class="filter wide">
+          <mat-slide-toggle
+            [ngModel]="source.node_filter !== null"
+            (ngModelChange)="setFilterEnabled(source, $event)"
+            >启用节点过滤</mat-slide-toggle
+          >
+          @if (source.node_filter) {
+            <app-predicate-editor
+              [predicate]="source.node_filter"
+              domain="node"
+              (predicateChange)="updateFilter(source, $event)"
+            />
+          }
+        </div>
+      </div>
+    </mat-expansion-panel>
+  } @empty {
+    <div class="empty">暂无来源。请先在上方填写并提交来源。</div>
+  }
+</mat-accordion>

@@ -26,6 +26,14 @@ impl SubscriptionError {
             http_status: http::StatusCode::BAD_REQUEST,
         }
     }
+
+    pub fn with_status(error: AppError, request: RequestBody, http_status: http::StatusCode) -> Self {
+        Self {
+            error,
+            request,
+            http_status,
+        }
+    }
 }
 
 impl IntoResponse for SubscriptionError {

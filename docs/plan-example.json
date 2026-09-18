@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "client": "surge",
+  "sources": [
+    {
+      "id": 1,
+      "name": "source-a",
+      "input": {
+        "kind": "inline",
+        "content": "[General]\nloglevel=notify\n[Proxy]\n香港 01=trojan,hk.example.com,443,password=example\n美国 07=trojan,us.example.com,443,password=example\n[Proxy Group]\n[Rule]\nFINAL,DIRECT\n"
+      },
+      "annotations": [],
+      "node_filter": null
+    },
+    {
+      "id": 2,
+      "name": "source-b",
+      "input": {
+        "kind": "inline",
+        "content": "[General]\n[Proxy]\n美国 01=trojan,us.example.org,443,password=example\n加拿大 01=trojan,ca.example.org,443,password=example\n[Proxy Group]\n[Rule]\nFINAL,DIRECT\n"
+      },
+      "annotations": [],
+      "node_filter": null
+    }
+  ],
+  "grouping_policies": [
+    {
+      "id": 1,
+      "group_by": [
+        {
+          "kind": "region"
+        },
+        {
+          "kind": "source"
+        }
+      ],
+      "strategy": {
+        "kind": "select"
+      }
+    }
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "name": "all",
+      "strategy": {
+        "kind": "select"
+      },
+      "member_selectors": [
+        {
+          "kind": "base_groups",
+          "value": {
+            "policy": 1,
+            "scope": "Roots",
+            "predicate": {
+              "op": "all",
+              "args": []
+            }
+          }
+        }
+      ],
+      "on_empty": "Error"
+    }
+  ],
+  "rules": [],
+  "output": {
+    "roots": [
+      1
+    ],
+    "extra_nodes": [],
+    "fallback": {
+      "Group": 1
+    },
+    "settings_source": 1
+  }
+}

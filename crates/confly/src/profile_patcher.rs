@@ -1,11 +1,12 @@
 use crate::config::ClientConfig;
 use crate::file_provider::FileProvider;
+use convertor::config::proxy_client::ProxyClient;
+use convertor::core::Render;
+use convertor::core::format::{SURGE_RULE_PROVIDER_COMMENT_END, SURGE_RULE_PROVIDER_COMMENT_START};
 use convertor::core::profile::clash_profile::ClashProfile;
 use convertor::core::profile::policy::Policy;
 use convertor::core::profile::rule::Rule;
 use convertor::core::profile::surge_header::SurgeHeader;
-use convertor::core::renderer::Renderer;
-use convertor::core::renderer::surge_renderer::{SURGE_RULE_PROVIDER_COMMENT_END, SURGE_RULE_PROVIDER_COMMENT_START, SurgeRenderer};
 use convertor::url::conv_url::UrlType;
 use convertor::url::url_builder::UrlBuilder;
 use std::borrow::Cow;
@@ -76,14 +77,27 @@ impl ClientConfig {
         let provider_rules = policies
             .into_iter()
             .map(|policy| {
-                let name = SurgeRenderer::render_provider_name_for_policy(policy);
+                let name = convertor::core::format::provider_name(policy, convertor::config::proxy_client::ProxyClient::Surge);
                 let url = url_builder.build_rule_provider_url(policy)?;
-                Ok(Rule::surge_rule_set(policy, name, url))
+                Ok(Rule {
+                    rule_type: convertor::core::profile::RuleType::RuleSet,
+                    value: Some(url.to_string()),
+                    target: Some(convertor::core::profile::PolicyRef::parse(&policy.name)),
+                    options: policy
+                        .option
+                        .as_ref()
+                        .map(|s| s.split(',').map(str::to_owned).collect())
+                        .unwrap_or_default(),
+                    comment: Some(format!("// {name}")),
+                })
             })
             .collect::<color_eyre::Result<Vec<_>>>()?;
         let mut output = provider_rules
             .iter()
-            .map(SurgeRenderer::render_rule)
+            .map(|rule| {
+                let mut content = String::new();
+                rule.render(&mut content, ProxyClient::Surge).map(|()| content)
+            })
             .map(|l| Ok(l.map(Cow::Owned)?))
             .collect::<color_eyre::Result<Vec<_>>>()?;
         output.insert(0, Cow::Borrowed(SURGE_RULE_PROVIDER_COMMENT_START));
@@ -94,17 +108,17 @@ impl ClientConfig {
 
     pub fn update_clash_config(
         &self,
-        file_provider: &FileProvider,
-        url_builder: &UrlBuilder,
-        raw_profile: ClashProfile,
-        secret: impl AsRef<str>,
+        _file_provider: &FileProvider,
+        _url_builder: &UrlBuilder,
+        _raw_profile: ClashProfile,
+        _secret: impl AsRef<str>,
     ) -> color_eyre::Result<()> {
         todo!()
         // let mut template = ClashProfile::template()?;
         // template.patch(raw_profile)?;
         // template.convert(url_builder)?;
         // template.secret = Some(secret.as_ref().to_string());
-        // let main_profile = ClashRenderer::render_profile(&template)?;
+        // let main_profile = { let mut content = String::new(); <_ as Render<ClashFormat>>::render(&template, &mut content).map(|()| content) }?;
         // file_provider.write(self.main_profile_path(), main_profile)?;
         // Ok(())
     }

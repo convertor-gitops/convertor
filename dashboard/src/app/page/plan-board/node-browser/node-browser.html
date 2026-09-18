@@ -1,0 +1,128 @@
+<div class="browser-head">
+  <div class="title">
+    <strong>输入节点</strong><span>{{ nodes().length }} 个 · 编排前</span>
+  </div>
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-label>搜索节点、来源或标签</mat-label>
+    <input matInput [ngModel]="search()" (ngModelChange)="search.set($event)" />
+  </mat-form-field>
+  <div class="dimension-picker" aria-label="浏览分组层级">
+    <span class="picker-label">浏览分组</span>
+    <div class="dimension-options">
+      @for (kind of dimensionKinds; track kind) {
+        <button
+          mat-stroked-button
+          type="button"
+          class="dimension-option"
+          [class.selected]="dimensionOrder(kind)"
+          [attr.aria-pressed]="!!dimensionOrder(kind)"
+          (click)="toggleDimension(kind)"
+        >
+          <span>{{ labels[kind] }}</span>
+          @if (dimensionOrder(kind); as order) {
+            <span class="order-badge" [attr.aria-label]="'当前第 ' + order + ' 层'">{{
+              order
+            }}</span>
+          }
+        </button>
+      }
+    </div>
+    @for (dimension of dimensions(); track dimension.kind; let i = $index) {
+      @if (dimension.kind === 'has_tag') {
+        <label class="tag-filter">
+          <span>原始标签名</span>
+          <input
+            class="tag-input"
+            matInput
+            placeholder="输入标签名"
+            [ngModel]="dimension.tag"
+            (ngModelChange)="tag(i, $event)"
+          />
+        </label>
+      }
+    }
+    <small>按选择顺序从外到内分组；不选择时直接平铺节点。</small>
+  </div>
+  <div class="actions">
+    @if (dimensions().length) {
+      <button mat-button (click)="expandAll()">展开</button>
+      <button mat-button (click)="tree.collapseAll()">折叠</button>
+    }
+    <button mat-button (click)="selectVisible()" [disabled]="!filtered().length">
+      全选搜索结果
+    </button>
+  </div>
+</div>
+<div
+  class="tree-scroll"
+  cdkDropList
+  id="input-nodes"
+  [cdkDropListConnectedTo]="dropTargets()"
+  [cdkDropListSortingDisabled]="true"
+>
+  <mat-tree
+    #tree
+    [dataSource]="data()"
+    [childrenAccessor]="children"
+    [trackBy]="track"
+    [expansionKey]="expansionKey"
+  >
+    <mat-tree-node
+      *matTreeNodeDef="let item"
+      matTreeNodePadding
+      [matTreeNodePaddingIndent]="14"
+      [class.linked]="highlighted().has(item.node.identity)"
+      cdkDrag
+      [cdkDragData]="dragNodes(item.node)"
+    >
+      <mat-checkbox
+        [checked]="selected().has(item.node.key)"
+        (change)="toggle(item.node, $event.checked)"
+        [aria-label]="'选择 ' + item.label"
+      />
+      <button
+        class="node-detail"
+        mat-button
+        (click)="focusNode.emit(item.node.identity)"
+        [matTooltip]="item.node.proxy.server + ':' + item.node.proxy.port"
+      >
+        <span class="node-name">{{ item.label }}</span>
+        <span class="node-meta">{{ item.node.proxy.protocol }} · {{ item.node.sourceName }}</span>
+        @if (item.node.proxy.tags.length) {
+          <span class="node-tags">{{ item.node.proxy.tags.join(' · ') }}</span>
+        }
+      </button>
+      <div *cdkDragPreview class="drag-preview">
+        添加 {{ dragNodes(item.node).length }} 个节点到组
+      </div>
+    </mat-tree-node>
+    <mat-tree-node
+      *matTreeNodeDef="let item; when: isBranch"
+      matTreeNodePadding
+      [matTreeNodePaddingIndent]="14"
+      [isExpandable]="true"
+    >
+      <button
+        mat-button
+        matTreeNodeToggle
+        [attr.aria-label]="'展开或折叠 ' + item.label"
+        class="branch-toggle"
+      >
+        {{ tree.isExpanded(item) ? '▾' : '▸' }} {{ item.label }} <span>{{ item.count }}</span>
+      </button>
+    </mat-tree-node>
+  </mat-tree>
+  @if (!filtered().length) {
+    <div class="empty">
+      {{ nodes().length ? '没有匹配的节点' : '添加并加载来源后，在这里浏览节点。' }}
+    </div>
+  }
+</div>
+@if (picked().length) {
+  <div class="selection-bar">
+    <span>已选 {{ picked().length }} 个</span>
+    <button mat-flat-button (click)="createGroup.emit(picked())">创建节点组</button>
+    <button mat-button (click)="clear()">清空</button>
+    <small>也可拖入按名称逐个选取节点的组；输入节点保留。</small>
+  </div>
+}

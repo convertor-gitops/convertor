@@ -72,7 +72,7 @@ impl<B> MakeSpan<B> for ConvdMakeSpan {
             "http_request",
             // 基础HTTP信息
             method = %request.method(),
-            uri = %request.uri(),
+            uri = %path,
             path = %path,
             version = ?request.version(),
 

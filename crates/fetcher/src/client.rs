@@ -127,8 +127,6 @@ impl FetchClient {
             target: "httpv",
             req_id = %prepared.request.req_id,
             method = %prepared.request.method,
-            url = %prepared.request.url,
-            final_url = %prepared.response.final_url,
             status = prepared.response.status.as_u16(),
             ttfb_ms = prepared.ttfb_ms,
             bytes_out = prepared.bytes_out,
@@ -173,8 +171,6 @@ impl FetchClient {
             target: "httpv",
             req_id = %prepared.request.req_id,
             method = %prepared.request.method,
-            url = %prepared.request.url,
-            final_url = %prepared.response.final_url,
             status = prepared.response.status.as_u16(),
             ttfb_ms = prepared.ttfb_ms,
             total_ms = total_ms,
@@ -254,6 +250,7 @@ impl FetchClient {
             method,
             url,
             headers,
+            header_map,
             body,
         } = request;
 
@@ -264,6 +261,8 @@ impl FetchClient {
         for (k, v) in merged_headers {
             rb = rb.header(k, v);
         }
+
+        rb = rb.headers(header_map);
 
         let bytes_out = match &body {
             Some(FetchBody::Bytes(raw)) => raw.len() as u64,

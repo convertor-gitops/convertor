@@ -4,7 +4,7 @@
 // use confly::file_provider::FileProvider;
 // use convertor::config::proxy_client::ProxyClient;
 // use convertor::init_test;
-// use convertor::provider::SubsProvider;
+// use convertor::subscription::SubscriptionFetcher;
 // use convertor::testkit::start_mock_provider_server;
 // use std::collections::HashMap;
 // use std::sync::{Arc, RwLock};
@@ -45,12 +45,12 @@
 //     let client_config = config.clients.get(&client).ok_or_eyre(format!("没有找到 {client} 客户端配置"))?;
 //     start_mock_provider_server(&mut config.common).await?;
 //
-//     let subs_provider = SubsProvider::new(None, config.common.redis.as_ref().map(|r| r.prefix.as_str()));
+//     let subscription_fetcher = SubscriptionFetcher::new(None, config.common.redis.as_ref().map(|r| r.prefix.as_str()));
 //     let cmds = cmds(client);
 //     for (i, cmd) in cmds.into_iter().enumerate() {
 //         let ctx = format!("test_subscription_{client}_cmd_{i}");
 //         let file_provider = file_provider(client_config);
-//         let (url_builder, result) = cmd.clone().execute(&config, &subs_provider, &file_provider).await?;
+//         let (url_builder, result) = cmd.clone().execute(&config, &subscription_fetcher, &file_provider).await?;
 //         let result = result.to_string();
 //         let result = result
 //             .replace(

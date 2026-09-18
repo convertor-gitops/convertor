@@ -13,7 +13,7 @@ fn test_build_surge_url() -> color_eyre::Result<()> {
     init_test();
     let url_builder = url_builder(ProxyClient::Surge, "test_build_surge_url")?;
     let raw_url = url_builder.build_original_url()?;
-    insta::assert_snapshot!(raw_url.to_string(), @"https://convertor.bppleman.com/subscription?token=bppleman&flag=surge");
+    insta::assert_snapshot!(raw_url.to_string(), @"https://convertor.bppleman.com/subscription?token=bppleman");
 
     let raw_url = url_builder.build_raw_url()?;
     insta::assert_snapshot!(raw_url.to_string(), @"http://127.0.0.1:8080/subscription/raw?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=surge&interval=86400&strict=true&sub_url=iImwC4XKfx_wFPtS_z90X5RlgwMLZx_r6elfLMS2vhnML4qrFO08yM3VxM66DctAznbimC4ILKcAqkswpZGv2ZvaXTXsAd7uRGMJHDKfhQrUxpYnemM8hSI79qe5OvxvOYc");
@@ -46,7 +46,7 @@ fn test_build_clash_url() -> color_eyre::Result<()> {
     init_test();
     let url_builder = url_builder(ProxyClient::Clash, "test_build_clash_url")?;
     let raw_url = url_builder.build_original_url()?;
-    insta::assert_snapshot!(raw_url.to_string(), @"https://convertor.bppleman.com/subscription?token=bppleman&flag=clash");
+    insta::assert_snapshot!(raw_url.to_string(), @"https://convertor.bppleman.com/subscription?token=bppleman");
 
     let raw_url = url_builder.build_raw_url()?;
     insta::assert_snapshot!(raw_url.to_string(), @"http://127.0.0.1:8080/subscription/raw?server=http%3A%2F%2F127.0.0.1%3A8080%2F&client=clash&interval=86400&strict=true&sub_url=SfxJSAferU_ckMID-y4NAqzOwSEai63Qmc_NTOl1bIXJ8Q3oj3UJH4zd6brEe6Eai7YLPY8CuL4Kk9PdpWGx7zRkXCiPtNhaEMxOrmQMg3Ox1kaQ3jYmYoV1Yu91q0SktsQ");

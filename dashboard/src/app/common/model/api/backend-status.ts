@@ -1,52 +1,57 @@
-import * as z from "zod";
-
-export const ServiceStatusSchema = z.object({
-    name: z.string(),
-    healthy: z.boolean(),
-    message: z.string().optional(),
-});
-
-export const BackendStatusSchema = z.object({
-    version: z.string(),
-    services: z.array(ServiceStatusSchema),
-});
+import {
+  asArray,
+  asBoolean,
+  asObject,
+  asString,
+  childPath,
+  optional,
+  required,
+} from '../../deserialize';
 
 export class ServiceStatus {
-    constructor(
-        public readonly name: string,
-        public readonly healthy: boolean,
-        public readonly message?: string,
-    ) {
-    }
+  constructor(
+    public readonly name: string,
+    public readonly healthy: boolean,
+    public readonly message?: string,
+  ) {}
 
-    static parse(json: unknown): z.infer<typeof ServiceStatusSchema> {
-        return ServiceStatusSchema.parse(json);
-    }
+  static deserialize(value: unknown, path = '$'): ServiceStatus {
+    const object = asObject(value, path);
+    return new ServiceStatus(
+      asString(required(object, 'name', path), childPath(path, 'name')),
+      asBoolean(required(object, 'healthy', path), childPath(path, 'healthy')),
+      optional(object['message'], asString, childPath(path, 'message')),
+    );
+  }
 
-    static deserialize(json: z.infer<typeof ServiceStatusSchema>): ServiceStatus {
-        return new ServiceStatus(json.name, json.healthy, json.message);
-    }
+  serialize(): unknown {
+    return { name: this.name, healthy: this.healthy, message: this.message };
+  }
 }
 
 export class BackendStatus {
-    constructor(
-        public readonly version: string,
-        public readonly services: ServiceStatus[],
-    ) {
-    }
+  constructor(
+    public readonly version: string,
+    public readonly services: ServiceStatus[],
+  ) {}
 
-    get healthy(): boolean {
-        return this.services.every(s => s.healthy);
-    }
+  get healthy(): boolean {
+    return this.services.every((service) => service.healthy);
+  }
 
-    static parse(json: unknown): z.infer<typeof BackendStatusSchema> {
-        return BackendStatusSchema.parse(json);
-    }
+  static deserialize(value: unknown, path = '$'): BackendStatus {
+    const object = asObject(value, path);
+    return new BackendStatus(
+      asString(required(object, 'version', path), childPath(path, 'version')),
+      asArray(
+        required(object, 'services', path),
+        ServiceStatus.deserialize,
+        childPath(path, 'services'),
+      ),
+    );
+  }
 
-    static deserialize(json: z.infer<typeof BackendStatusSchema>): BackendStatus {
-        return new BackendStatus(
-            json.version,
-            json.services.map(ServiceStatus.deserialize),
-        );
-    }
+  serialize(): unknown {
+    return { version: this.version, services: this.services.map((service) => service.serialize()) };
+  }
 }

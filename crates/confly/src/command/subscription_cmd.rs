@@ -3,11 +3,9 @@ use crate::model::UrlResult;
 use clap::Args;
 use color_eyre::Result;
 use convertor::config::proxy_client::ProxyClient;
-use convertor::core::profile::clash_profile::ClashProfile;
-use convertor::core::profile::surge_profile::SurgeProfile;
-use convertor::core::profile::{Profile, ProfileTrait};
+use convertor::core::{Parse, conversion::convert, profile::ClientProfile};
 use convertor::error::UrlBuilderError;
-use convertor::provider::SubsProvider;
+use convertor::subscription::SubscriptionFetcher;
 use convertor::url::url_builder::UrlBuilder;
 
 #[derive(Default, Debug, Clone, Hash, Args)]
@@ -22,37 +20,28 @@ pub struct SubscriptionCmd {
 }
 
 impl SubscriptionCmd {
-    pub async fn execute(self, config: &CliConfig, subs_provider: &SubsProvider) -> Result<(UrlBuilder, UrlResult)> {
+    pub async fn execute(self, config: &CliConfig, subscription_fetcher: &SubscriptionFetcher) -> Result<(UrlBuilder, UrlResult)> {
         // 1. 构造 URLBuilder
         let url_builder = config.common.create_url_builder(self.client, config.server.clone())?;
 
         // 2. 构造原始订阅地址并获取原始订阅内容
         let original_url = url_builder.build_original_url()?;
-        let raw_profile_content = subs_provider
+        let raw_profile_content = subscription_fetcher
             .get_raw_profile(original_url.try_into()?, &config.common.subscription.headers)
             .await?;
 
-        let mut profile = match self.client {
-            ProxyClient::Surge => Profile::Surge(Box::new(SurgeProfile::parse(raw_profile_content)?)),
-            ProxyClient::Clash => Profile::Clash(Box::new(ClashProfile::parse(raw_profile_content)?)),
-        };
-        profile.convert(&url_builder)?;
+        let document = ClientProfile::parse(&raw_profile_content, self.client)?;
+        let profile = convert(&document, &url_builder)?;
 
         let original_url = url_builder.build_original_url()?;
         let raw_url = url_builder.build_raw_url()?;
         let profile_url = url_builder.build_profile_url()?;
-        let proxy_provider_urls = match &profile {
-            Profile::Surge(_) => vec![],
-            Profile::Clash(profile) => profile
-                .proxy_providers
-                .keys()
-                .map(|name| url_builder.build_proxy_provider_url(name))
-                .collect::<Result<Vec<_>, UrlBuilderError>>()?,
-        };
-        let policies = match &profile {
-            Profile::Surge(profile) => profile.rule_providers.keys().collect::<Vec<_>>(),
-            Profile::Clash(profile) => profile.rule_providers.keys().collect::<Vec<_>>(),
-        };
+        let proxy_provider_urls = profile
+            .proxy_exports
+            .keys()
+            .map(|name| url_builder.build_proxy_provider_url(name))
+            .collect::<Result<Vec<_>, UrlBuilderError>>()?;
+        let policies = profile.rule_exports.keys();
         let rule_provider_urls = policies
             .into_iter()
             .map(|policy| url_builder.build_rule_provider_url(policy))

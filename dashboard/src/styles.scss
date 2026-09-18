@@ -5,6 +5,7 @@
 // custom components at https://material.angular.dev/guide/theming
 @use "@angular/material" as mat;
 @use "./styles/tokens";
+@use "./styles/workbench-ui";
 
 
 $font-stack: "Geist", -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
@@ -215,4 +216,8 @@ code {
         width:     16px;
         height:    16px;
     }
+}
+
+app-plan-board {
+    @include workbench-ui.theme();
 }

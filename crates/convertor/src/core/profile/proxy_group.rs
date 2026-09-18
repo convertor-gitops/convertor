@@ -1,102 +1,78 @@
-use crate::error::ParseError;
+use super::{ExternalResource, ExtraFields, PolicyRef};
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
 
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+/// 一个客户端策略组声明。
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct ProxyGroup {
+    /// 配置中的组名。
     pub name: String,
-
-    #[serde(rename = "type")]
-    pub r#type: ProxyGroupType,
-
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub proxies: Option<Vec<String>>,
-
-    #[serde(rename = "use", default, skip_serializing_if = "Option::is_none")]
-    pub uses: Option<Vec<String>>,
-
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub filter: Option<String>,
-
-    #[serde(rename = "exclude-filter", default, skip_serializing_if = "Option::is_none")]
-    pub exclude_filter: Option<String>,
-
-    #[serde(skip)]
+    /// 组的选择或探测策略。
+    pub strategy: ProxyGroupType,
+    /// 直接节点、其它组和内置动作，保持原有顺序。
+    pub members: Vec<PolicyRef>,
+    /// Mihomo `use` 引用的命名 ProxyProvider。
+    ///
+    /// 该列表与 `members` 分开保存，不虚构客户端并不存在的交错顺序。
+    pub providers: Vec<String>,
+    /// Surge 组内的 `policy-path`。它不属于根级 ProxyProvider。
+    pub policy_path: Option<PolicyPath>,
+    /// 跨客户端可对齐的组参数。
+    pub options: GroupOptions,
+    /// 组声明的行尾注释。
     pub comment: Option<String>,
 }
 
-impl ProxyGroup {
-    pub fn use_proxies(name: String, r#type: ProxyGroupType, proxies: Vec<String>) -> Self {
-        let proxies = Some(proxies);
-        Self {
-            name,
-            r#type,
-            proxies,
-            ..Default::default()
-        }
-    }
-
-    pub fn use_provider(name: String, r#type: ProxyGroupType, uses: Vec<String>, filter: String) -> Self {
-        let uses = Some(uses);
-        let filter = Some(filter);
-        Self {
-            name,
-            r#type,
-            uses,
-            filter,
-            ..Default::default()
-        }
-    }
-
-    pub fn use_provider_with_exclude(name: String, r#type: ProxyGroupType, uses: Vec<String>, filter: String) -> Self {
-        let uses = Some(uses);
-        let exclude_filter = Some(filter);
-        Self {
-            name,
-            r#type,
-            uses,
-            exclude_filter,
-            ..Default::default()
-        }
-    }
-
-    pub fn set_comment(&mut self, comment: Option<String>) {
-        self.comment = comment;
-    }
-}
-
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+/// 首版公共模型支持的策略组类型。
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
 pub enum ProxyGroupType {
-    #[serde(rename = "select")]
-    Select,
     #[default]
-    #[serde(rename = "url-test")]
+    Select,
     UrlTest,
     Smart,
 }
 
 impl ProxyGroupType {
+    /// 返回客户端配置中使用的类型名。
     pub fn as_str(&self) -> &'static str {
         match self {
-            ProxyGroupType::Select => "select",
-            ProxyGroupType::UrlTest => "url-test",
-            ProxyGroupType::Smart => "smart",
+            Self::Select => "select",
+            Self::UrlTest => "url-test",
+            Self::Smart => "smart",
         }
     }
 }
 
-impl FromStr for ProxyGroupType {
-    type Err = ParseError;
+/// Surge 组直接引用的外部节点资源。
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PolicyPath {
+    /// URL 或文件路径。
+    pub resource: ExternalResource,
+    /// Surge `update-interval`，单位为秒。
+    pub update_interval: Option<u64>,
+}
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.to_lowercase().as_str() {
-            "select" => Ok(ProxyGroupType::Select),
-            "url-test" | "test-url" => Ok(ProxyGroupType::UrlTest),
-            "smart" => Ok(ProxyGroupType::Smart),
-            _ => Err(ParseError::ProxyGroup {
-                line: 0,
-                reason: format!("无法识别的策略组类型: {}", s),
-            }),
-        }
-    }
+/// 策略组的可选运行参数。
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct GroupOptions {
+    /// URL 测试地址。
+    pub url: Option<String>,
+    /// 测试间隔，单位为秒。
+    pub interval: Option<u64>,
+    /// 延迟容差，单位为毫秒。
+    pub tolerance: Option<u64>,
+    /// 单次测试超时，单位由客户端语义决定。
+    pub timeout: Option<u64>,
+    /// 是否延迟执行首次健康检查。
+    pub lazy: Option<bool>,
+    /// 可接受的 HTTP 状态表达式。
+    pub expected_status: Option<String>,
+    /// 成员名称包含过滤器。
+    pub filter: Option<String>,
+    /// 成员名称排除过滤器。
+    pub exclude_filter: Option<String>,
+    /// 排除的节点协议类型。
+    pub exclude_types: Vec<String>,
+    /// 尚未显式建模的同格式组参数。
+    pub extra: ExtraFields,
 }

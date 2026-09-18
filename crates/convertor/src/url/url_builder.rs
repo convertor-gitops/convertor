@@ -59,8 +59,7 @@ impl UrlBuilder {
     }
 
     pub fn build_original_url(&self) -> Result<ConvUrl, UrlBuilderError> {
-        let mut url = self.sub_url.clone();
-        url.query_pairs_mut().append_pair("flag", self.client.as_str());
+        let url = self.sub_url.clone();
         ConvUrl::original(url)
             .encrypt(&self.encryptor)
             .map_err(|e| UrlBuilderError::BuildUrl(UrlType::Original, e))

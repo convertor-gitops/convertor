@@ -650,6 +650,7 @@ dependencies = [
  "color-eyre",
  "config",
  "fetcher",
+ "flate2",
  "futures-util",
  "getrandom 0.4.2",
  "headers",

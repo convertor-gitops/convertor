@@ -27,10 +27,11 @@ regex = { workspace = true, features = ["unicode-perl"] }
 uuid = { workspace = true }
 getrandom = { workspace = true, features = ["std"] }
 blake3 = { workspace = true, features = [] }
+flate2 = { workspace = true }
 
 # 异步运行时 / 并发
 futures-util = { workspace = true }
-tokio = { workspace = true, features = ["sync"] }
+tokio = { workspace = true, features = ["sync", "time"] }
 
 # 日志 / 追踪 / 遥测（可选 feature）
 tracing = { workspace = true, features = ["attributes"] }

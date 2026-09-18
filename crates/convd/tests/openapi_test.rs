@@ -28,6 +28,9 @@ async fn exposes_openapi_json_in_debug() -> color_eyre::Result<()> {
         .ok_or_else(|| color_eyre::eyre::eyre!("missing openapi paths"))?;
 
     assert!(paths.contains_key("/api/build-url"));
+    assert!(paths.contains_key("/api/load-source"));
+    assert!(paths.contains_key("/api/evaluate-plan"));
+    assert!(paths.contains_key("/api/decode-plan"));
     assert!(paths.contains_key("/actuator/status"));
     assert!(paths.contains_key("/download") || paths.contains_key("/download/"));
     assert!(paths.contains_key("/subscription/profile"));

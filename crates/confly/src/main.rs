@@ -4,7 +4,7 @@ use confly::command::ConflyCommand;
 use confly::config::CliConfig;
 use convertor::common::clap_style::SONOKAI_TC;
 use convertor::common::once::{init_backtrace, init_base_dir, init_log};
-use convertor::provider::SubsProvider;
+use convertor::subscription::SubscriptionFetcher;
 use std::path::PathBuf;
 
 #[derive(Debug, Parser)]
@@ -38,8 +38,8 @@ async fn main() -> Result<()> {
         }
         ConflyCommand::Subscription(sub_cmd) => {
             let config = CliConfig::search(&base_dir, args.config)?;
-            let subs_provider = SubsProvider::new(None, config.common.redis.as_ref().map(|r| r.prefix.as_str()));
-            let (_url_builder, url_result) = sub_cmd.execute(&config, &subs_provider).await?;
+            let subscription_fetcher = SubscriptionFetcher::new(None, config.common.redis.as_ref().map(|r| r.prefix.as_str()));
+            let (_url_builder, url_result) = sub_cmd.execute(&config, &subscription_fetcher).await?;
             println!("{url_result}");
         }
     }

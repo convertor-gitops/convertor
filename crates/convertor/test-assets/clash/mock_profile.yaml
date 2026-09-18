@@ -46,9 +46,65 @@ proxies:
   - { name: '🇬🇧 英国 01', type: trojan, server: convertor.bppleman.cn, port: 60082, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
   - { name: '🇫🇷 法国 01', type: trojan, server: convertor.bppleman.cn, port: 60138, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
   - { name: '🇩🇪 德国 01', type: trojan, server: convertor.bppleman.cn, port: 60125, password: bppleman_secret, udp: true, sni: g.alicdn.com, skip-cert-verify: true }
+proxy-providers:
+  remote:
+    type: "http"
+    url: "https://example.invalid/proxies.yaml"
+    path: "./cache/remote.yaml"
+    interval: 3600
+    proxy: "DIRECT"
+    size-limit: 1048576
+    header: {"User-Agent":["Mihomo"]}
+    health-check: {"enable":true,"expected-status":"204","interval":300,"url":"https://example.invalid/check"}
+    filter: "HK"
+    exclude-filter: "expired"
+    exclude-type: "ss|http"
+    override: {"udp":true}
+    custom: {"enabled":true}
+  local:
+    type: "file"
+    path: "./proxies.yaml"
+  inline-empty:
+    type: "inline"
+    payload: []
+  inline-nodes:
+    type: "inline"
+    payload: [{"name":"local-socks","port":1080,"server":"127.0.0.1","type":"socks5"}]
+rule-providers:
+  remote-rules:
+    type: "http"
+    url: "https://example.invalid/rules.yaml"
+    path: "./cache/rules.yaml"
+    interval: 3600
+    behavior: "classical"
+    format: "yaml"
+  local-rules:
+    type: "file"
+    path: "./rules.list"
+    behavior: "classical"
+    format: "text"
+  inline-rules:
+    type: "inline"
+    behavior: "classical"
+    format: "yaml"
+    payload: ["DOMAIN-SUFFIX,netflix.com","IP-CIDR,192.0.2.0/24,no-resolve"]
+  domains:
+    type: "inline"
+    behavior: "domain"
+    payload: ["+.example.com"]
+  cidrs:
+    type: "inline"
+    behavior: "ipcidr"
+    payload: ["192.0.2.0/24"]
 proxy-groups:
+  - { name: External, type: select, proxies: [ DIRECT ], use: [ remote, local, inline-nodes ], filter: HK }
   - { name: BosLife, type: select, proxies: [ '剩余流量：43.9 GB', '距离下次重置剩余：15 天', 套餐到期：2026-04-22, '🇭🇰 香港 01', '🇭🇰 香港 02', '🇭🇰 香港 03', '🇭🇰 香港 04', '🇭🇰 香港 05', '🇭🇰 香港 06', '🇭🇰 香港 07', '🇭🇰 香港 08', '🇭🇰 香港 09', '🇭🇰 香港 10', '🇸🇬 新加坡 01', '🇸🇬 新加坡 02', '🇸🇬 新加坡 03', '🇸🇬 新加坡 04', '🇸🇬 新加坡 05', '🇸🇬 新加坡 06', '🏳️‍🌈 台湾 01', '🏳️‍🌈 台湾 02', '🏳️‍🌈 台湾 03', '🏳️‍🌈 台湾 04', '🇯🇵 日本 01', '🇯🇵 日本 02', '🇯🇵 日本 03', '🇯🇵 日本 04', '🇺🇸 美国 01', '🇺🇸 美国 02', '🇺🇸 美国 03', '🇺🇸 美国 04', '🇺🇸 美国 05', '🇺🇸 美国 06', '🇺🇸 美国 07 - OnlyAI', '🇨🇦 加拿大 01', '🇰🇷 韩国 01', '🇬🇧 英国 01', '🇫🇷 法国 01', '🇩🇪 德国 01' ] }
 rules:
+  - "RULE-SET,remote-rules,External"
+  - "RULE-SET,local-rules,External,no-resolve"
+  - "RULE-SET,inline-rules,External"
+  - "RULE-SET,domains,DIRECT"
+  - "RULE-SET,cidrs,DIRECT"
   # Subscription Direct
   - "DOMAIN,1.convertor.bppleman.com,DIRECT"
   - "DOMAIN,2.convertor.bppleman.com,DIRECT"

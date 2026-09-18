@@ -1,0 +1,177 @@
+@use "@angular/material" as mat;
+
+$radius-control: 4px;
+$radius-panel: 8px;
+$radius-surface: 12px;
+
+// Public workbench skin. Keep this scoped to app-plan-board so the legacy
+// dashboard can migrate independently.
+@mixin theme() {
+    --app-radius-xs: #{$radius-control};
+    --app-radius-sm: #{$radius-panel};
+    --app-radius-md: #{$radius-surface};
+    --ui-radius-sm: #{$radius-control};
+    --ui-radius-md: #{$radius-panel};
+    --ui-radius-lg: #{$radius-surface};
+
+    @include mat.form-field-overrides((
+        container-height: 48px,
+        container-vertical-padding: 12px,
+        filled-container-shape: $radius-control,
+        outlined-container-shape: $radius-control,
+        outlined-label-text-size: 14px,
+    ));
+    @include mat.button-overrides((
+        filled-container-shape: $radius-control,
+        outlined-container-shape: $radius-control,
+        protected-container-shape: $radius-control,
+        text-container-shape: $radius-control,
+        tonal-container-shape: $radius-control,
+        filled-horizontal-padding: 16px,
+        filled-touch-target-size: 40px,
+        filled-label-text-size: 14px,
+        filled-container-height: 36px,
+    ));
+    @include mat.expansion-overrides((
+        container-shape: $radius-panel,
+        header-text-size: 14px,
+        header-collapsed-state-height: 48px,
+        header-expanded-state-height: 48px,
+    ));
+    @include mat.sidenav-overrides((
+        container-shape: $radius-surface,
+    ));
+    @include mat.select-overrides((
+        trigger-text-size: 14px,
+    ));
+    @include mat.tabs-overrides((
+        container-height: 40px,
+        active-indicator-height: 2px,
+        label-text-size: 14px,
+        label-text-weight: 500,
+    ));
+    @include mat.checkbox-overrides((
+        state-layer-size: 32px,
+        label-text-size: 14px,
+    ));
+    @include mat.slide-toggle-overrides((
+        track-shape: $radius-control,
+        handle-shape: $radius-control,
+        track-height: 24px,
+        track-width: 42px,
+        state-layer-size: 32px,
+        pressed-handle-size: 20px,
+        with-icon-handle-size: 18px,
+        selected-with-icon-handle-horizontal-margin: 0 calc(42px - 18px - 4px),
+        unselected-with-icon-handle-horizontal-margin: 0 4px,
+    ));
+    @include mat.progress-bar-overrides((
+        active-indicator-height: 4px,
+        track-height: 4px,
+        track-shape: $radius-control,
+    ));
+    @include mat.tree-overrides((
+        node-min-height: 36px,
+        node-text-size: 14px,
+    ));
+
+    // Directive classes are stable public hooks; element selectors keep the
+    // skin active while feature owners adopt the directives incrementally.
+    .ui-button,
+    button[mat-button],
+    button[mat-flat-button],
+    button[mat-stroked-button] {
+        min-width: 0;
+        border-radius: $radius-control;
+    }
+
+    app-ui-close-button .mat-mdc-icon-button .mat-mdc-button-persistent-ripple {
+        border-radius: $radius-control;
+    }
+
+    .ui-button--primary {
+        font-weight: 600;
+    }
+
+    .ui-button--danger,
+    .danger {
+        color: var(--mat-sys-error);
+    }
+
+    mat-drawer {
+        border-radius: $radius-surface 0 0 $radius-surface;
+        overflow-x: hidden;
+    }
+
+    mat-expansion-panel,
+    .ui-panel {
+        border-radius: $radius-panel;
+        overflow: hidden;
+    }
+
+    // Material's fixed collapsed/expanded heights fight wrapped headers in the
+    // narrow result rail. A content-sized header also prevents the 96px -> 48px
+    // jump that looked like a broken accordion toggle.
+    .mat-expansion-panel-header,
+    .mat-expansion-panel-header.mat-expanded {
+        height: auto;
+        min-height: 48px;
+        padding: 10px 16px;
+    }
+
+    .mat-expansion-panel-header .mat-content {
+        min-width: 0;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center;
+        gap: 2px;
+        overflow: hidden;
+    }
+
+    .mat-expansion-panel-header-title,
+    .mat-expansion-panel-header-description {
+        flex: 0 1 auto;
+        min-width: 0;
+        width: 100%;
+        margin-right: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .mat-expansion-panel-header-description {
+        color: var(--app-text-3);
+        font-size: 12px;
+    }
+
+    .mat-expansion-panel-body {
+        min-width: 0;
+    }
+
+    .ui-panel--comfortable .mat-expansion-panel-header,
+    .ui-panel--comfortable .mat-expansion-panel-header.mat-expanded {
+        min-height: 56px;
+        padding-block: 14px;
+    }
+
+    .ui-panel--comfortable .mat-expansion-panel-body {
+        padding-bottom: 20px;
+    }
+
+    // Cards use one quiet outline on every side; hierarchy is expressed by
+    // spacing and nesting rather than accent rails.
+    .predicate.compound,
+    .group-card,
+    .node-row {
+        border-left-width: 1px;
+        border-left-color: var(--app-border, var(--mat-sys-outline-variant));
+    }
+
+    .predicate,
+    .dimension-row,
+    .selector-card,
+    .drop-hint,
+    .graph,
+    .metrics span,
+    .status {
+        border-radius: $radius-panel;
+    }
+}

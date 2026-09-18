@@ -1,11 +1,12 @@
 use crate::server::service::ServiceResult;
 use color_eyre::eyre::eyre;
 use convertor::config::Config;
-use convertor::core::profile::ProfileTrait;
+use convertor::config::proxy_client::ProxyClient;
+use convertor::core::conversion::{ConvertedProfile, convert};
+use convertor::core::format::RulePayload;
+use convertor::core::profile::ClientProfile;
 use convertor::core::profile::policy::Policy;
-use convertor::core::profile::surge_profile::SurgeProfile;
-use convertor::core::renderer::Renderer;
-use convertor::core::renderer::surge_renderer::SurgeRenderer;
+use convertor::core::{Parse, Render};
 use convertor::url::conv_url::UrlType;
 use convertor::url::url_builder::UrlBuilder;
 use moka::future::Cache;
@@ -15,7 +16,7 @@ use tracing::instrument;
 #[derive(Clone)]
 pub struct SurgeService {
     pub config: Arc<Config>,
-    pub profile_cache: Cache<UrlBuilder, SurgeProfile>,
+    pub profile_cache: Cache<UrlBuilder, ConvertedProfile>,
 }
 
 impl SurgeService {
@@ -28,7 +29,10 @@ impl SurgeService {
     #[instrument(skip_all)]
     pub async fn profile(&self, url_builder: UrlBuilder, raw_profile: String) -> ServiceResult<String> {
         let profile = self.try_get_profile(url_builder, raw_profile).await?;
-        let content = SurgeRenderer::render_profile(&profile)?;
+        let content = {
+            let mut content = String::new();
+            profile.document.render(&mut content, ProxyClient::Surge).map(|()| content)
+        }?;
         Ok(content)
     }
 
@@ -45,18 +49,21 @@ impl SurgeService {
     #[instrument(skip_all)]
     pub async fn rule_provider(&self, url_builder: UrlBuilder, raw_profile: String, policy: &Policy) -> ServiceResult<String> {
         let profile = self.try_get_profile(url_builder, raw_profile).await?;
-        let Some(rules) = profile.rule_providers.get(policy) else {
+        let Some(rules) = profile.rule_exports.get(policy) else {
             return Ok(String::new());
         };
-        Ok(SurgeRenderer::render_rule_provider_payload(rules)?)
+        Ok({
+            let mut content = String::new();
+            RulePayload(rules).render(&mut content, ProxyClient::Surge).map(|()| content)
+        }?)
     }
 
-    #[instrument(skip(self))]
-    pub async fn try_get_profile(&self, url_builder: UrlBuilder, raw_profile: String) -> ServiceResult<SurgeProfile> {
+    #[instrument(skip_all)]
+    pub async fn try_get_profile(&self, url_builder: UrlBuilder, raw_profile: String) -> ServiceResult<ConvertedProfile> {
         self.profile_cache
             .try_get_with(url_builder.clone(), async {
-                let mut profile = SurgeProfile::parse(raw_profile.clone())?;
-                profile.convert(&url_builder)?;
+                let document = ClientProfile::parse(&raw_profile, ProxyClient::Surge)?;
+                let profile = convert(&document, &url_builder)?;
                 ServiceResult::<_>::Ok(profile)
             })
             .await

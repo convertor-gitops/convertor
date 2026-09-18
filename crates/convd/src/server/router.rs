@@ -38,7 +38,7 @@ pub fn router(app_state: AppState) -> Router {
     #[cfg(debug_assertions)]
     {
         let (router, openapi) = router.split_for_parts();
-        return router.merge(debug_docs_router(openapi));
+        router.merge(debug_docs_router(openapi))
     }
 
     #[cfg(not(debug_assertions))]

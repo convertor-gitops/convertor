@@ -1,66 +1,40 @@
+use super::ExtraFields;
 use serde::{Deserialize, Serialize};
 
-// 临时兼容 BosLife 当前订阅命名；供应商调整节点编号后需同步更新
-const BOSLIFE_UNNAMED_HOME_BROADBAND_NAMES: [&str; 4] = ["🇺🇸 美国 07", "🇺🇸 美国 08", "🇺🇸 美国 09", "🇺🇸 美国 10"];
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// 一个可由 Surge 和 Mihomo 共同表达的代理节点。
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct Proxy {
+    /// 配置中的节点名称。
     pub name: String,
-    #[serde(rename = "type")]
-    pub r#type: String,
+    /// 标准化的小写协议名，例如 `trojan`、`ss`、`socks5`。
+    pub protocol: String,
+    /// 远端服务器地址。
     pub server: String,
+    /// 远端服务器端口。
     pub port: u16,
-    pub password: String,
-    pub udp: Option<bool>,
-    pub tfo: Option<bool>,
+    /// 认证密码。`None` 表示原配置未声明，区别于显式空字符串。
+    pub password: Option<String>,
+    /// 加密套件；仅在对应协议支持时有意义。
     pub cipher: Option<String>,
+    /// TLS SNI。
     pub sni: Option<String>,
-    #[serde(rename = "skip-cert-verify", default)]
+    /// 是否启用 UDP。
+    pub udp: Option<bool>,
+    /// 是否启用 TCP Fast Open。
+    pub tfo: Option<bool>,
+    /// 是否跳过证书校验。
     pub skip_cert_verify: Option<bool>,
-    #[serde(skip)]
+    /// Plan 标注产生或原配置携带的节点标签。
+    pub tags: Vec<String>,
+    /// 当前公共模型未显式建模的同格式节点参数。
+    pub extra: ExtraFields,
+    /// 节点行尾注释。
     pub comment: Option<String>,
 }
 
 impl Proxy {
-    pub fn set_comment(&mut self, comment: Option<String>) {
-        self.comment = comment;
-    }
-
-    pub fn is_home_broadband(&self) -> bool {
-        let name = self.name.to_lowercase();
-        BOSLIFE_UNNAMED_HOME_BROADBAND_NAMES.contains(&name.trim())
-            || ["home", "broadband", "bell", "家宽", "宽带"]
-                .iter()
-                .any(|keyword| name.contains(keyword))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn proxy(name: &str) -> Proxy {
-        Proxy {
-            name: name.to_string(),
-            r#type: "trojan".to_string(),
-            server: "example.com".to_string(),
-            port: 443,
-            password: "password".to_string(),
-            udp: None,
-            tfo: None,
-            cipher: None,
-            sni: None,
-            skip_cert_verify: None,
-            comment: None,
-        }
-    }
-
-    #[test]
-    fn detects_current_boslife_home_broadband_names() {
-        for name in BOSLIFE_UNNAMED_HOME_BROADBAND_NAMES {
-            assert!(proxy(name).is_home_broadband(), "{name}");
-        }
-        assert!(!proxy("🇺🇸 美国 06").is_home_broadband());
-        assert!(!proxy("🇺🇸 美国 11").is_home_broadband());
+    /// 当前旧转换内核能够安全处理的协议集合。
+    pub fn supports_protocol(s: &str) -> bool {
+        crate::core::legacy::profile::proxy::Proxy::supports_protocol(s)
     }
 }

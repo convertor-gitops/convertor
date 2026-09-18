@@ -5,7 +5,7 @@ use crate::server::model::UrlResult;
 use crate::server::openapi::{ConvQueryParams, EmptyApiResponseDoc, UrlResultApiResponseDoc};
 use crate::server::response::{ApiResponse, RequestBody};
 use crate::server::router::helper::{build_original_url, gen_url_builder, get_original_profile};
-use axum::extract::State;
+use axum::extract::{DefaultBodyLimit, State};
 use color_eyre::eyre::WrapErr;
 use convertor::url::conv_query::ConvQuery;
 use serde::Serialize;
@@ -14,11 +14,19 @@ use std::sync::Arc;
 use tracing::instrument;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
+mod model;
+mod workbench;
+
 pub fn router() -> OpenApiRouter<Arc<AppState>> {
     OpenApiRouter::new()
         .routes(routes!(build_url))
         .routes(routes!(flush_cache))
         .routes(routes!(health))
+        .routes(routes!(workbench::load_source))
+        .routes(routes!(workbench::evaluate_plan))
+        .routes(routes!(workbench::build_plan_url))
+        .routes(routes!(workbench::decode_plan_url))
+        .layer(DefaultBodyLimit::max(64 * 1024 * 1024))
 }
 
 async fn into_api_response<T, F, Fut>(request: RequestBody, f: F) -> ApiResponse<T>
@@ -99,7 +107,7 @@ async fn flush_cache(
         let url_builder = gen_url_builder(state.clone(), query).map_err(|r| AppError::new(AppStatus::URL_BUILDER, r))?;
         let sub_url: url::Url = build_original_url(&url_builder).map_err(|r| AppError::new(AppStatus::URL_BUILDER, r))?;
         state
-            .provider
+            .subscription_fetcher
             .flush_cache(sub_url)
             .await
             .wrap_err("无法清除缓存")

@@ -5,6 +5,8 @@ use thiserror::Error;
 /// 所有解析失败场景的统一错误
 #[derive(Debug, Error)]
 pub enum ParseError {
+    #[error("[Parse] {0}")]
+    Document(String),
     #[error("[Parse] 缺少必要配置段: {0}")]
     MissingSection(&'static str),
 
@@ -29,7 +31,9 @@ pub enum ParseError {
 
 #[derive(Debug, Error)]
 pub enum ConvertError {
-    #[error("[Convert] 无法将: {0} 转换为 ProviderRule")]
+    #[error("[Convert] {0}")]
+    Unsupported(String),
+    #[error("[Convert] 无法将: {0:?} 转换为 ProviderRule")]
     IntoProviderRule(Rule),
 
     #[error("[Convert] 转换阶段构建或处理 URL 失败")]

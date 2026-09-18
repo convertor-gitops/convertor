@@ -42,4 +42,15 @@ impl RequestBody {
             headers,
         }
     }
+
+    /// Remove query parameters, bodies and headers before returning request context to clients.
+    pub fn redacted(&self) -> Self {
+        Self {
+            method: self.method.clone(),
+            scheme: String::new(),
+            host: String::new(),
+            uri: self.uri.split('?').next().unwrap_or(&self.uri).to_owned(),
+            headers: Headers::from([] as [(String, String); 0]),
+        }
+    }
 }

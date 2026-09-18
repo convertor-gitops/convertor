@@ -1,0 +1,88 @@
+<div class="row">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic"
+    ><mat-label>挑选方式</mat-label>
+    <mat-select [ngModel]="selector().kind" (ngModelChange)="changeKind($event)">
+      @for (kind of kinds; track kind[0]) {
+        <mat-option [value]="kind[0]">{{ kind[1] }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  @if (nodeSelection() || sourceSelection(); as selection) {
+    <mat-form-field appearance="outline" subscriptSizing="dynamic"
+      ><mat-label>来源</mat-label>
+      <mat-select [ngModel]="selection.source" (ngModelChange)="changeSource($event)">
+        @for (source of sources(); track source.id) {
+          <mat-option [value]="source.id">{{ source.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  }
+</div>
+@if (nodeSelection(); as selection) {
+  <app-predicate-editor
+    domain="node"
+    [predicate]="selection.predicate"
+    (predicateChange)="changePredicate($event)"
+  />
+}
+@if (sourceSelection(); as selection) {
+  @if (selector().kind === 'nodes_from_groups') {
+    <mat-form-field appearance="outline" subscriptSizing="dynamic"
+      ><mat-label>展开深度</mat-label
+      ><mat-select [ngModel]="depth()" (ngModelChange)="changeDepth($event)"
+        ><mat-option value="Direct">仅直接节点</mat-option
+        ><mat-option value="Recursive">递归展开子组</mat-option></mat-select
+      ></mat-form-field
+    >
+  }
+  <app-predicate-editor
+    domain="source-group"
+    [predicate]="selection.predicate"
+    (predicateChange)="changePredicate($event)"
+  />
+}
+@if (baseSelection(); as selection) {
+  <div class="row">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic"
+      ><mat-label>自动组策略</mat-label
+      ><mat-select [ngModel]="selection.policy" (ngModelChange)="changeBase('policy', $event)">
+        @for (policy of policies(); track policy.id) {
+          <mat-option [value]="policy.id">策略 {{ policy.id }}</mat-option>
+        }
+      </mat-select></mat-form-field
+    >
+    <mat-form-field appearance="outline" subscriptSizing="dynamic"
+      ><mat-label>选择层级</mat-label
+      ><mat-select [ngModel]="selection.scope" (ngModelChange)="changeBase('scope', $event)"
+        ><mat-option value="Roots">顶层组</mat-option
+        ><mat-option value="All">所有层级</mat-option></mat-select
+      ></mat-form-field
+    >
+  </div>
+  <app-predicate-editor
+    domain="base-group"
+    [predicate]="selection.predicate"
+    (predicateChange)="changePredicate($event)"
+  />
+}
+@if (selector().kind === 'group') {
+  <mat-form-field appearance="outline" subscriptSizing="dynamic"
+    ><mat-label>引用节点组</mat-label
+    ><mat-select [ngModel]="groupValue()" (ngModelChange)="changeGroup($event)">
+      @for (group of groups(); track group.id) {
+        @if (group.id !== owner()) {
+          <mat-option [value]="group.id">{{ group.name }}</mat-option>
+        }
+      }
+    </mat-select></mat-form-field
+  >
+}
+@if (selector().kind === 'builtin') {
+  <mat-form-field appearance="outline" subscriptSizing="dynamic"
+    ><mat-label>动作</mat-label
+    ><mat-select [ngModel]="builtinValue()" (ngModelChange)="changeBuiltin($event)"
+      ><mat-option value="Direct">DIRECT</mat-option
+      ><mat-option value="Reject">REJECT</mat-option></mat-select
+    ></mat-form-field
+  >
+}

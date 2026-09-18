@@ -3,8 +3,8 @@ pub mod config;
 pub mod core;
 pub mod env;
 pub mod error;
-pub mod provider;
 pub mod result;
+pub mod subscription;
 pub mod url;
 
 pub mod telemetry {

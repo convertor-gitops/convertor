@@ -1,11 +1,10 @@
 use convertor::common::once::{init_backtrace, init_base_dir};
 use convertor::config::Config;
 use convertor::config::proxy_client::ProxyClient;
-use convertor::core::profile::ProfileTrait;
-use convertor::core::profile::surge_profile::SurgeProfile;
-use convertor::core::renderer::Renderer;
-use convertor::core::renderer::surge_renderer::SurgeRenderer;
-use convertor::provider::SubsProvider;
+use convertor::core::Render;
+use convertor::core::profile::ClientProfile;
+use convertor::core::{Parse, conversion::convert};
+use convertor::subscription::SubscriptionFetcher;
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> color_eyre::Result<()> {
@@ -19,7 +18,7 @@ async fn main() -> color_eyre::Result<()> {
     // 搜索可用配置文件
     let config: Config = Config::search(&base_dir, Option::<&str>::None)?;
     // 创建订阅供应商实例
-    let provider = SubsProvider::new(None, config.redis.as_ref().map(|r| r.prefix.as_str()));
+    let provider = SubscriptionFetcher::new(None, config.redis.as_ref().map(|r| r.prefix.as_str()));
     // 定义服务器访问 URI
     let server: url::Url = "http://127.0.0.1:8080".parse()?;
     // 创建 UrlBuilder 对象, 该 UrlBuilder 可用于创建适用于 Surge 的且使用 BosLife 订阅的 URL
@@ -31,17 +30,20 @@ async fn main() -> color_eyre::Result<()> {
         .get_raw_profile(sub_url, &[("User-Agent", "Surge Mac/8310")].into())
         .await?;
     // 解析原始配置文件内容为 SurgeProfile 对象
-    let mut profile = SurgeProfile::parse(raw_sub_content)?;
+    let profile = ClientProfile::parse(&raw_sub_content, ProxyClient::Surge)?;
 
     // 转换 SurgeProfile 对象
     // 传入 UrlBuilder 对象有两个作用
     // - 用于生成 Surge 配置的托管链接
     // - 用于生成 Surge 规则集的托管链接
     // 二者均会指向 convertor 所在服务器
-    profile.convert(&url_builder)?;
+    let profile = convert(&profile, &url_builder)?;
 
     // 使用渲染器将 SurgeProfile 对象转换为字符串格式
-    let converted = SurgeRenderer::render_profile(&profile)?;
+    let converted = {
+        let mut content = String::new();
+        profile.document.render(&mut content, ProxyClient::Surge).map(|()| content)
+    }?;
     println!("{}", converted);
 
     Ok(())

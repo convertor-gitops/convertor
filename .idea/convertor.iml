@@ -25,6 +25,7 @@
       <sourceFolder url="file://$MODULE_DIR$/crates/builder/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/fetcher/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/fetcher/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/convertor/examples" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/test-assets/cache" />
       <excludeFolder url="file://$MODULE_DIR$/test-assets/logs" />

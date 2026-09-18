@@ -104,11 +104,11 @@ fn mock_profile(client: ProxyClient, sub_host: impl AsRef<str>) -> String {
     let raw_profile = match client {
         ProxyClient::Surge => include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../convertor/test-assets/surge/mock_profile.conf"
+            "/../convertor/test-assets/surge/conversion_profile.conf"
         )),
         ProxyClient::Clash => include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../convertor/test-assets/clash/mock_profile.yaml"
+            "/../convertor/test-assets/clash/conversion_profile.yaml"
         )),
     };
     raw_profile
@@ -137,7 +137,8 @@ where
 {
     let ServerContext { router, app, .. } = server_context;
     // 下面的 server 随便写一个就行
-    let url_builder = app.config.create_url_builder(client, "http://127.0.0.1:8080".parse()?)?;
+    let mut url_builder = app.config.create_url_builder(client, "http://127.0.0.1:8080".parse()?)?;
+    url_builder.sub_url.query_pairs_mut().append_pair("flag", client.as_str());
     let conv_url = build_url(&url_builder)?;
 
     let request = Request::builder()
@@ -156,10 +157,11 @@ where
 fn normalize_response(url_builder: &UrlBuilder, raw: impl AsRef<str>) -> Result<String> {
     let sub_url = &url_builder.sub_url;
     let raw = raw.as_ref().replace(&sub_url.host_port().unwrap(), sub_url.host_str().unwrap());
-    let sub_url_regex = Regex::new(r"sub_url=[^\s&]*")?;
+    let sub_url_regex = Regex::new(r#"sub_url=[^\s&"',]*"#)?;
     let mut sub_url = url_builder.sub_url.clone();
     sub_url.set_port(None).unwrap();
-    let replacement = format!("sub_url={}", sub_url);
+    let encoded = url::form_urlencoded::byte_serialize(sub_url.as_str().as_bytes()).collect::<String>();
+    let replacement = format!("sub_url={encoded}");
     let normalized = sub_url_regex.replace_all(raw.as_ref(), regex::NoExpand(&replacement)).into_owned();
     Ok(normalized)
 }

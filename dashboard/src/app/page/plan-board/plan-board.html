@@ -1,0 +1,507 @@
+<mat-drawer-container class="shell" autosize>
+  <mat-drawer #drawer position="end" mode="over">
+    <app-source-manager (closeRequested)="drawer.close()" />
+  </mat-drawer>
+
+  <mat-drawer-content>
+    <header class="topbar">
+      <div class="brand">
+        <strong>Convertor</strong><span>PlanBoard · v{{ metadata.version }}</span>
+      </div>
+      <div class="top-actions">
+        @if (board.previewStale()) {
+          <span class="stale">预览待更新</span>
+        }
+        <button mat-stroked-button type="button" (click)="drawer.open()">管理来源</button>
+      </div>
+    </header>
+
+    @if (board.error() || operationError()) {
+      <div class="error-banner">
+        <span>{{ operationError() || board.error() }}</span>
+        <button mat-button type="button" (click)="operationError.set(null); board.clearError()">
+          关闭
+        </button>
+      </div>
+    }
+
+    <main class="workspace">
+      <aside class="left-pane" id="input-node-browser">
+        @if (focusedNodeName(); as nodeName) {
+          <div class="focus-banner">
+            <span>已定位节点：{{ nodeName }}</span
+            ><button mat-button type="button" (click)="clearNodeFocus()">清除定位</button>
+          </div>
+        }
+        <app-node-browser
+          [nodes]="nodes()"
+          [highlighted]="highlighted()"
+          [dropTargets]="dropTargets()"
+          (createGroup)="createGroup($event)"
+          (focusNode)="focusResource($event)"
+        />
+      </aside>
+
+      <section class="center-pane">
+        <mat-tab-group
+          animationDuration="150ms"
+          preserveContent
+          [selectedIndex]="centerTab()"
+          (selectedIndexChange)="centerTab.set($event)"
+        >
+          <mat-tab label="自动组策略">
+            <div class="tab-toolbar">
+              <p>按层级从输入节点生成基础组树。</p>
+              <button mat-flat-button type="button" (click)="addPolicy()">添加策略</button>
+            </div>
+            <div class="editor-list">
+              @for (policy of board.plan().grouping_policies; track policy.id) {
+                <mat-expansion-panel
+                  [id]="'policy-' + policy.id"
+                  [expanded]="expandedPolicyId() === policy.id"
+                  (opened)="expandedPolicyId.set(policy.id)"
+                >
+                  <mat-expansion-panel-header>
+                    <mat-panel-title>自动组策略 #{{ policy.id }}</mat-panel-title>
+                    <mat-panel-description
+                      >{{ policy.group_by.length }} 个分组层级</mat-panel-description
+                    >
+                  </mat-expansion-panel-header>
+                  <app-strategy-editor
+                    [strategy]="policy.strategy"
+                    (strategyChange)="setPolicyStrategy(policy.id, $event)"
+                  />
+                  <div class="dimension-list">
+                    @for (dimension of policy.group_by; track $index; let index = $index) {
+                      <div class="dimension-row">
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                          <mat-label>第 {{ index + 1 }} 层</mat-label>
+                          <mat-select
+                            [ngModel]="dimension.kind"
+                            (ngModelChange)="changeDimension(policy.id, index, $event)"
+                          >
+                            <mat-option value="region">地区</mat-option
+                            ><mat-option value="source">来源</mat-option>
+                            <mat-option value="protocol">协议</mat-option
+                            ><mat-option value="has_tag">标签</mat-option>
+                          </mat-select>
+                        </mat-form-field>
+                        @if (dimension.kind === 'has_tag') {
+                          <mat-form-field appearance="outline" subscriptSizing="dynamic"
+                            ><mat-label>标签名</mat-label>
+                            <input
+                              matInput
+                              [ngModel]="dimensionTag(dimension)"
+                              (ngModelChange)="setDimensionTag(policy.id, index, $event)"
+                            />
+                          </mat-form-field>
+                        }
+                        <button
+                          mat-button
+                          type="button"
+                          [disabled]="index === 0"
+                          (click)="moveDimension(policy.id, index, -1)"
+                        >
+                          上移
+                        </button>
+                        <button
+                          mat-button
+                          type="button"
+                          [disabled]="index === policy.group_by.length - 1"
+                          (click)="moveDimension(policy.id, index, 1)"
+                        >
+                          下移
+                        </button>
+                        <button
+                          mat-button
+                          class="danger"
+                          type="button"
+                          (click)="removeDimension(policy.id, index)"
+                        >
+                          删除
+                        </button>
+                        <button
+                          mat-button
+                          type="button"
+                          (click)="
+                            focusPath('grouping_policies/' + policy.id + '/depth/' + (index + 1))
+                          "
+                        >
+                          预览命中
+                        </button>
+                      </div>
+                    }
+                  </div>
+                  <div class="panel-actions">
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic"
+                      ><mat-label>添加分组层级</mat-label>
+                      <mat-select
+                        (selectionChange)="
+                          addDimension(policy.id, $event.value); $event.source.value = null
+                        "
+                      >
+                        <mat-option value="region">地区</mat-option
+                        ><mat-option value="source">来源</mat-option>
+                        <mat-option value="protocol">协议</mat-option
+                        ><mat-option value="has_tag">标签</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                    <button mat-stroked-button type="button" (click)="wrapPolicy(policy)">
+                      创建输出包装组
+                    </button>
+                    <button
+                      mat-button
+                      class="danger"
+                      type="button"
+                      (click)="removePolicy(policy.id)"
+                    >
+                      删除策略
+                    </button>
+                  </div>
+                </mat-expansion-panel>
+              } @empty {
+                <div class="empty">添加自动组策略，按地区、来源、协议或标签生成组树。</div>
+              }
+            </div>
+          </mat-tab>
+
+          <mat-tab label="节点组">
+            <div class="tab-toolbar">
+              <p>组合节点、原始组、自动组或其他节点组。</p>
+              <button mat-flat-button type="button" (click)="addGroup()">添加节点组</button>
+            </div>
+            <div class="editor-list">
+              @for (group of board.plan().groups; track group.id) {
+                <mat-expansion-panel
+                  [expanded]="expandedGroupId() === group.id"
+                  (opened)="expandedGroupId.set(group.id)"
+                  cdkDropList
+                  [id]="groupDropId(group.id)"
+                  [cdkDropListConnectedTo]="['input-nodes']"
+                  [cdkDropListSortingDisabled]="true"
+                  [cdkDropListDisabled]="!acceptsPickedNodes(group)"
+                  (cdkDropListDropped)="dropNodes(group.id, $event)"
+                >
+                  <mat-expansion-panel-header
+                    ><mat-panel-title>{{ group.name }}</mat-panel-title
+                    ><mat-panel-description
+                      >{{ group.member_selectors.length }} 个成员选择器</mat-panel-description
+                    ></mat-expansion-panel-header
+                  >
+                  <div class="group-head">
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic"
+                      ><mat-label>组名</mat-label
+                      ><input
+                        matInput
+                        [ngModel]="group.name"
+                        (ngModelChange)="setGroupName(group.id, $event)"
+                    /></mat-form-field>
+                    <app-strategy-editor
+                      [strategy]="group.strategy"
+                      (strategyChange)="setGroupStrategy(group.id, $event)"
+                    />
+                    <mat-checkbox
+                      [checked]="board.plan().output.roots.includes(group.id)"
+                      (change)="toggleRoot(group.id, $event.checked)"
+                      >输出根组</mat-checkbox
+                    >
+                  </div>
+                  @if (!acceptsPickedNodes(group)) {
+                    <p class="drop-hint">
+                      该组含条件或组引用，请使用成员选择器编辑；拖入节点已禁用。
+                    </p>
+                  }
+                  <div class="selector-list">
+                    @for (selector of group.member_selectors; track $index; let index = $index) {
+                      <article
+                        class="selector-card"
+                        [id]="'selector-' + group.id + '-' + index"
+                        [class.focused]="
+                          focusedPath() === 'custom/' + group.id + '/member_selectors/' + index
+                        "
+                      >
+                        <app-member-editor
+                          [selector]="selector"
+                          [sources]="board.plan().sources"
+                          [groups]="board.plan().groups"
+                          [policies]="board.plan().grouping_policies"
+                          [owner]="group.id"
+                          (selectorChange)="setSelector(group.id, index, $event)"
+                        />
+                        <div class="row-actions">
+                          <button
+                            mat-button
+                            type="button"
+                            (click)="focusPath('custom/' + group.id + '/member_selectors/' + index)"
+                          >
+                            预览命中
+                          </button>
+                          <button
+                            mat-button
+                            [disabled]="index === 0"
+                            (click)="moveSelector(group.id, index, -1)"
+                          >
+                            上移</button
+                          ><button
+                            mat-button
+                            [disabled]="index === group.member_selectors.length - 1"
+                            (click)="moveSelector(group.id, index, 1)"
+                          >
+                            下移</button
+                          ><button
+                            mat-button
+                            class="danger"
+                            (click)="removeSelector(group.id, index)"
+                          >
+                            删除
+                          </button>
+                        </div>
+                      </article>
+                    }
+                  </div>
+                  <div class="panel-actions">
+                    <button mat-stroked-button type="button" (click)="addSelector(group.id)">
+                      添加成员选择器
+                    </button>
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic"
+                      ><mat-label>空组处理</mat-label
+                      ><mat-select
+                        [ngModel]="emptyPolicyValue(group)"
+                        (ngModelChange)="setEmptyPolicy(group.id, $event)"
+                        ><mat-option value="error">报告错误</mat-option
+                        ><mat-option value="builtin:Direct">使用 DIRECT</mat-option
+                        ><mat-option value="builtin:Reject">使用 REJECT</mat-option>
+                        @for (fallback of board.plan().groups; track fallback.id) {
+                          @if (fallback.id !== group.id) {
+                            <mat-option [value]="'group:' + fallback.id"
+                              >使用 {{ fallback.name }}</mat-option
+                            >
+                          }
+                        }
+                      </mat-select></mat-form-field
+                    >
+                    <button mat-button class="danger" type="button" (click)="removeGroup(group.id)">
+                      删除节点组
+                    </button>
+                  </div>
+                </mat-expansion-panel>
+              } @empty {
+                <div class="empty">从左侧选择节点创建组，或添加一个空节点组。</div>
+              }
+            </div>
+          </mat-tab>
+
+          <mat-tab label="节点标签">
+            <div class="tab-toolbar">
+              <p>同一标签可以由多个来源和条件独立赋予，不级联修改其他标签。</p>
+              <button
+                mat-flat-button
+                type="button"
+                [disabled]="!board.plan().sources.length"
+                (click)="addTag()"
+              >
+                添加标签
+              </button>
+            </div>
+            <div class="editor-list">
+              @for (container of tags(); track container.tag) {
+                <mat-expansion-panel
+                  [attr.id]="tagPanelId(container.tag)"
+                  [expanded]="focusedTag() === container.tag"
+                  (opened)="focusedTag.set(container.tag)"
+                >
+                  <mat-expansion-panel-header
+                    ><mat-panel-title>{{ container.tag }}</mat-panel-title
+                    ><mat-panel-description
+                      >{{ container.rows.length }} 个来源条件</mat-panel-description
+                    ></mat-expansion-panel-header
+                  >
+                  <div class="tag-name-row">
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic"
+                      ><mat-label>标签名</mat-label
+                      ><input
+                        matInput
+                        [ngModel]="tagDraft(container.tag)"
+                        (ngModelChange)="setTagDraft(container.tag, $event)"
+                    /></mat-form-field>
+                    <button
+                      mat-stroked-button
+                      type="button"
+                      [disabled]="
+                        !tagDraft(container.tag).trim() ||
+                        tagDraft(container.tag).trim() === container.tag
+                      "
+                      (click)="renameTag(container.tag, tagDraft(container.tag))"
+                    >
+                      保存标签名
+                    </button>
+                  </div>
+                  @for (row of container.rows; track row.source.id + ':' + row.annotationIndex) {
+                    <article class="selector-card">
+                      <div class="selector-title">
+                        <strong>{{ row.source.name }}</strong
+                        ><button
+                          mat-button
+                          type="button"
+                          (click)="
+                            focusPath(
+                              'source/' + row.source.id + '/annotations/' + row.annotationIndex
+                            )
+                          "
+                        >
+                          预览命中</button
+                        ><button
+                          mat-button
+                          class="danger"
+                          (click)="removeTagSelector(container.tag, row)"
+                        >
+                          移除此标签条件
+                        </button>
+                      </div>
+                      <app-predicate-editor
+                        domain="node"
+                        [predicate]="row.predicate"
+                        (predicateChange)="updateTagPredicate(container.tag, row, $event)"
+                      />
+                    </article>
+                  }
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic"
+                    ><mat-label>添加来源条件</mat-label
+                    ><mat-select
+                      (selectionChange)="
+                        addTagSelector(container.tag, $event.value); $event.source.value = null
+                      "
+                    >
+                      @for (source of board.plan().sources; track source.id) {
+                        <mat-option [value]="source.id">{{ source.name }}</mat-option>
+                      }
+                    </mat-select></mat-form-field
+                  >
+                </mat-expansion-panel>
+              } @empty {
+                <div class="empty">添加标签后，为各来源配置节点匹配条件。</div>
+              }
+            </div>
+          </mat-tab>
+        </mat-tab-group>
+
+        <mat-accordion class="tools">
+          <mat-expansion-panel>
+            <mat-expansion-panel-header
+              ><mat-panel-title>输出与订阅工具</mat-panel-title
+              ><mat-panel-description
+                >根组、兜底、URL 恢复与本地注入</mat-panel-description
+              ></mat-expansion-panel-header
+            >
+            <div class="tool-grid">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic"
+                ><mat-label>客户端设置来源</mat-label
+                ><mat-select
+                  [ngModel]="board.plan().output.settings_source"
+                  (ngModelChange)="setSettingsSource($event)"
+                >
+                  @for (source of board.plan().sources; track source.id) {
+                    <mat-option [value]="source.id">{{ source.name }}</mat-option>
+                  }
+                </mat-select></mat-form-field
+              >
+              <mat-form-field appearance="outline" subscriptSizing="dynamic"
+                ><mat-label>唯一兜底</mat-label
+                ><mat-select [ngModel]="fallbackValue()" (ngModelChange)="setFallback($event)"
+                  ><mat-option value="builtin:Direct">DIRECT</mat-option
+                  ><mat-option value="builtin:Reject">REJECT</mat-option>
+                  @for (group of board.plan().groups; track group.id) {
+                    <mat-option [value]="'group:' + group.id">{{ group.name }}</mat-option>
+                  }
+                </mat-select></mat-form-field
+              >
+              <button
+                mat-flat-button
+                type="button"
+                [disabled]="!board.canBuildUrl()"
+                (click)="board.buildUrl()"
+              >
+                {{ board.building() ? '生成中…' : '生成订阅 URL' }}
+              </button>
+              @if (board.subscriptionUrl(); as url) {
+                <div class="url wide">
+                  <code>{{ url }}</code
+                  ><app-copy-action [value]="url" />
+                </div>
+              }
+              <mat-form-field class="wide" appearance="outline" subscriptSizing="dynamic"
+                ><mat-label>从订阅 URL 恢复方案</mat-label
+                ><input matInput [ngModel]="restoreUrl()" (ngModelChange)="restoreUrl.set($event)"
+              /></mat-form-field>
+              <button
+                mat-stroked-button
+                type="button"
+                [disabled]="board.restoring() || !restoreUrl().trim()"
+                (click)="restore()"
+              >
+                恢复方案
+              </button>
+              <button mat-button type="button" (click)="board.restoreDraft()">恢复本地草稿</button
+              ><button mat-button class="danger" type="button" (click)="board.clearDraft()">
+                清空草稿
+              </button>
+              @if (board.plan().client === 'Surge') {
+                <button
+                  mat-stroked-button
+                  type="button"
+                  [disabled]="!localFs.supported"
+                  (click)="pickLocalDirectory()"
+                >
+                  选择 Surge 配置目录
+                </button>
+                @if (localBinding(); as binding) {
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic"
+                    ><mat-label>主配置文件</mat-label
+                    ><mat-select
+                      [ngModel]="binding.mainProfile ?? ''"
+                      (ngModelChange)="setLocalMainFile($event)"
+                    >
+                      @for (file of localFiles(); track file) {
+                        <mat-option [value]="file">{{ file }}</mat-option>
+                      }
+                    </mat-select></mat-form-field
+                  ><button
+                    mat-stroked-button
+                    [disabled]="!board.subscriptionUrl() || !binding.mainProfile"
+                    (click)="previewLocalInjection()"
+                  >
+                    预览本地注入</button
+                  ><button
+                    mat-flat-button
+                    [disabled]="!localPreview()"
+                    (click)="applyLocalInjection()"
+                  >
+                    写入主配置
+                  </button>
+                }
+              }
+              @if (localMessage()) {
+                <p class="wide">{{ localMessage() }}</p>
+              }
+              @if (localPreview()) {
+                <pre class="wide local-preview">{{ localPreview() }}</pre>
+              }
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </section>
+
+      <aside class="right-pane">
+        <app-result-preview
+          [report]="board.report()"
+          [rendered]="board.renderedContent()"
+          [stale]="board.previewStale()"
+          [evaluating]="board.evaluating()"
+          [highlighted]="highlighted()"
+          (resourceFocus)="focusResource($event)"
+          (pathFocus)="focusPath($event)"
+        />
+      </aside>
+    </main>
+  </mat-drawer-content>
+</mat-drawer-container>

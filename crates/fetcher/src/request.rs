@@ -25,6 +25,8 @@ pub struct FetchRequest {
     pub method: Method,
     pub url: Url,
     pub headers: HashMap<String, String>,
+    /// 精确请求头覆盖；支持同名多值，优先于简易字符串 headers。
+    pub header_map: reqwest::header::HeaderMap,
     pub body: Option<FetchBody>,
 }
 
@@ -35,11 +37,17 @@ impl FetchRequest {
             url,
             headers: HashMap::new(),
             body: None,
+            header_map: Default::default(),
         }
     }
 
     pub fn with_headers(mut self, headers: HashMap<String, String>) -> Self {
         self.headers = headers;
+        self
+    }
+
+    pub fn with_header_map(mut self, headers: reqwest::header::HeaderMap) -> Self {
+        self.header_map = headers;
         self
     }
 

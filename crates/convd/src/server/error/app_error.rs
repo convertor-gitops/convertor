@@ -80,6 +80,21 @@ impl AppStatus {
         code: 1010,
         status: "NO_REDIS_ERROR",
     };
+
+    pub const SOURCE_LOAD: Self = Self {
+        code: 1100,
+        status: "SOURCE_LOAD_ERROR",
+    };
+
+    pub const PLAN_EVALUATION: Self = Self {
+        code: 1101,
+        status: "PLAN_EVALUATION_ERROR",
+    };
+
+    pub const PLAN_CODEC: Self = Self {
+        code: 1102,
+        status: "PLAN_CODEC_ERROR",
+    };
 }
 
 impl Default for AppStatus {

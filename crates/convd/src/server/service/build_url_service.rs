@@ -3,7 +3,6 @@ use crate::server::model::UrlResult;
 use crate::server::service::ServiceResult;
 use convertor::config::Config;
 use convertor::config::proxy_client::ProxyClient;
-use convertor::core::profile::Profile;
 use convertor::core::profile::clash_profile::ClashProfile;
 use convertor::url::url_builder::UrlBuilder;
 use moka::future::Cache;
@@ -32,28 +31,12 @@ impl BuildUrlService {
         let profile_url = url_builder.build_profile_url().map_err(Box::new)?;
 
         let profile = match client {
-            ProxyClient::Surge => {
-                let profile = state.surge_service.try_get_profile(url_builder.clone(), raw_profile).await?;
-                Profile::Surge(Box::new(profile))
-            }
-            ProxyClient::Clash => {
-                let profile = state.clash_service.try_get_profile(url_builder.clone(), raw_profile).await?;
-                Profile::Clash(Box::new(profile))
-            }
+            ProxyClient::Surge => state.surge_service.try_get_profile(url_builder.clone(), raw_profile).await?,
+            ProxyClient::Clash => state.clash_service.try_get_profile(url_builder.clone(), raw_profile).await?,
         };
 
-        let (proxy_provider_names, policies) = match &profile {
-            Profile::Surge(surge) => {
-                let proxy_provider_names = vec![];
-                let policies = surge.rule_providers.keys().collect::<Vec<_>>();
-                (proxy_provider_names, policies)
-            }
-            Profile::Clash(clash) => {
-                let proxy_provider_names = clash.proxy_providers.keys().collect::<Vec<_>>();
-                let policies = clash.rule_providers.keys().collect::<Vec<_>>();
-                (proxy_provider_names, policies)
-            }
-        };
+        let proxy_provider_names = profile.proxy_exports.keys().collect::<Vec<_>>();
+        let policies = profile.rule_exports.keys().collect::<Vec<_>>();
 
         let proxy_provider_urls = proxy_provider_names
             .iter()

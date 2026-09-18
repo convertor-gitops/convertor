@@ -1,55 +1,45 @@
-import * as z from "zod";
-import Cloneable from "../../base/cloneable";
-import Equatable from "../../base/equals";
-import Serializable from "../../base/serializable";
-
-export const PolicySchema = z.object({
-    name: z.string(),
-    is_subscription: z.boolean(),
-    option: z.string().nullable().optional(),
-});
-
-export type PolicyJson = z.infer<typeof PolicySchema>;
+import {
+  asBoolean,
+  asObject,
+  asString,
+  childPath,
+  optionalNullable,
+  required,
+} from '../../deserialize';
+import Cloneable from '../../base/cloneable';
+import Equatable from '../../base/equals';
+import Serializable from '../../base/serializable';
 
 export class Policy implements Cloneable<Policy>, Equatable<Policy>, Serializable {
-    public constructor(
-        public name: string,
-        public is_subscription: boolean,
-        public option?: string,
-    ) {
-    }
+  constructor(
+    public name: string,
+    public is_subscription: boolean,
+    public option?: string,
+  ) {}
 
-    public clone(): Policy {
-        return new Policy(this.name, this.is_subscription, this.option);
-    }
+  clone(): Policy {
+    return Policy.deserialize(this.serialize());
+  }
 
-    public equals(other?: Policy): boolean {
-        if (!other) {
-            return false;
-        }
-        return this.name === other.name
-            && this.is_subscription === other.is_subscription
-            && this.option === other.option;
-    }
+  equals(other?: Policy): boolean {
+    return (
+      other instanceof Policy &&
+      this.name === other.name &&
+      this.is_subscription === other.is_subscription &&
+      this.option === other.option
+    );
+  }
 
-    public serialize(): any {
-        return {
-            name: this.name,
-            is_subscription: this.is_subscription,
-            option: this.option,
-        };
-    }
+  serialize(): unknown {
+    return { name: this.name, is_subscription: this.is_subscription, option: this.option ?? null };
+  }
 
-    public static parse(json: unknown): PolicyJson {
-        return PolicySchema.parse(json);
-    }
-
-    public static deserialize(policy: PolicyJson): Policy {
-        return new Policy(
-            policy.name,
-            policy.is_subscription,
-            !!policy.option ? policy.option : undefined,
-        );
-    }
+  static deserialize(value: unknown, path = '$'): Policy {
+    const object = asObject(value, path);
+    return new Policy(
+      asString(required(object, 'name', path), childPath(path, 'name')),
+      asBoolean(required(object, 'is_subscription', path), childPath(path, 'is_subscription')),
+      optionalNullable(object['option'], asString, childPath(path, 'option')) ?? undefined,
+    );
+  }
 }
-

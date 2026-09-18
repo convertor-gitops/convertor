@@ -18,5 +18,5 @@ pub(super) fn build_original_url(url_builder: &UrlBuilder) -> color_eyre::Result
 }
 
 pub(super) async fn get_original_profile(state: Arc<AppState>, sub_url: url::Url, headers: &Headers) -> color_eyre::Result<String> {
-    Ok(state.provider.get_raw_profile(sub_url, headers).await?)
+    Ok(state.subscription_fetcher.get_raw_profile(sub_url, headers).await?)
 }

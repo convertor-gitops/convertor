@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #0d0f14; }
+  a { color: #8b9bff; text-decoration: none; }
+  a:hover { color: #a6b2ff; }
+  * { box-sizing: border-box; }
+  input, button { font-family: inherit; }
+  input:focus-visible, button:focus-visible { outline: 2px solid #8b9bff; outline-offset: 1px; }
+  [data-scroll]::-webkit-scrollbar { width: 10px; height: 10px; }
+  [data-scroll]::-webkit-scrollbar-thumb { background: #2a3040; border-radius: 10px; }
+  [data-scroll]::-webkit-scrollbar-track { background: transparent; }
+  @container root (max-width: 880px) {
+    [data-body] { flex-direction: column !important; }
+    [data-left] { width: auto !important; max-height: 320px; border-right: none !important; border-bottom: 1px solid #1f2430; }
+  }
+</style>
+</helmet>
+<div style="height:100vh;overflow:hidden;container-type:inline-size;container-name:root;display:flex;flex-direction:column;background:#0d0f14;color:#eceef4;font-family:'IBM Plex Sans','PingFang SC','Microsoft YaHei',sans-serif;font-size:13.5px;">
+
+  <div style="flex:none;display:flex;align-items:center;gap:10px 16px;padding:10px 18px;border-bottom:1px solid #1f2430;background:#11141b;flex-wrap:wrap;">
+    <span style="font-size:14.5px;font-weight:600;letter-spacing:.01em;">Convertor</span>
+    <input value="{{ planName }}" onChange="{{ onPlanName }}" style="width:168px;padding:6px 10px;border-radius:8px;border:1px solid transparent;background:transparent;color:#eceef4;font-size:13.5px;" style-hover="border-color:#242a38;background:#0d0f14;" />
+    <span style="{{ saveStyle }}">{{ saveText }}</span>
+    <span style="{{ exportStateStyle }}">{{ exportStateText }}</span>
+    <div style="flex:1;"></div>
+    <button onClick="{{ openIssues }}" style="{{ issueStyle }}">{{ issueText }}</button>
+    <button onClick="{{ toggleDrawer }}" style="padding:7px 13px;border-radius:8px;border:1px solid #242a38;background:#161a23;color:#eceef4;font-size:12.5px;cursor:pointer;" style-hover="border-color:#39415a;">源管理 · {{ sourceCount }}</button>
+    <div style="display:flex;gap:5px;">
+      <button onClick="{{ undo }}" style="{{ undoStyle }}" title="撤销">↶</button>
+      <button onClick="{{ redo }}" style="{{ redoStyle }}" title="恢复">↷</button>
+    </div>
+    <div style="position:relative;">
+      <button onClick="{{ toggleDemo }}" style="{{ demoBtnStyle }}">演示 ⌄</button>
+      <sc-if value="{{ demoOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;right:0;top:36px;width:300px;z-index:50;padding:14px;border-radius:12px;border:1px solid #2a3040;background:#161a23;box-shadow:0 20px 44px rgba(0,0,0,.55);display:flex;flex-direction:column;gap:12px;">
+          <span style="font-size:11.5px;color:#6d7488;line-height:1.55;">原型演示开关，不属于产品功能。</span>
+          <sc-for list="{{ snapOptions }}" as="s" hint-placeholder-count="3">
+            <button onClick="{{ s.select }}" style="{{ s.style }}">
+              <span style="font-weight:500;">{{ s.label }}</span>
+              <span style="font-size:11.5px;color:#8a92a8;line-height:1.5;">{{ s.desc }}</span>
+            </button>
+          </sc-for>
+          <sc-for list="{{ demoToggles }}" as="t" hint-placeholder-count="2">
+            <button onClick="{{ t.toggle }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px;border-radius:8px;border:1px solid #242a38;background:#0d0f14;color:#eceef4;font-size:12.5px;cursor:pointer;">
+              <span>{{ t.label }}</span><span style="{{ t.pill }}">{{ t.state }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <div data-body style="flex:1;display:flex;min-height:0;">
+
+    <div data-left style="width:352px;flex:none;border-right:1px solid #1f2430;background:#11141b;display:flex;flex-direction:column;min-height:0;">
+      <div style="flex:none;padding:12px 14px 10px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid #1f2430;">
+        <div style="display:flex;gap:4px;">
+          <sc-for list="{{ leftTabs }}" as="t" hint-placeholder-count="3">
+            <button onClick="{{ t.select }}" style="{{ t.style }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <input value="{{ search }}" onChange="{{ onSearch }}" placeholder="搜索节点" style="flex:1;min-width:120px;padding:8px 11px;border-radius:9px;border:1px solid #242a38;background:#0d0f14;color:#eceef4;font-size:12.5px;" />
+          <sc-if value="{{ leftIsNodes }}" hint-placeholder-val="{{ true }}">
+            <span style="position:relative;display:inline-flex;">
+              <button onClick="{{ groupByDD.toggle }}" style="{{ groupByDD.btnStyle }}">{{ groupByDD.label }}</button>
+              <sc-if value="{{ groupByDD.open }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;top:34px;right:0;z-index:30;min-width:150px;padding:5px;border-radius:9px;border:1px solid #2a3040;background:#161a23;box-shadow:0 16px 36px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:2px;">
+                  <sc-for list="{{ groupByDD.options }}" as="o" hint-placeholder-count="5">
+                    <button onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </span>
+          </sc-if>
+          <sc-if value="{{ leftIsRaw }}" hint-placeholder-val="{{ false }}">
+            <span style="position:relative;display:inline-flex;">
+              <button onClick="{{ rawSrcDD.toggle }}" style="{{ rawSrcDD.btnStyle }}">{{ rawSrcDD.label }}</button>
+              <sc-if value="{{ rawSrcDD.open }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;top:34px;right:0;z-index:30;min-width:150px;padding:5px;border-radius:9px;border:1px solid #2a3040;background:#161a23;box-shadow:0 16px 36px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:2px;">
+                  <sc-for list="{{ rawSrcDD.options }}" as="o" hint-placeholder-count="2">
+                    <button onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </span>
+          </sc-if>
+        </div>
+        <span style="font-size:11.5px;color:#6d7488;">{{ leftMeta }}</span>
+      </div>
+
+      <div data-scroll style="flex:1;min-height:0;overflow:auto;padding:6px 0 10px;">
+        <sc-if value="{{ leftIsNodes }}" hint-placeholder-val="{{ true }}">
+          <sc-for list="{{ nodeSections }}" as="sec" hint-placeholder-count="3">
+            <div style="display:flex;flex-direction:column;">
+              <button onClick="{{ sec.toggle }}" style="display:flex;align-items:center;gap:8px;padding:9px 14px;border:none;background:transparent;cursor:pointer;text-align:left;">
+                <span style="{{ sec.caret }}">›</span>
+                <span style="font-size:12px;font-weight:600;color:#c3c9db;">{{ sec.label }}</span>
+                <span style="font-size:11.5px;color:#6d7488;">{{ sec.count }}</span>
+                <div style="flex:1;"></div>
+                <sc-if value="{{ sec.hasTagDot }}" hint-placeholder-val="{{ false }}">
+                  <span style="{{ sec.tagDot }}"></span>
+                </sc-if>
+              </button>
+              <sc-if value="{{ sec.open }}" hint-placeholder-val="{{ true }}">
+                <sc-for list="{{ sec.nodes }}" as="n" hint-placeholder-count="5">
+                  <div style="{{ n.rowStyle }}">
+                    <button onClick="{{ n.toggle }}" style="{{ n.checkStyle }}">{{ n.check }}</button>
+                    <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
+                      <span style="{{ n.nameStyle }}">{{ n.name }}</span>
+                      <span style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6d7488;">{{ n.meta }}</span>
+                        <sc-for list="{{ n.tags }}" as="tg" hint-placeholder-count="1">
+                          <span style="{{ tg.style }}" title="{{ tg.hint }}">{{ tg.label }}</span>
+                        </sc-for>
+                      </span>
+                    </span>
+                    <span style="font-size:11px;color:#565d72;flex:none;">{{ n.usedIn }}</span>
+                  </div>
+                </sc-for>
+              </sc-if>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noNodes }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:40px 20px;text-align:center;font-size:12.5px;color:#6d7488;line-height:1.6;">没有匹配的节点</div>
+          </sc-if>
+        </sc-if>
+
+        <sc-if value="{{ leftIsRawGroups }}" hint-placeholder-val="{{ false }}">
+          <sc-for list="{{ rawGroupRows }}" as="g" hint-placeholder-count="3">
+            <div style="margin:6px 12px;padding:11px 13px;border-radius:10px;border:1px solid #1f2430;background:#0f1218;display:flex;flex-direction:column;gap:7px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:13px;font-weight:600;">{{ g.name }}</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6d7488;">{{ g.type }}</span>
+                <div style="flex:1;"></div>
+                <span style="font-size:11.5px;color:#8a92a8;">{{ g.summary }}</span>
+              </div>
+              <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                <sc-for list="{{ g.members }}" as="m" hint-placeholder-count="2">
+                  <span style="{{ m.style }}">{{ m.label }}</span>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </sc-if>
+
+        <sc-if value="{{ leftIsRawRules }}" hint-placeholder-val="{{ false }}">
+          <sc-for list="{{ rawRuleRows }}" as="r" hint-placeholder-count="6">
+            <div style="display:flex;align-items:center;gap:9px;padding:8px 14px;border-bottom:1px solid #171b23;">
+              <span style="width:100px;flex:none;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#8a92a8;">{{ r.type }}</span>
+              <span style="flex:1;min-width:0;font-family:'JetBrains Mono',monospace;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.value }}</span>
+              <span style="{{ r.targetStyle }}">{{ r.target }}</span>
+            </div>
+          </sc-for>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ hasSelection }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;padding:11px 14px;border-top:1px solid #1f2430;background:#141824;display:flex;flex-direction:column;gap:9px;">
+          <span style="font-size:12px;color:#c3c9db;">已选 {{ selCount }} 个节点</span>
+          <div style="display:flex;gap:7px;flex-wrap:wrap;">
+            <button onClick="{{ selToCondition }}" style="padding:8px 12px;border-radius:8px;border:none;background:#8b9bff;color:#0d0f14;font-size:12.5px;font-weight:600;cursor:pointer;">{{ selActionLabel }}</button>
+            <button onClick="{{ clearSelection }}" style="padding:8px 11px;border-radius:8px;border:1px solid #2a3040;background:transparent;color:#8a92a8;font-size:12.5px;cursor:pointer;">取消</button>
+          </div>
+          <span style="font-size:11px;color:#6d7488;line-height:1.55;">{{ selActionHint }}</span>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;min-height:0;">
+      <div style="flex:none;display:flex;align-items:center;gap:4px;padding:10px 18px 0;border-bottom:1px solid #1f2430;flex-wrap:wrap;">
+        <sc-for list="{{ modeTabs }}" as="t" hint-placeholder-count="4">
+          <button onClick="{{ t.select }}" style="{{ t.style }}">{{ t.label }}</button>
+        </sc-for>
+      </div>
+
+      <div data-scroll style="flex:1;min-height:0;overflow:auto;">
+
+        <sc-if value="{{ modeIsGroups }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:20px 18px 40px;display:flex;flex-direction:column;gap:14px;max-width:900px;">
+          <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">
+            <span style="font-size:16px;font-weight:600;">策略组编排</span>
+            <span style="font-size:12px;color:#8a92a8;">{{ groupsSummary }}</span>
+          </div>
+          <sc-for list="{{ groupCards }}" as="g" hint-placeholder-count="3">
+            <div style="{{ g.cardStyle }}">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <button onClick="{{ g.toggle }}" style="{{ g.caretStyle }}">›</button>
+                <sc-if value="{{ g.open }}" hint-placeholder-val="{{ true }}">
+                  <input value="{{ g.name }}" onChange="{{ g.onName }}" style="width:180px;padding:6px 9px;border-radius:8px;border:1px solid #242a38;background:#0d0f14;color:#eceef4;font-size:14px;font-weight:600;" />
+                </sc-if>
+                <sc-if value="{{ g.closed }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ g.toggle }}" style="border:none;background:transparent;padding:0;color:#eceef4;font-size:14px;font-weight:600;cursor:pointer;">{{ g.name }}</button>
+                </sc-if>
+                <span style="{{ g.typeChip }}">{{ g.typeLabel }}</span>
+                <div style="flex:1;"></div>
+                <span style="{{ g.countStyle }}">{{ g.countLabel }}</span>
+                <sc-if value="{{ g.open }}" hint-placeholder-val="{{ true }}">
+                  <span style="display:flex;gap:6px;flex:none;">
+                    <button onClick="{{ g.dup }}" style="padding:5px 10px;border-radius:7px;border:1px solid #242a38;background:transparent;color:#8a92a8;font-size:11.5px;cursor:pointer;">复制</button>
+                    <button onClick="{{ g.remove }}" style="padding:5px 10px;border-radius:7px;border:1px solid #242a38;background:transparent;color:#8a92a8;font-size:11.5px;cursor:pointer;" style-hover="color:#f28b8b;border-color:#5d3030;">删除</button>
+                  </span>
+                </sc-if>
+              </div>
+
+              <sc-if value="{{ g.open }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:14px;padding-top:4px;">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                  <div style="display:flex;gap:3px;padding:3px;border-radius:9px;background:#0d0f14;border:1px solid #242a38;">
+                    <sc-for list="{{ g.types }}" as="t" hint-placeholder-count="2">
+                      <button onClick="{{ t.select }}" style="{{ t.style }}">{{ t.label }}</button>
+                    </sc-for>
+                  </div>
+                  <sc-for list="{{ g.params }}" as="p" hint-placeholder-count="0">
+                    <span style="display:flex;align-items:center;gap:6px;">
+                      <span style="font-size:11.5px;color:#6d7488;">{{ p.label }}</span>
+                      <input value="{{ p.value }}" onChange="{{ p.onChange }}" style="{{ p.inputStyle }}" />
+                    </span>
+                  </sc-for>
+                </div>
+
+                <sc-for list="{{ g.members }}" as="mb" hint-placeholder-count="2">
+                  <div style="display:flex;flex-direction:column;gap:10px;padding:12px 13px;border-radius:10px;border:1px solid #1f2430;background:#0f1218;">
+                    <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+                      <span style="{{ mb.kindStyle }}">{{ mb.kindLabel }}</span>
+                      <span style="font-size:13px;font-weight:500;">{{ mb.title }}</span>
+                      <span style="font-size:11.5px;color:#8a92a8;">{{ mb.subtitle }}</span>
+                      <div style="flex:1;"></div>
+                      <span style="{{ mb.countStyle }}">{{ mb.countLabel }}</span>
+                      <span style="display:flex;gap:4px;flex:none;">
+                        <button onClick="{{ mb.up }}" style="{{ mb.iconBtn }}">↑</button>
+                        <button onClick="{{ mb.down }}" style="{{ mb.iconBtn }}">↓</button>
+                        <button onClick="{{ mb.remove }}" style="{{ mb.iconBtn }}">×</button>
+                      </span>
+                    </div>
+
+                    <sc-if value="{{ mb.isExpr }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                        <span style="position:relative;display:inline-flex;">
+                          <button onClick="{{ mb.srcDD.toggle }}" style="{{ mb.srcDD.btnStyle }}">{{ mb.srcDD.label }}</button>
+                          <sc-if value="{{ mb.srcDD.open }}" hint-placeholder-val="{{ false }}">
+                            <div style="position:absolute;top:34px;left:0;z-index:30;min-width:150px;padding:5px;border-radius:9px;border:1px solid #2a3040;background:#161a23;box-shadow:0 16px 36px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:2px;">
+                              <sc-for list="{{ mb.srcDD.options }}" as="o" hint-placeholder-count="2">
+                                <button onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</button>
+                              </sc-for>
+                            </div>
+                          </sc-if>
+                        </span>
+                        <div style="display:flex;gap:3px;padding:3px;border-radius:8px;background:#0d0f14;border:1px solid #242a38;">
+                          <sc-for list="{{ mb.modes }}" as="md" hint-placeholder-count="2">
+                            <button onClick="{{ md.select }}" style="{{ md.style }}">{{ md.label }}</button>
+                          </sc-for>
+                        </div>
+                      </div>
+                      <sc-for list="{{ mb.items }}" as="it" hint-placeholder-count="2">
+                        <div style="display:flex;flex-direction:column;gap:4px;">
+                          <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
+                            <button onClick="{{ it.toggleNeg }}" style="{{ it.negStyle }}">{{ it.negLabel }}</button>
+                            <span style="position:relative;display:inline-flex;">
+                              <button onClick="{{ it.fieldDD.toggle }}" style="{{ it.fieldDD.btnStyle }}">{{ it.fieldDD.label }}</button>
+                              <sc-if value="{{ it.fieldDD.open }}" hint-placeholder-val="{{ false }}">
+                                <div style="position:absolute;top:34px;left:0;z-index:30;min-width:130px;padding:5px;border-radius:9px;border:1px solid #2a3040;background:#161a23;box-shadow:0 16px 36px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:2px;">
+                                  <sc-for list="{{ it.fieldDD.options }}" as="o" hint-placeholder-count="5">
+                                    <button onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</button>
+                                  </sc-for>
+                                </div>
+                              </sc-if>
+                            </span>
+                            <span style="position:relative;display:inline-flex;">
+                              <button onClick="{{ it.opDD.toggle }}" style="{{ it.opDD.btnStyle }}">{{ it.opDD.label }}</button>
+                              <sc-if value="{{ it.opDD.open }}" hint-placeholder-val="{{ false }}">
+                                <div style="position:absolute;top:34px;left:0;z-index:30;min-width:140px;padding:5px;border-radius:9px;border:1px solid #2a3040;background:#161a23;box-shadow:0 16px 36px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:2px;">
+                                  <sc-for list="{{ it.opDD.options }}" as="o" hint-placeholder-count="4">
+                                    <button onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</button>
+                                  </sc-for>
+                                </div>
+                              </sc-if>
+                            </span>
+                            <input value="{{ it.value }}" onChange="{{ it.onValue }}" placeholder="{{ it.placeholder }}" style="{{ it.inputStyle }}" />
+                            <span style="{{ it.hitStyle }}">{{ it.hits }}</span>
+                            <button onClick="{{ it.remove }}" style="{{ it.iconBtn }}">×</button>
+                          </div>
+                          <sc-if value="{{ it.error }}" hint-placeholder-val="{{ false }}">
+                            <span style="margin-left:8px;font-size:11.5px;color:#f28b8b;">{{ it.error }}</span>
+                          </sc-if>
+                        </div>
+                      </sc-for>
+                      <div style="display:flex;gap:7px;flex-wrap:wrap;">
+                        <button onClick="{{ mb.addItem }}" style="{{ mb.ghostBtn }}">+ 条件</button>
+                        <button onClick="{{ mb.addRegex }}" style="{{ mb.ghostBtn }}">+ 正则</button>
+                      </div>
+                    </div>
+                    </sc-if>
+
+                    <sc-if value="{{ mb.isRaw }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                      <button onClick="{{ mb.toggleRecursive }}" style="{{ mb.recStyle }}">{{ mb.recLabel }}</button>
+                      <span style="font-size:11.5px;color:#6d7488;line-height:1.55;">{{ mb.rawHint }}</span>
+                    </div>
+                    </sc-if>
+
+                    <sc-if value="{{ mb.hasPreview }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                      <sc-for list="{{ mb.preview }}" as="pv" hint-placeholder-count="3">
+                        <span style="{{ pv.style }}">{{ pv.label }}</span>
+                      </sc-for>
+                    </div>
+                    </sc-if>
+
+                    <sc-if value="{{ mb.warn }}" hint-placeholder-val="{{ false }}">
+                    <div style="padding:8px 10px;border-radius:8px;background:#221a0c;border:1px solid #5f4620;font-size:11.5px;color:#f0bd67;line-height:1.55;">{{ mb.warn }}</div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+
+                <div style="display:flex;gap:7px;flex-wrap:wrap;">
+                  <sc-for list="{{ g.addOptions }}" as="o" hint-placeholder-count="6">
+                    <button onClick="{{ o.add }}" style="{{ o.style }}" title="{{ o.hint }}">{{ o.label }}</button>
+                  </sc-for>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:8px;padding:12px 13px;border-radius:10px;border:1px solid #242a38;background:#0f1218;">
+                  <span style="font-size:12px;color:#8a92a8;">{{ g.resultSummary }}</span>
+                  <sc-if value="{{ g.empty }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 11px;border-radius:9px;border:1px solid #5d3030;background:#1d1214;">
+                      <span style="font-size:12px;color:#f28b8b;">空组，导出被阻断</span>
+                      <button onClick="{{ g.gotoTags }}" style="padding:5px 10px;border-radius:7px;border:1px solid #5d3030;background:transparent;color:#f28b8b;font-size:11.5px;cursor:pointer;">去打标签模式检查</button>
+                    </div>
+                  </sc-if>
+                  <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                    <sc-for list="{{ g.result }}" as="m" hint-placeholder-count="5">
+                      <span style="{{ m.style }}" title="{{ m.hint }}">{{ m.label }}</span>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+              </sc-if>
+            </div>
+          </sc-for>
+          <button onClick="{{ addGroup }}" style="align-self:flex-start;padding:10px 15px;border-radius:9px;border:1px dashed #39415a;background:transparent;color:#8a92a8;font-size:12.5px;cursor:pointer;" style-hover="color:#eceef4;border-color:#8b9bff;">+ 新建策略组</button>
+
+          <div style="display:flex;flex-direction:column;gap:10px;padding-top:6px;">
+            <span style="font-size:12px;color:#6d7488;">动态组族</span>
+            <sc-for list="{{ familyCards }}" as="f" hint-placeholder-count="1">
+              <div style="padding:14px;border-radius:12px;border:1px solid #1f2430;background:#11141b;display:flex;flex-direction:column;gap:11px;">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                  <input value="{{ f.name }}" onChange="{{ f.onName }}" style="width:170px;padding:6px 9px;border-radius:8px;border:1px solid #242a38;background:#0d0f14;color:#eceef4;font-size:14px;font-weight:600;" />
+                  <span style="padding:3px 9px;border-radius:7px;background:#171b2b;border:1px solid #363e5c;font-size:11px;color:#a6b2ff;">按地区自动生成</span>
+                  <div style="flex:1;"></div>
+                  <span style="font-size:11.5px;color:#8a92a8;">{{ f.meta }}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                  <span style="font-size:11.5px;color:#6d7488;">组名模板</span>
+                  <input value="{{ f.template }}" onChange="{{ f.onTemplate }}" style="width:150px;padding:6px 9px;border-radius:8px;border:1px solid #242a38;background:#0d0f14;color:#eceef4;font-family:'JetBrains Mono',monospace;font-size:11.5px;" />
+                  <span style="font-size:11px;color:#6d7488;">来源：{{ f.source }}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                  <sc-for list="{{ f.groups }}" as="fg" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;border:1px solid #1f2430;background:#0f1218;flex-wrap:wrap;">
+                      <span style="width:120px;flex:none;font-size:12.5px;font-weight:500;">{{ fg.name }}</span>
+                      <span style="font-size:11.5px;color:#8a92a8;">{{ fg.count }} 个节点</span>
+                      <div style="flex:1;"></div>
+                      <span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;">
+                        <sc-for list="{{ fg.nodes }}" as="fn" hint-placeholder-count="2">
+                          <span style="{{ fn.style }}">{{ fn.label }}</span>
+                        </sc-for>
+                      </span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ modeIsTags }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:20px 18px 40px;display:flex;flex-direction:column;gap:14px;max-width:900px;">
+          <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">
+            <span style="font-size:16px;font-weight:600;">打标签模式</span>
+            <span style="font-size:12px;color:#8a92a8;line-height:1.6;">标签名是全局的；每条选取条件跟着它所属的来源走。左栏会实时反映谁被打上了标签。</span>
+          </div>
+          <sc-for list="{{ tagCards }}" as="t" hint-placeholder-count="2">
+            <div style="{{ t.cardStyle }}">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <button onClick="{{ t.toggle }}" style="{{ t.caretStyle }}">›</button>
+                <input value="{{ t.name }}" onChange="{{ t.onName }}" style="width:150px;padding:6px 9px;border-radius:8px;border:1px solid #242a38;background:#0d0f14;color:#eceef4;font-size:14px;font-weight:600;" />
+                <span style="{{ t.countStyle }}">命中 {{ t.count }} 个节点</span>
+                <span style="font-size:11.5px;color:#8a92a8;">{{ t.srcMeta }}</span>
+                <div style="flex:1;"></div>
+                <button onClick="{{ t.remove }}" style="padding:5px 10px;border-radius:7px;border:1px solid #242a38;background:transparent;color:#8a92a8;font-size:11.5px;cursor:pointer;" style-hover="color:#f28b8b;border-color:#5d3030;">删除标签</button>
+              </div>
+
+              <sc-if value="{{ t.open }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:12px;padding-top:4px;">
+                <sc-for list="{{ t.rules }}" as="rl" hint-placeholder-count="2">
+                  <div style="display:flex;flex-direction:column;gap:10px;padding:12px 13px;border-radius:10px;border:1px solid #1f2430;background:#0f1218;">
+                    <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+                      <span style="position:relative;display:inline-flex;">
+                        <button onClick="{{ rl.srcDD.toggle }}" style="{{ rl.srcDD.btnStyle }}">{{ rl.srcDD.label }}</button>
+                        <sc-if value="{{ rl.srcDD.open }}" hint-placeholder-val="{{ false }}">
+                          <div style="position:absolute;top:34px;left:0;z-index:30;min-width:150px;padding:5px;border-radius:9px;border:1px solid #2a3040;background:#161a23;box-shadow:0 16px 36px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:2px;">
+                            <sc-for list="{{ rl.srcDD.options }}" as="o" hint-placeholder-count="2">
+                              <button onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</button>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+                      </span>
+                      <div style="display:flex;gap:3px;padding:3px;border-radius:8px;background:#0d0f14;border:1px solid #242a38;">
+                        <sc-for list="{{ rl.modes }}" as="md" hint-placeholder-count="2">
+                          <button onClick="{{ md.select }}" style="{{ md.style }}">{{ md.label }}</button>
+                        </sc-for>
+                      </div>
+                      <div style="flex:1;"></div>
+                      <span style="{{ rl.countStyle }}">{{ rl.count }} 个节点</span>
+                      <button onClick="{{ rl.remove }}" style="{{ rl.iconBtn }}">×</button>
+                    </div>
+                    <sc-for list="{{ rl.items }}" as="it" hint-placeholder-count="1">
+                      <div style="display:flex;flex-direction:column;gap:4px;">
+                        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
+                          <button onClick="{{ it.toggleNeg }}" style="{{ it.negStyle }}">{{ it.negLabel }}</button>
+                          <span style="position:relative;display:inline-flex;">
+                            <button onClick="{{ it.fieldDD.toggle }}" style="{{ it.fieldDD.btnStyle }}">{{ it.fieldDD.label }}</button>
+                            <sc-if value="{{ it.fieldDD.open }}" hint-placeholder-val="{{ false }}">
+                              <div style="position:absolute;top:34px;left:0;z-index:30;min-width:130px;padding:5px;border-radius:9px;border:1px solid #2a3040;background:#161a23;box-shadow:0 16px 36px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:2px;">
+                                <sc-for list="{{ it.fieldDD.options }}" as="o" hint-placeholder-count="5">
+                                  <button onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</button>
+                                </sc-for>
+                              </div>
+                            </sc-if>
+                          </span>
+                          <span style="position:relative;display:inline-flex;">
+                            <button onClick="{{ it.opDD.toggle }}" style="{{ it.opDD.btnStyle }}">{{ it.opDD.label }}</button>
+                            <sc-if value="{{ it.opDD.open }}" hint-placeholder-val="{{ false }}">
+                              <div style="position:absolute;top:34px;left:0;z-index:30;min-width:140px;padding:5px;border-radius:9px;border:1px solid #2a3040;background:#161a23;box-shadow:0 16px 36px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:2px;">
+                                <sc-for list="{{ it.opDD.options }}" as="o" hint-placeholder-count="4">
+                                  <button onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</button>
+                                </sc-for>
+                              </div>
+                            </sc-if>
+                          </span>
+                          <input value="{{ it.value }}" onChange="{{ it.onValue }}" placeholder="{{ it.placeholder }}" style="{{ it.inputStyle }}" />
+                          <span style="{{ it.hitStyle }}">{{ it.hits }}</span>
+                          <button onClick="{{ it.remove }}" style="{{ it.iconBtn }}">×</button>
+                        </div>
+                        <sc-if value="{{ it.error }}" hint-placeholder-val="{{ false }}">
+                          <span style="margin-left:8px;font-size:11.5px;color:#f28b8b;">{{ it.error }}</span>
+                        </sc-if>
+                      </div>
+                    </sc-for>
+                    <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;">
+                      <button onClick="{{ rl.addItem }}" style="{{ rl.ghostBtn }}">+ 条件</button>
+                      <button onClick="{{ rl.addRegex }}" style="{{ rl.ghostBtn }}">+ 正则</button>
+                      <span style="font-size:11px;color:#6d7488;">{{ rl.hint }}</span>
+                    </div>
+                    <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                      <sc-for list="{{ rl.preview }}" as="pv" hint-placeholder-count="3">
+                        <span style="{{ pv.style }}">{{ pv.label }}</span>
+                      </sc-for>
+                    </div>
+                    <sc-if value="{{ rl.warn }}" hint-placeholder-val="{{ false }}">
+                      <div style="padding:8px 10px;border-radius:8px;background:#221a0c;border:1px solid #5f4620;font-size:11.5px;color:#f0bd67;line-height:1.55;">{{ rl.warn }}</div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+                <div style="display:flex;gap:7px;flex-wrap:wrap;">
+                  <sc-for list="{{ t.addRuleOptions }}" as="o" hint-placeholder-count="2">
+                    <button onClick="{{ o.add }}" style="{{ o.style }}">{{ o.label }}</button>
+                  </sc-for>
+                </div>
+                <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:11px 12px;border-radius:10px;border:1px solid #242a38;background:#0f1218;">
+                  <span style="font-size:11.5px;color:#6d7488;">使用这个标签的组</span>
+                  <sc-for list="{{ t.usedBy }}" as="u" hint-placeholder-count="1">
+                    <button onClick="{{ u.goto }}" style="{{ u.style }}">{{ u.label }}</button>
+                  </sc-for>
+                  <sc-if value="{{ t.unused }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:11.5px;color:#8a92a8;">暂时没有组按这个标签选节点</span>
+                  </sc-if>
+                </div>
+              </div>
+              </sc-if>
+            </div>
+          </sc-for>
+          <button onClick="{{ addTag }}" style="align-self:flex-start;padding:10px 15px;border-radius:9px;border:1px dashed #39415a;background:transparent;color:#8a92a8;font-size:12.5px;cursor:pointer;" style-hover="color:#eceef4;border-color:#8b9bff;">+ 新建标签</button>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ modeIsRules }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:20px 18px 40px;display:flex;flex-direction:column;gap:14px;max-width:900px;">
+          <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">
+            <span style="font-size:16px;font-weight:600;">规则编排</span>
+            <span style="font-size:12px;color:#8a92a8;">顺序即生效顺序，兜底固定在最后</span>
+          </div>
+          <sc-for list="{{ ruleBlocks }}" as="b" hint-placeholder-count="2">
+            <div style="{{ b.cardStyle }}" draggable="true" onDragStart="{{ b.dragStart }}" onDragOver="{{ b.dragOver }}" onDrop="{{ b.drop }}">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6d7488;">{{ b.idx }}</span>
+                <button onClick="{{ b.toggle }}" style="{{ b.caretStyle }}">›</button>
+                <span style="{{ b.kindStyle }}">{{ b.kindLabel }}</span>
+                <span style="font-size:13.5px;font-weight:500;">{{ b.title }}</span>
+                <span style="font-size:11.5px;color:#8a92a8;">{{ b.meta }}</span>
+                <div style="flex:1;"></div>
+                <span style="display:flex;gap:4px;flex:none;">
+                  <button onClick="{{ b.up }}" style="{{ b.iconBtn }}">↑</button>
+                  <button onClick="{{ b.down }}" style="{{ b.iconBtn }}">↓</button>
+                  <button onClick="{{ b.remove }}" style="{{ b.iconBtn }}">×</button>
+                </span>
+              </div>
+
+              <sc-if value="{{ b.openCustom }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:9px;">
+                <sc-for list="{{ b.rules }}" as="r" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:9px 10px;border-radius:9px;border:1px solid #1f2430;background:#0f1218;">
+                    <span style="position:relative;display:inline-flex;">
+                      <button onClick="{{ r.typeDD.toggle }}" style="{{ r.typeDD.btnStyle }}">{{ r.typeDD.label }}</button>
+                      <sc-if value="{{ r.typeDD.open }}" hint-placeholder-val="{{ false }}">
+                        <div style="position:absolute;top:34px;left:0;z-index:30;min-width:170px;padding:5px;border-radius:9px;border:1px solid #2a3040;background:#161a23;box-shadow:0 16px 36px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:2px;">
+                          <sc-for list="{{ r.typeDD.options }}" as="o" hint-placeholder-count="4">
+                            <button onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</button>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                    </span>
+                    <input value="{{ r.value }}" onChange="{{ r.onValue }}" placeholder="匹配内容" style="flex:1 1 90px;min-width:90px;padding:6px 9px;border-radius:8px;border:1px solid #242a38;background:#0d0f14;color:#eceef4;font-family:'JetBrains Mono',monospace;font-size:11.5px;" />
+                    <span style="font-size:11px;color:#6d7488;">→</span>
+                    <span style="position:relative;display:inline-flex;">
+                      <button onClick="{{ r.targetDD.toggle }}" style="{{ r.targetDD.btnStyle }}">{{ r.targetDD.label }}</button>
+                      <sc-if value="{{ r.targetDD.open }}" hint-placeholder-val="{{ false }}">
+                        <div style="position:absolute;top:34px;right:0;z-index:30;min-width:170px;padding:5px;border-radius:9px;border:1px solid #2a3040;background:#161a23;box-shadow:0 16px 36px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:2px;">
+                          <sc-for list="{{ r.targetDD.options }}" as="o" hint-placeholder-count="4">
+                            <button onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</button>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                    </span>
+                    <span style="display:flex;gap:4px;flex:none;">
+                      <button onClick="{{ r.up }}" style="{{ r.iconBtn }}">↑</button>
+                      <button onClick="{{ r.down }}" style="{{ r.iconBtn }}">↓</button>
+                      <button onClick="{{ r.remove }}" style="{{ r.iconBtn }}">×</button>
+                    </span>
+                  </div>
+                </sc-for>
+                <button onClick="{{ b.addRule }}" style="{{ b.ghostBtn }}">+ 新增规则</button>
+              </div>
+              </sc-if>
+
+              <sc-if value="{{ b.openSource }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:11px;">
+                <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+                  <button onClick="{{ b.toggleKeepDR }}" style="{{ b.keepDRStyle }}">{{ b.keepDRLabel }}</button>
+                  <span style="font-size:11.5px;color:#8a92a8;">其它目标替换为</span>
+                  <span style="position:relative;display:inline-flex;">
+                    <button onClick="{{ b.defDD.toggle }}" style="{{ b.defDD.btnStyle }}">{{ b.defDD.label }}</button>
+                    <sc-if value="{{ b.defDD.open }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute;top:34px;left:0;z-index:30;min-width:200px;padding:5px;border-radius:9px;border:1px solid #2a3040;background:#161a23;box-shadow:0 16px 36px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:2px;">
+                        <sc-for list="{{ b.defDD.options }}" as="o" hint-placeholder-count="4">
+                          <button onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</button>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                  </span>
+                  <div style="flex:1;"></div>
+                  <span style="{{ b.unmappedStyle }}">{{ b.unmappedLabel }}</span>
+                </div>
+                <div style="border:1px solid #1f2430;border-radius:10px;overflow:hidden;">
+                  <sc-for list="{{ b.sourceRules }}" as="r" hint-placeholder-count="5">
+                    <div style="{{ r.rowStyle }}">
+                      <span style="width:120px;flex:none;font-family:'JetBrains Mono',monospace;font-size:11px;color:#8a92a8;">{{ r.type }}</span>
+                      <span style="flex:1;min-width:0;font-family:'JetBrains Mono',monospace;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.value }}</span>
+                      <span style="width:82px;flex:none;font-size:11.5px;color:#8a92a8;">{{ r.origin }}</span>
+                      <sc-if value="{{ r.editable }}" hint-placeholder-val="{{ true }}">
+                        <span style="position:relative;display:inline-flex;flex:none;">
+                          <button onClick="{{ r.targetDD.toggle }}" style="{{ r.targetDD.btnStyle }}">{{ r.targetDD.label }}</button>
+                          <sc-if value="{{ r.targetDD.open }}" hint-placeholder-val="{{ false }}">
+                            <div style="position:absolute;top:34px;right:0;z-index:30;min-width:170px;padding:5px;border-radius:9px;border:1px solid #2a3040;background:#161a23;box-shadow:0 16px 36px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:2px;">
+                              <sc-for list="{{ r.targetDD.options }}" as="o" hint-placeholder-count="4">
+                                <button onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</button>
+                              </sc-for>
+                            </div>
+                          </sc-if>
+                        </span>
+                      </sc-if>
+                      <sc-if value="{{ r.locked }}" hint-placeholder-val="{{ false }}">
+                        <span style="{{ r.lockStyle }}">{{ r.lockLabel }}</span>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              </sc-if>
+            </div>
+          </sc-for>
+
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;border-radius:11px;border:1px dashed #39415a;background:#11141b;">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6d7488;">FINAL</span>
+            <span style="font-size:12px;color:#8a92a8;">兜底</span>
+            <div style="flex:1;"></div>
+            <span style="position:relative;display:inline-flex;">
+              <button onClick="{{ fallbackDD.toggle }}" style="{{ fallbackDD.btnStyle }}">{{ fallbackDD.label }}</button>
+              <sc-if value="{{ fallbackDD.open }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;top:34px;right:0;z-index:30;min-width:170px;padding:5px;border-radius:9px;border:1px solid #2a3040;background:#161a23;box-shadow:0 16px 36px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:2px;">
+                  <sc-for list="{{ fallbackDD.options }}" as="o" hint-placeholder-count="4">
+                    <button onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </span>
+          </div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button onClick="{{ addCustomBlock }}" style="{{ ghostBtn }}">+ 自定义规则块</button>
+            <button onClick="{{ addSourceBlock }}" style="{{ ghostBtn }}">+ 来源规则块</button>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:9px;padding-top:6px;">
+            <span style="font-size:12px;color:#6d7488;">最终展开预览 · 共 {{ finalRuleCount }} 条</span>
+            <div data-scroll style="max-height:280px;overflow:auto;border:1px solid #1f2430;border-radius:11px;">
+              <sc-for list="{{ finalRules }}" as="r" hint-placeholder-count="8">
+                <div style="{{ r.rowStyle }}">
+                  <span style="width:26px;flex:none;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#565d72;">{{ r.idx }}</span>
+                  <span style="width:104px;flex:none;font-size:10.5px;color:#6d7488;">{{ r.origin }}</span>
+                  <span style="flex:1;min-width:0;font-family:'JetBrains Mono',monospace;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.text }}</span>
+                  <span style="{{ r.targetStyle }}">{{ r.target }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ modeIsExport }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:20px 18px 40px;display:flex;flex-direction:column;gap:16px;max-width:900px;">
+          <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">
+            <span style="font-size:16px;font-weight:600;">预览与导出</span>
+            <span style="font-size:12px;color:#8a92a8;">{{ structureSummary }}</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:9px;">
+            <div style="display:flex;align-items:center;gap:9px;">
+              <span style="font-size:12.5px;font-weight:600;">问题</span>
+              <span style="{{ diagCountStyle }}">{{ diagCountText }}</span>
+            </div>
+            <sc-for list="{{ diagnostics }}" as="d" hint-placeholder-count="2">
+              <button onClick="{{ d.goto }}" style="{{ d.style }}">
+                <span style="display:flex;align-items:center;gap:8px;">
+                  <span style="{{ d.levelStyle }}">{{ d.level }}</span>
+                  <span style="font-size:12.5px;font-weight:500;">{{ d.title }}</span>
+                </span>
+                <span style="font-size:11.5px;color:#8a92a8;line-height:1.55;text-align:left;">{{ d.detail }}</span>
+              </button>
+            </sc-for>
+            <sc-if value="{{ diagClean }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:11px 12px;border-radius:10px;border:1px solid #2b4a35;background:#101a14;font-size:12px;color:#63d68f;">当前快照下没有阻断问题</div>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ hasDelta }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:12px 13px;border-radius:11px;border:1px solid #2b4a35;background:#101a14;display:flex;flex-direction:column;gap:6px;">
+              <span style="font-size:12px;color:#63d68f;">来源更新差异</span>
+              <sc-for list="{{ deltaRows }}" as="d" hint-placeholder-count="2">
+                <span style="{{ d.style }}">{{ d.text }}</span>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;flex-direction:column;gap:9px;">
+            <span style="font-size:12.5px;font-weight:600;">结构</span>
+            <div style="border:1px solid #1f2430;border-radius:11px;overflow:hidden;">
+              <sc-for list="{{ structureRows }}" as="s" hint-placeholder-count="8">
+                <div style="{{ s.rowStyle }}">
+                  <span style="{{ s.indentStyle }}"></span>
+                  <span style="{{ s.kindStyle }}">{{ s.kind }}</span>
+                  <span style="{{ s.nameStyle }}">{{ s.name }}</span>
+                  <div style="flex:1;"></div>
+                  <span style="font-size:11px;color:#6d7488;">{{ s.meta }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:9px;">
+            <div style="display:flex;align-items:center;gap:9px;">
+              <span style="font-size:12.5px;font-weight:600;">配置文本</span>
+              <span style="font-size:11px;color:#6d7488;">Surge · 由当前快照生成</span>
+              <div style="flex:1;"></div>
+              <button onClick="{{ copyConfig }}" style="{{ ghostBtnSm }}">复制</button>
+            </div>
+            <pre data-scroll style="margin:0;max-height:260px;overflow:auto;padding:13px;border-radius:11px;border:1px solid #1f2430;background:#0a0c10;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.7;color:#c3c9db;white-space:pre-wrap;">{{ configText }}</pre>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:11px;padding:15px;border-radius:12px;border:1px solid #242a38;background:#11141b;">
+            <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+              <span style="font-size:13.5px;font-weight:600;">导出</span>
+              <span style="{{ exportChipStyle }}">{{ exportChipText }}</span>
+            </div>
+            <button onClick="{{ doExport }}" style="{{ exportBtnStyle }}">{{ exportBtnLabel }}</button>
+            <sc-if value="{{ hasLink }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:9px;">
+                <div style="display:flex;align-items:flex-start;gap:9px;padding:11px 12px;border-radius:10px;border:1px solid #1f2430;background:#0a0c10;">
+                  <span style="flex:1;min-width:0;font-family:'JetBrains Mono',monospace;font-size:10.5px;line-height:1.65;color:#c3c9db;word-break:break-all;">{{ exportLink }}</span>
+                  <button onClick="{{ copyLink }}" style="flex:none;padding:6px 11px;border-radius:8px;border:none;background:#8b9bff;color:#0d0f14;font-size:11.5px;font-weight:600;cursor:pointer;">复制</button>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                  <span style="{{ lenStyle }}">长度 {{ linkLength }}</span>
+                  <span style="padding:3px 9px;border-radius:7px;background:#171b2b;border:1px solid #363e5c;font-size:10.5px;color:#a6b2ff;">演示链接，未经真实 Surge 验证</span>
+                </div>
+                <sc-if value="{{ tooLong }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:10px 11px;border-radius:10px;border:1px solid #5f4620;background:#221a0c;font-size:11.5px;color:#f0bd67;line-height:1.6;">链接超出模拟阈值，建议减少来源规则块或改用方案文件传递。实际阈值取决于客户端。</div>
+                </sc-if>
+                <span style="font-size:11.5px;color:#6d7488;line-height:1.7;">修改方案后需要重新生成，并在 Surge 中替换链接。<br />链接可能包含订阅凭据，请勿公开分享。</span>
+              </div>
+            </sc-if>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button onClick="{{ downloadPlan }}" style="{{ ghostBtnSm }}">下载方案文件</button>
+              <button onClick="{{ importPlan }}" style="{{ ghostBtnSm }}">导入方案文件</button>
+              <button onClick="{{ injectLocal }}" style="{{ ghostBtnSm }}">本地配置注入预览</button>
+            </div>
+            <sc-if value="{{ localNote }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:10px 11px;border-radius:10px;border:1px solid #1f2430;background:#0a0c10;font-size:11.5px;color:#8a92a8;line-height:1.6;">{{ localNote }}</div>
+            </sc-if>
+          </div>
+        </div>
+        </sc-if>
+
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{ ddOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDD }}" style="position:fixed;inset:0;z-index:20;"></div>
+  </sc-if>
+
+  <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:70;display:flex;justify-content:flex-end;">
+      <div onClick="{{ toggleDrawer }}" style="position:absolute;inset:0;background:rgba(6,7,10,.6);"></div>
+      <div data-scroll style="position:relative;width:420px;max-width:92vw;height:100%;overflow:auto;background:#11141b;border-left:1px solid #242a38;padding:18px;display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:15px;font-weight:600;">源管理</span>
+          <div style="flex:1;"></div>
+          <button onClick="{{ toggleDrawer }}" style="{{ ghostBtnSm }}">关闭</button>
+        </div>
+        <sc-for list="{{ drawerSources }}" as="src" hint-placeholder-count="2">
+          <div style="padding:14px;border-radius:12px;border:1px solid #1f2430;background:#0f1218;display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+              <input value="{{ src.name }}" onChange="{{ src.onName }}" style="width:150px;padding:6px 9px;border-radius:8px;border:1px solid #242a38;background:#0d0f14;color:#eceef4;font-size:13.5px;font-weight:600;" />
+              <span style="{{ src.statusStyle }}">{{ src.statusText }}</span>
+              <div style="flex:1;"></div>
+              <button onClick="{{ src.refresh }}" style="{{ ghostBtnSm }}">重新读取</button>
+            </div>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6d7488;word-break:break-all;">{{ src.url }}</span>
+            <span style="font-size:11.5px;color:#8a92a8;">{{ src.counts }}</span>
+            <sc-if value="{{ src.stale }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:9px 11px;border-radius:9px;border:1px solid #5f4620;background:#221a0c;font-size:11.5px;color:#f0bd67;line-height:1.6;">读取失败，下面的节点仍是上次快照，可能已过期。</div>
+            </sc-if>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <span style="font-size:11.5px;color:#6d7488;">来源级过滤（对该来源整体生效）</span>
+              <sc-for list="{{ src.filters }}" as="f" hint-placeholder-count="1">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                  <span style="font-size:11.5px;color:#f28b8b;">排除名称包含</span>
+                  <input value="{{ f.value }}" onChange="{{ f.onValue }}" style="flex:1;min-width:110px;padding:6px 9px;border-radius:8px;border:1px solid #242a38;background:#0d0f14;color:#eceef4;font-family:'JetBrains Mono',monospace;font-size:11.5px;" />
+                  <span style="font-size:11px;color:#6d7488;">{{ f.count }}</span>
+                  <button onClick="{{ f.remove }}" style="{{ src.iconBtn }}">×</button>
+                </div>
+              </sc-for>
+              <button onClick="{{ src.addFilter }}" style="{{ ghostBtnSm }}">+ 过滤条件</button>
+              <sc-for list="{{ src.dropped }}" as="d" hint-placeholder-count="1">
+                <span style="font-size:11px;color:#6d7488;text-decoration:line-through;">{{ d.name }}</span>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+        <div style="padding:14px;border-radius:12px;border:1px dashed #39415a;display:flex;flex-direction:column;gap:9px;">
+          <input value="{{ newSrcName }}" onChange="{{ onNewSrcName }}" placeholder="来源名称" style="padding:8px 10px;border-radius:8px;border:1px solid #242a38;background:#0d0f14;color:#eceef4;font-size:12.5px;" />
+          <input value="{{ newSrcUrl }}" onChange="{{ onNewSrcUrl }}" placeholder="https://订阅地址" style="padding:8px 10px;border-radius:8px;border:1px solid #242a38;background:#0d0f14;color:#eceef4;font-family:'JetBrains Mono',monospace;font-size:11.5px;" />
+          <div style="display:flex;gap:8px;">
+            <button onClick="{{ addSource }}" style="flex:1;padding:9px;border-radius:8px;border:none;background:#8b9bff;color:#0d0f14;font-size:12.5px;font-weight:600;cursor:pointer;">添加并读取</button>
+            <button onClick="{{ pasteConfig }}" style="{{ ghostBtnSm }}">粘贴配置</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);padding:10px 18px;border-radius:999px;background:#1d2230;border:1px solid #39415a;font-size:12.5px;color:#eceef4;box-shadow:0 12px 32px rgba(0,0,0,.55);z-index:80;">{{ toast }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#8b9bff&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#8b9bff&quot;,&quot;#5eead4&quot;,&quot;#f0bd67&quot;,&quot;#f28b8b&quot;]},&quot;startMode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;groups&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;groups&quot;,&quot;tags&quot;,&quot;rules&quot;,&quot;export&quot;],&quot;section&quot;:&quot;演示状态&quot;}}">
+const AC = '#8b9bff', GR = '#63d68f', WN = '#f0bd67', RD = '#f28b8b', DIM = '#8a92a8', BD = '#242a38';
+const REGIONS = ['香港', '日本', '新加坡', '美国', '加拿大', '德国', '台湾', '韩国', '英国'];
+const RULE_TYPES = ['DOMAIN', 'DOMAIN-SUFFIX', 'DOMAIN-KEYWORD', 'IP-CIDR', 'GEOIP', 'PROCESS-NAME'];
+const FIELDS = [{ value: 'name', label: '名称' }, { value: 'protocol', label: '协议' }, { value: 'server', label: '服务器' }, { value: 'port', label: '端口' }, { value: 'tag', label: '标签' }];
+const OPS = {
+  text: [{ value: 'eq', label: '等于' }, { value: 'in', label: '属于列表' }, { value: 'contains', label: '包含' }, { value: 'prefix', label: '前缀' }, { value: 'suffix', label: '后缀' }, { value: 'regex', label: '正则' }],
+  tag: [{ value: 'contains', label: '包含' }, { value: 'in', label: '属于列表' }],
+};
+const GROUP_BYS = [
+  { value: 'source', label: '按来源' }, { value: 'protocol', label: '按协议' }, { value: 'tag', label: '按标签' },
+  { value: 'region', label: '按地区' }, { value: 'usage', label: '按是否被引用' }, { value: 'none', label: '不分组' },
+];
+
+function nd(name, protocol, server, port, tags) { return { name: name, protocol: protocol, server: server, port: port, rawTags: tags || [] }; }
+
+const BOS_A = [
+  nd('🇺🇸 美国 07', 'trojan', 'us07.bos-edge.example', 443),
+  nd('🇺🇸 美国 08', 'trojan', 'us08.bos-edge.example', 443),
+  nd('🇺🇸 美国 09', 'trojan', 'us09.bos-edge.example', 443),
+  nd('🇺🇸 美国 10', 'trojan', 'us10.bos-edge.example', 443),
+  nd('🇨🇦 加拿大 - 家宽', 'trojan', 'ca01.bos-edge.example', 443),
+  nd('香港 01', 'ss', 'hk01.bos-edge.example', 8443, ['IEPL']),
+  nd('香港 02', 'ss', 'hk02.bos-edge.example', 8443, ['IEPL']),
+  nd('香港 03', 'vmess', 'hk03.bos-edge.example', 443),
+  nd('日本 01', 'ss', 'jp01.bos-edge.example', 8443),
+  nd('日本 02', 'vmess', 'jp02.bos-edge.example', 443),
+  nd('新加坡 01', 'ss', 'sg01.bos-edge.example', 8443),
+  nd('到期提示：2026-11-30', 'ss', 'info.bos-edge.example', 80),
+];
+const BOS_B = BOS_A.filter(n => n.name !== '🇺🇸 美国 07').concat([nd('🇺🇸 美国 11', 'trojan', 'us11.bos-edge.example', 443), nd('香港 04', 'ss', 'hk04.bos-edge.example', 8443)]);
+const BOS_X = BOS_A.filter(n => n.protocol !== 'trojan').concat([nd('🇨🇦 加拿大 01', 'trojan', 'ca01.bos-edge.example', 443)]);
+const BAK_A = [
+  nd('香港 B01', 'ss', 'hk-b01.backup.example', 443),
+  nd('香港 B02', 'ss', 'hk-b02.backup.example', 443),
+  nd('日本 B01', 'vmess', 'jp-b01.backup.example', 443),
+  nd('日本 B02', 'vmess', 'jp-b02.backup.example', 443),
+  nd('新加坡 B01', 'ss', 'sg-b01.backup.example', 443),
+  nd('新加坡 B02', 'ss', 'sg-b02.backup.example', 443),
+];
+const BAK_B = BAK_A.concat([nd('德国 B01', 'ss', 'de-b01.backup.example', 443)]);
+
+const BOS_RULES = [
+  { t: 'DOMAIN-SUFFIX', v: 'cn', o: 'DIRECT' }, { t: 'IP-CIDR', v: '192.168.0.0/16', o: 'DIRECT' },
+  { t: 'GEOIP', v: 'CN', o: 'DIRECT' }, { t: 'DOMAIN-KEYWORD', v: 'ads', o: 'REJECT' },
+  { t: 'DOMAIN-SUFFIX', v: 'doubleclick.net', o: 'REJECT' }, { t: 'DOMAIN-SUFFIX', v: 'netflix.com', o: '流媒体' },
+  { t: 'DOMAIN-SUFFIX', v: 'openai.com', o: 'PROXY' }, { t: 'DOMAIN-SUFFIX', v: 'github.com', o: 'PROXY' },
+  { t: 'RULE-SET', v: 'https://rules.example.com/extra.list', o: 'PROXY' },
+];
+const BAK_RULES = [
+  { t: 'DOMAIN-SUFFIX', v: 'spotify.com', o: 'PROXY' }, { t: 'DOMAIN-KEYWORD', v: 'analytics', o: 'REJECT' }, { t: 'GEOIP', v: 'CN', o: 'DIRECT' },
+];
+
+const SNAPSHOTS = {
+  A: { label: '快照 A（默认）', desc: '初始读取结果', time: '今天 09:42', nodes: { boslife: BOS_A, backup: BAK_A } },
+  B: { label: '快照 B（来源更新）', desc: '新增 香港 04 / 美国 11 / 德国 B01；美国 07 消失', time: '今天 14:05', nodes: { boslife: BOS_B, backup: BAK_B } },
+  X: { label: '异常：家宽全失配', desc: '美国 07-10 消失，加拿大改名', time: '今天 15:20', nodes: { boslife: BOS_X, backup: BAK_A } },
+};
+
+function uid(p) { return p + Math.random().toString(36).slice(2, 7); }
+
+function initialDef() {
+  return {
+    name: '家庭主力方案',
+    sources: [
+      { id: 'boslife', name: 'BosLife', url: 'https://boslife.example.com/subscribe?token=8f3a••••', filter: [{ id: 'fl1', value: '到期' }] },
+      { id: 'backup', name: '备用来源', url: 'https://backup.example.net/link/7d2e9c', filter: [] },
+    ],
+    tags: [
+      {
+        id: 't_res', name: '家宽', rules: [
+          { id: 'tr1', sourceId: 'boslife', mode: 'all', items: [{ id: 'ti1', field: 'name', op: 'in', value: '🇺🇸 美国 07, 🇺🇸 美国 08, 🇺🇸 美国 09, 🇺🇸 美国 10' }] },
+          { id: 'tr2', sourceId: 'boslife', mode: 'all', items: [{ id: 'ti2', field: 'name', op: 'contains', value: '家宽' }] },
+        ],
+      },
+      {
+        id: 't_asia', name: '亚洲近距', rules: [
+          { id: 'tr3', sourceId: 'boslife', mode: 'any', items: [{ id: 'ti3', field: 'name', op: 'contains', value: '香港' }, { id: 'ti4', field: 'name', op: 'contains', value: '日本' }] },
+          { id: 'tr4', sourceId: 'backup', mode: 'any', items: [{ id: 'ti5', field: 'name', op: 'contains', value: '香港' }, { id: 'ti6', field: 'name', op: 'contains', value: '日本' }] },
+        ],
+      },
+    ],
+    groups: [
+      {
+        id: 'g_res', name: '家宽自动', type: 'url-test', params: { url: 'http://www.gstatic.com/generate_204', interval: '600', tolerance: '120' },
+        members: [{ id: 'mb1', kind: 'expr', sourceId: 'boslife', mode: 'all', items: [{ id: 'it1', field: 'tag', op: 'contains', value: '家宽' }, { id: 'it2', field: 'protocol', op: 'eq', value: 'trojan' }] }],
+      },
+      {
+        id: 'g_hk', name: '香港手动', type: 'select', params: {},
+        members: [
+          { id: 'mb2', kind: 'expr', sourceId: 'boslife', mode: 'all', items: [{ id: 'it4', field: 'name', op: 'contains', value: '香港' }] },
+          { id: 'mb3', kind: 'raw-expand', sourceId: 'backup', rawGroup: '香港', recursive: false },
+        ],
+      },
+      {
+        id: 'g_daily', name: '日常访问', type: 'select', params: {},
+        members: [
+          { id: 'mb4', kind: 'group', groupId: 'g_res' }, { id: 'mb5', kind: 'group', groupId: 'g_hk' },
+          { id: 'mb6', kind: 'family', familyId: 'fam_bak' }, { id: 'mb7', kind: 'builtin', value: 'DIRECT' },
+        ],
+      },
+    ],
+    families: [{ id: 'fam_bak', name: '备用地区', sourceId: 'backup', template: '备用 {region}', policy: 'url-test' }],
+    blocks: [
+      { id: 'rb1', kind: 'custom', title: '内网与 AI', rules: [{ id: 'r1', type: 'DOMAIN-SUFFIX', value: 'internal.example', target: 'DIRECT' }, { id: 'r2', type: 'DOMAIN-SUFFIX', value: 'ai.example', target: 'g_res' }] },
+      { id: 'rb2', kind: 'source', sourceId: 'boslife', keepDR: true, defaultTarget: 'g_daily', map: {} },
+    ],
+    fallback: 'g_daily',
+  };
+}
+
+class Component extends DCLogic {
+  state = {
+    def: initialDef(), past: [], future: [],
+    mode: 'groups', leftTab: 'nodes', groupBy: 'source', rawSrc: 'backup',
+    search: '', sel: {}, collapsed: {}, openCard: { g_res: true }, openTag: { t_res: true }, openBlock: {},
+    save: 'saved', exportedHash: null, exportLink: '', forceLong: false, failNext: false,
+    srcStatus: {}, demoOpen: false, drawerOpen: false, toast: '', localNote: '', delta: null,
+    snap: 'A', openDD: null, focusGroup: null,
+  };
+
+  componentDidMount() { setTimeout(() => this.forceUpdate(), 60); }
+
+  ping(msg) { clearTimeout(this._t); this.setState({ toast: msg }); this._t = setTimeout(() => this.setState({ toast: '' }), 2000); }
+  markSaved() { clearTimeout(this._s); this.setState({ save: 'saving' }); this._s = setTimeout(() => this.setState({ save: 'saved' }), 550); }
+  update(fn) {
+    const next = JSON.parse(JSON.stringify(this.state.def));
+    fn(next);
+    this.setState(s => ({ def: next, past: s.past.concat([s.def]).slice(-40), future: [], openDD: null }));
+    this.markSaved();
+  }
+  undo = () => {
+    if (!this.state.past.length) return;
+    const past = this.state.past.slice(), prev = past.pop();
+    this.setState(s => ({ def: prev, past: past, future: [s.def].concat(s.future) }));
+    this.markSaved();
+  };
+  redo = () => {
+    if (!this.state.future.length) return;
+    const fut = this.state.future.slice(), next = fut.shift();
+    this.setState(s => ({ def: next, past: s.past.concat([s.def]), future: fut }));
+    this.markSaved();
+  };
+
+  // ---------- engine ----------
+  snapNodes(sid) { return (SNAPSHOTS[this.state.snap].nodes[sid] || []).slice(); }
+  src(sid) { return this.state.def.sources.filter(s => s.id === sid)[0] || this.state.def.sources[0]; }
+  listVals(v) { return String(v == null ? '' : v).split(/[,，|]/).map(x => x.trim()).filter(Boolean); }
+
+  fieldVal(node, field) {
+    if (field === 'tag') return (node.tags || []).map(t => t.label);
+    if (field === 'port') return String(node.port);
+    return String(node[field] || '');
+  }
+  itemMatch(node, it, errs) {
+    const v = this.fieldVal(node, it.field), raw = String(it.value == null ? '' : it.value), list = this.listVals(raw);
+    let r = false;
+    if (Array.isArray(v)) r = it.op === 'in' ? list.some(x => v.indexOf(x) >= 0) : v.indexOf(raw) >= 0;
+    else if (it.op === 'eq') r = v === raw;
+    else if (it.op === 'in') r = list.indexOf(v) >= 0;
+    else if (it.op === 'contains') r = raw ? v.indexOf(raw) >= 0 : false;
+    else if (it.op === 'prefix') r = raw ? v.indexOf(raw) === 0 : false;
+    else if (it.op === 'suffix') r = raw ? v.slice(-raw.length) === raw : false;
+    else if (it.op === 'regex') { try { r = new RegExp(raw).test(v); } catch (e) { if (errs) errs[it.id] = '正则无效：' + e.message; r = false; } }
+    return it.neg ? !r : r;
+  }
+  exprMatch(node, expr, errs) {
+    const items = expr.items || [];
+    if (!items.length) return false;
+    return expr.mode === 'any' ? items.some(it => this.itemMatch(node, it, errs)) : items.every(it => this.itemMatch(node, it, errs));
+  }
+
+  // 标签是全局的，选取条件跟着来源走
+  tagsOf(bare, sid, errs) {
+    const out = (bare.rawTags || []).map(t => ({ label: t, origin: 'raw' }));
+    const probe = Object.assign({}, bare, { tags: [] });
+    this.state.def.tags.forEach(tg => {
+      const hit = (tg.rules || []).some(rl => rl.sourceId === sid && this.exprMatch(probe, rl, errs));
+      if (hit && !out.some(x => x.label === tg.name && x.origin === 'custom')) out.push({ label: tg.name, origin: 'custom', tagId: tg.id });
+    });
+    return out;
+  }
+  resolveSource(sid, errs) {
+    const source = this.src(sid), raw = this.snapNodes(sid), kept = [], dropped = [];
+    raw.forEach(n => {
+      const node = Object.assign({}, n, { sourceId: sid, tags: this.tagsOf(n, sid, errs) });
+      const hit = (source.filter || []).filter(f => f.value && n.name.indexOf(f.value) >= 0)[0];
+      if (hit) dropped.push(Object.assign({}, node, { reason: '名称包含「' + hit.value + '」' }));
+      else kept.push(node);
+    });
+    return { source: source, raw: raw, kept: kept, dropped: dropped };
+  }
+  allNodes(errs) { let out = []; this.state.def.sources.forEach(s => { out = out.concat(this.resolveSource(s.id, errs).kept); }); return out; }
+  tagNodes(tagId, ruleId) {
+    const out = [];
+    const tg = this.state.def.tags.filter(t => t.id === tagId)[0];
+    if (!tg) return out;
+    (tg.rules || []).forEach(rl => {
+      if (ruleId && rl.id !== ruleId) return;
+      this.resolveSource(rl.sourceId).kept.forEach(n => {
+        if (this.exprMatch(Object.assign({}, n, { tags: [] }), rl) && !out.some(x => x.sourceId === n.sourceId && x.name === n.name)) out.push(n);
+      });
+    });
+    return out;
+  }
+
+  rawGroups(sid) {
+    const kept = this.resolveSource(sid).kept;
+    if (sid === 'backup') {
+      const regions = [];
+      kept.forEach(n => { const r = REGIONS.filter(x => n.name.indexOf(x) === 0)[0]; if (r && regions.indexOf(r) < 0) regions.push(r); });
+      const groups = regions.map(r => ({ name: r, type: 'select', members: kept.filter(n => n.name.indexOf(r) === 0).map(n => n.name), subs: [] }));
+      groups.push({ name: '地区集合', type: 'select', members: [], subs: regions.slice(0, 3) });
+      return groups;
+    }
+    return [
+      { name: 'PROXY', type: 'select', members: kept.map(n => n.name), subs: [] },
+      { name: 'AUTO', type: 'url-test', members: kept.filter(n => /香港|日本/.test(n.name)).map(n => n.name), subs: [] },
+    ];
+  }
+  rawRules(sid) { return sid === 'backup' ? BAK_RULES : BOS_RULES; }
+  rawGroupNodes(sid, gname, recursive, depth) {
+    const g = this.rawGroups(sid).filter(x => x.name === gname)[0];
+    if (!g) return [];
+    const kept = this.resolveSource(sid).kept;
+    let nodes = g.members.map(nm => kept.filter(n => n.name === nm)[0]).filter(Boolean);
+    if (recursive && (depth || 0) < 3) (g.subs || []).forEach(s => { nodes = nodes.concat(this.rawGroupNodes(sid, s, true, (depth || 0) + 1)); });
+    return nodes;
+  }
+  exprNodes(member, errs) { return this.resolveSource(member.sourceId, errs).kept.filter(n => this.exprMatch(n, member, errs)); }
+
+  famGroups(fam) {
+    const kept = this.resolveSource(fam.sourceId).kept, regions = [];
+    kept.forEach(n => { const r = REGIONS.filter(x => n.name.indexOf(x) >= 0)[0]; if (r && regions.indexOf(r) < 0) regions.push(r); });
+    return regions.map(r => ({ id: 'fam:' + fam.id + ':' + r, name: fam.template.replace('{region}', r), type: fam.policy, nodes: kept.filter(n => n.name.indexOf(r) >= 0) }));
+  }
+  allFamGroups() { const out = []; this.state.def.families.forEach(f => this.famGroups(f).forEach(g => out.push(g))); return out; }
+
+  resolveGroup(gid, seen, errs) {
+    seen = seen || [];
+    const g = this.state.def.groups.filter(x => x.id === gid)[0];
+    if (!g) return { nodes: [], entries: [], cyc: false };
+    if (seen.indexOf(gid) >= 0) return { nodes: [], entries: [], cyc: true };
+    const path = seen.concat([gid]);
+    let nodes = [], entries = [], cyc = false;
+    (g.members || []).forEach(m => {
+      if (m.kind === 'expr') { const ns = this.exprNodes(m, errs); nodes = nodes.concat(ns); ns.forEach(n => entries.push({ type: 'node', node: n })); }
+      else if (m.kind === 'raw-expand') { const ns = this.rawGroupNodes(m.sourceId, m.rawGroup, m.recursive); nodes = nodes.concat(ns); ns.forEach(n => entries.push({ type: 'node', node: n })); }
+      else if (m.kind === 'raw-keep') { const ns = this.rawGroupNodes(m.sourceId, m.rawGroup, false); nodes = nodes.concat(ns); entries.push({ type: 'group', name: this.src(m.sourceId).name + ' · ' + m.rawGroup, nodes: ns, kept: true }); }
+      else if (m.kind === 'group') {
+        const sub = this.resolveGroup(m.groupId, path, errs), target = this.state.def.groups.filter(x => x.id === m.groupId)[0];
+        if (sub.cyc) cyc = true;
+        nodes = nodes.concat(sub.nodes);
+        entries.push({ type: 'group', name: target ? target.name : '（已删除的组）', nodes: sub.nodes, missing: !target });
+      } else if (m.kind === 'family') {
+        this.state.def.families.filter(f => f.id === m.familyId).forEach(f => this.famGroups(f).forEach(fg => { nodes = nodes.concat(fg.nodes); entries.push({ type: 'group', name: fg.name, nodes: fg.nodes, dyn: true }); }));
+      } else if (m.kind === 'builtin') entries.push({ type: 'builtin', name: m.value });
+    });
+    const seenKey = {}, uniq = [];
+    nodes.forEach(n => { const k = n.sourceId + '|' + n.name + '|' + n.server + '|' + n.port; if (!seenKey[k]) { seenKey[k] = 1; uniq.push(n); } });
+    return { nodes: uniq, entries: entries, cyc: cyc };
+  }
+
+  targets() {
+    const out = [{ value: 'DIRECT', label: 'DIRECT' }, { value: 'REJECT', label: 'REJECT' }];
+    this.state.def.groups.forEach(g => out.push({ value: g.id, label: g.name }));
+    this.allFamGroups().forEach(g => out.push({ value: g.id, label: g.name + '（动态）' }));
+    return out;
+  }
+  targetLabel(id) { const t = this.targets().filter(x => x.value === id)[0]; return t ? t.label : '（悬空目标）'; }
+
+  finalRules() {
+    const out = [];
+    this.state.def.blocks.forEach(b => {
+      if (b.kind === 'custom') (b.rules || []).forEach(r => out.push({ origin: '自定义', type: r.type, value: r.value, target: r.target, dangling: !this.targets().some(t => t.value === r.target) }));
+      else {
+        const sname = this.src(b.sourceId).name;
+        this.rawRules(b.sourceId).forEach((r, i) => {
+          if (r.t === 'RULE-SET') return;
+          const key = b.sourceId + ':' + i;
+          let target = null;
+          if ((r.o === 'DIRECT' || r.o === 'REJECT') && b.keepDR) target = r.o;
+          else if (b.map && b.map[key]) target = b.map[key];
+          else if (b.defaultTarget && b.defaultTarget !== 'none') target = b.defaultTarget;
+          if (!target) return;
+          out.push({ origin: sname, type: r.t, value: r.v, target: target, dangling: !this.targets().some(t => t.value === target) });
+        });
+      }
+    });
+    return out;
+  }
+  unmapped(b) {
+    let n = 0;
+    this.rawRules(b.sourceId).forEach((r, i) => {
+      if (r.t === 'RULE-SET') return;
+      if ((r.o === 'DIRECT' || r.o === 'REJECT') && b.keepDR) return;
+      if (b.map && b.map[b.sourceId + ':' + i]) return;
+      if (b.defaultTarget && b.defaultTarget !== 'none') return;
+      n++;
+    });
+    return n;
+  }
+  outputNodes() {
+    const map = {};
+    this.state.def.groups.forEach(g => this.resolveGroup(g.id).nodes.forEach(n => { map[n.sourceId + '|' + n.name + '|' + n.server] = n; }));
+    this.allFamGroups().forEach(g => g.nodes.forEach(n => { map[n.sourceId + '|' + n.name + '|' + n.server] = n; }));
+    return Object.keys(map).map(k => map[k]);
+  }
+  usageMap(errs) {
+    const u = {}, add = (n, group, gid, reason) => { const k = n.sourceId + '|' + n.name; (u[k] = u[k] || []).push({ group: group, gid: gid, reason: reason }); };
+    this.state.def.groups.forEach(g => (g.members || []).forEach(m => {
+      if (m.kind === 'expr') this.exprNodes(m, errs).forEach(n => add(n, g.name, g.id, '满足条件'));
+      else if (m.kind === 'raw-expand' || m.kind === 'raw-keep') this.rawGroupNodes(m.sourceId, m.rawGroup, m.recursive).forEach(n => add(n, g.name, g.id, '原始组 ' + m.rawGroup));
+    }));
+    this.allFamGroups().forEach(g => g.nodes.forEach(n => add(n, g.name, null, '动态地区组')));
+    return u;
+  }
+
+  diagnose() {
+    const d = [], errs = {}, def = this.state.def;
+    def.groups.forEach(g => {
+      const r = this.resolveGroup(g.id, [], errs);
+      if (!r.entries.length) d.push({ level: 'block', title: g.name + ' 没有成员', detail: '当前快照下该组为空，导出被阻断。', go: () => this.go({ mode: 'groups', openCard: Object.assign({}, this.state.openCard, { [g.id]: true }), focusGroup: g.id }) });
+      if (r.cyc) d.push({ level: 'block', title: g.name + ' 存在循环引用', detail: '组之间互相引用，需要移除其中一条引用。', go: () => this.go({ mode: 'groups', openCard: Object.assign({}, this.state.openCard, { [g.id]: true }) }) });
+      r.entries.forEach(e => { if (e.missing) d.push({ level: 'block', title: g.name + ' 引用了已删除的组', detail: '请更换或移除该成员。', go: () => this.go({ mode: 'groups', openCard: Object.assign({}, this.state.openCard, { [g.id]: true }) }) }); });
+      const dup = def.groups.filter(x => x.name === g.name);
+      if (dup.length > 1 && dup[0].id === g.id) d.push({ level: 'block', title: '组名重复：' + g.name, detail: 'Surge 要求组名唯一。', go: () => this.go({ mode: 'groups' }) });
+    });
+    def.tags.forEach(tg => (tg.rules || []).forEach(rl => {
+      const exact = (rl.items || []).filter(it => it.op === 'in' && it.field === 'name' && !it.neg);
+      const kept = this.resolveSource(rl.sourceId).kept;
+      exact.forEach(it => {
+        const miss = this.listVals(it.value).filter(v => !kept.some(n => n.name === v));
+        if (miss.length) d.push({ level: 'warn', title: '「' + tg.name + '」精确名单部分失配', detail: this.src(rl.sourceId).name + ' 当前快照缺少：' + miss.join('、'), go: () => this.go({ mode: 'tags', openTag: Object.assign({}, this.state.openTag, { [tg.id]: true }) }) });
+      });
+    }));
+    Object.keys(errs).forEach(k => d.push({ level: 'block', title: '正则条件无效', detail: errs[k], go: () => this.go({ mode: 'groups' }) }));
+    def.blocks.forEach(b => {
+      if (b.kind !== 'source') return;
+      const un = this.unmapped(b);
+      if (un) d.push({ level: 'block', title: '来源规则未映射', detail: un + ' 条来源规则没有目标，导出前必须处理。', go: () => this.go({ mode: 'rules', openBlock: Object.assign({}, this.state.openBlock, { [b.id]: true }) }) });
+      const unsup = this.rawRules(b.sourceId).filter(r => r.t === 'RULE-SET').length;
+      if (unsup) d.push({ level: 'warn', title: '不支持的规则类型', detail: unsup + ' 条 RULE-SET 已跳过，不会进入输出。', go: () => this.go({ mode: 'rules', openBlock: Object.assign({}, this.state.openBlock, { [b.id]: true }) }) });
+    });
+    this.finalRules().forEach(r => { if (r.dangling) d.push({ level: 'block', title: '规则指向悬空目标', detail: r.type + ',' + r.value, go: () => this.go({ mode: 'rules' }) }); });
+    if (!this.targets().some(t => t.value === def.fallback)) d.push({ level: 'block', title: '兜底目标无效', detail: '请重新选择 FINAL 目标。', go: () => this.go({ mode: 'rules' }) });
+    return d;
+  }
+
+  configText() {
+    const def = this.state.def, L = [], out = this.outputNodes();
+    L.push('#!MANAGED-CONFIG https://convertor.example.dev/s/v1/… interval=86400', '', '[Proxy]');
+    out.slice(0, 8).forEach(n => L.push(n.name + ' = ' + n.protocol + ', ' + n.server + ', ' + n.port + ', password=••••••, udp-relay=true'));
+    if (out.length > 8) L.push('# … 其余 ' + (out.length - 8) + ' 个节点');
+    L.push('', '[Proxy Group]');
+    def.groups.forEach(g => {
+      const r = this.resolveGroup(g.id), names = r.entries.map(e => e.type === 'node' ? e.node.name : e.name);
+      let line = g.name + ' = ' + (g.type === 'url-test' ? 'url-test' : 'select') + ', ' + (names.slice(0, 6).join(', ') || '（空）');
+      if (names.length > 6) line += ', …+' + (names.length - 6);
+      if (g.type === 'url-test') line += ', url=' + g.params.url + ', interval=' + g.params.interval + ', tolerance=' + g.params.tolerance;
+      L.push(line);
+    });
+    this.allFamGroups().forEach(g => L.push(g.name + ' = url-test, ' + g.nodes.map(n => n.name).join(', ') + '  # 动态生成'));
+    L.push('', '[Rule]');
+    this.finalRules().forEach(r => L.push(r.type + ',' + r.value + ',' + this.targetLabel(r.target).replace('（动态）', '')));
+    L.push('FINAL,' + this.targetLabel(def.fallback).replace('（动态）', ''));
+    return L.join('\n');
+  }
+  defHash() { const s = JSON.stringify(this.state.def); return s.length + ':' + s.split('').reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 99999989, 7); }
+
+  go(patch) { this.setState(patch, () => setTimeout(() => this.forceUpdate(), 30)); }
+
+  // ---------- style helpers ----------
+  pill(text, color) { return { padding: '3px 9px', borderRadius: 7, background: 'rgba(255,255,255,.03)', border: '1px solid ' + color + '4d', color: color, fontSize: 11, whiteSpace: 'nowrap' }; }
+  tab(on) { return { padding: '9px 14px', border: 'none', borderBottom: '2px solid ' + (on ? AC : 'transparent'), background: 'transparent', color: on ? '#eceef4' : DIM, fontSize: 13, fontWeight: on ? 600 : 400, cursor: 'pointer' }; }
+  seg(on) { return { padding: '5px 12px', borderRadius: 7, border: 'none', background: on ? AC : 'transparent', color: on ? '#0d0f14' : DIM, fontSize: 11.5, fontWeight: on ? 600 : 400, cursor: 'pointer' }; }
+  icon() { return { width: 24, height: 24, flex: 'none', borderRadius: 7, border: '1px solid ' + BD, background: 'transparent', color: DIM, fontSize: 11.5, cursor: 'pointer' }; }
+  ghost(sm) { return { padding: sm ? '6px 11px' : '8px 13px', borderRadius: 8, border: '1px solid ' + BD, background: 'transparent', color: DIM, fontSize: sm ? 11.5 : 12.5, cursor: 'pointer' }; }
+  chipNode(n, tone) { return { label: n.name, style: { padding: '4px 9px', borderRadius: 7, background: '#0d0f14', border: '1px solid ' + (tone === 'bad' ? '#5d3030' : BD), color: tone === 'bad' ? RD : '#c3c9db', fontSize: 11, whiteSpace: 'nowrap' } }; }
+  chipGroup(label, count) { return { label: '⊞ ' + label + (count == null ? '' : ' (' + count + ')'), style: { padding: '4px 9px', borderRadius: 7, background: 'rgba(139,155,255,.1)', border: '1px solid #363e5c', color: '#a6b2ff', fontSize: 11, whiteSpace: 'nowrap' } }; }
+  dd(key, options, cur, pick, opt) {
+    opt = opt || {};
+    const open = this.state.openDD === key, hit = options.filter(o => o.value === cur)[0], tone = opt.tone;
+    return {
+      open: open, label: (hit ? hit.label : (opt.empty || '未选择')) + '  ⌄',
+      toggle: () => this.setState({ openDD: open ? null : key }),
+      btnStyle: {
+        minWidth: opt.w || 0, padding: '6px 10px', borderRadius: 8, textAlign: 'left',
+        border: '1px solid ' + (open ? AC : tone === 'warn' ? '#5f4620' : tone === 'bad' ? '#5d3030' : BD),
+        background: open ? '#171b2b' : '#0d0f14', color: tone === 'warn' ? WN : tone === 'bad' ? RD : '#eceef4',
+        fontSize: 11.5, fontFamily: opt.mono ? "'JetBrains Mono',monospace" : 'inherit', cursor: 'pointer', whiteSpace: 'nowrap',
+      },
+      options: options.map(o => ({
+        label: o.label, pick: () => { this.setState({ openDD: null }); pick(o.value); },
+        style: { padding: '7px 10px', borderRadius: 7, border: 'none', background: o.value === cur ? 'rgba(139,155,255,.16)' : 'transparent', color: o.value === cur ? '#eceef4' : DIM, fontSize: 12, textAlign: 'left', cursor: 'pointer', whiteSpace: 'nowrap' },
+      })),
+    };
+  }
+
+  exprRows(key, expr, errs, apply, sourceId) {
+    return (expr.items || []).map((it, ii) => {
+      const isTag = it.field === 'tag';
+      const hits = this.resolveSource(sourceId, errs).kept.filter(n => this.itemMatch(n, it, errs)).length;
+      return {
+        value: it.value == null ? '' : it.value,
+        placeholder: it.op === 'in' ? '用逗号分隔多个值' : it.op === 'regex' ? '正则表达式' : '值',
+        fieldDD: this.dd(key + '-f' + ii, FIELDS, it.field, v => apply(x => { x.items[ii].field = v; if (v === 'tag' && ['eq', 'prefix', 'suffix', 'regex'].indexOf(x.items[ii].op) >= 0) x.items[ii].op = 'contains'; }), { w: 70 }),
+        opDD: this.dd(key + '-o' + ii, isTag ? OPS.tag : OPS.text, it.op, v => apply(x => { x.items[ii].op = v; }), { w: 82 }),
+        inputStyle: { flex: 1, minWidth: 150, padding: '6px 10px', borderRadius: 8, border: '1px solid ' + (errs[it.id] ? '#5d3030' : BD), background: '#0d0f14', color: '#eceef4', fontFamily: "'JetBrains Mono',monospace", fontSize: 11.5 },
+        negStyle: { padding: '5px 10px', borderRadius: 8, border: '1px solid ' + (it.neg ? '#5d3030' : BD), background: it.neg ? '#1d1214' : '#0d0f14', color: it.neg ? RD : DIM, fontSize: 11, cursor: 'pointer', flex: 'none' },
+        negLabel: it.neg ? '排除' : '包含',
+        hits: hits + ' 命中', hitStyle: this.pill(hits + ' 命中', hits ? GR : WN),
+        error: errs[it.id] || '', iconBtn: this.icon(),
+        onValue: e => { const v = e.target.value; apply(x => { x.items[ii].value = v; }); },
+        toggleNeg: () => apply(x => { x.items[ii].neg = !x.items[ii].neg; }),
+        remove: () => apply(x => { x.items = x.items.filter((_, j) => j !== ii); }),
+      };
+    });
+  }
+
+  renderVals() {
+    const s = this.state, def = s.def, errs = {};
+    const diags = this.diagnose(), blocking = diags.filter(d => d.level === 'block');
+    const dirty = s.exportedHash !== null && s.exportedHash !== this.defHash();
+    const usage = this.usageMap(errs);
+    const famAll = this.allFamGroups();
+    const fr = this.finalRules();
+    const outNodes = this.outputNodes();
+    const srcOptions = def.sources.map(x => ({ value: x.id, label: x.name }));
+    const linkBase = 'https://convertor.example.dev/s/v1?p=' + btoa(unescape(encodeURIComponent(JSON.stringify(def)))).slice(0, s.forceLong ? 2600 : 168).replace(/=/g, '');
+    const linkLen = s.forceLong ? 2740 : 268;
+
+    // ---- left column
+    let nodes = this.allNodes(errs);
+    if (s.search) nodes = nodes.filter(n => (n.name + n.server).toLowerCase().indexOf(s.search.toLowerCase()) >= 0);
+    const sections = [];
+    const push = (key, label, list, extra) => { if (list.length) sections.push(Object.assign({ key: key, label: label, list: list }, extra || {})); };
+    if (s.groupBy === 'source') def.sources.forEach(src => push('s-' + src.id, src.name, nodes.filter(n => n.sourceId === src.id)));
+    else if (s.groupBy === 'protocol') {
+      const ps = [];
+      nodes.forEach(n => { if (ps.indexOf(n.protocol) < 0) ps.push(n.protocol); });
+      ps.forEach(p => push('p-' + p, p, nodes.filter(n => n.protocol === p)));
+    } else if (s.groupBy === 'tag') {
+      def.tags.forEach(tg => push('t-' + tg.id, tg.name, nodes.filter(n => n.tags.some(x => x.tagId === tg.id)), { isTag: true }));
+      const rawLabels = [];
+      nodes.forEach(n => n.tags.forEach(t => { if (t.origin === 'raw' && rawLabels.indexOf(t.label) < 0) rawLabels.push(t.label); }));
+      rawLabels.forEach(l => push('r-' + l, l + '（原始标签）', nodes.filter(n => n.tags.some(t => t.origin === 'raw' && t.label === l))));
+      push('t-none', '无标签', nodes.filter(n => !n.tags.length));
+    } else if (s.groupBy === 'region') {
+      REGIONS.forEach(r => push('g-' + r, r, nodes.filter(n => n.name.indexOf(r) >= 0)));
+      push('g-other', '其它', nodes.filter(n => !REGIONS.some(r => n.name.indexOf(r) >= 0)));
+    } else if (s.groupBy === 'usage') {
+      push('u-yes', '已被输出组引用', nodes.filter(n => (usage[n.sourceId + '|' + n.name] || []).length));
+      push('u-no', '尚未被任何组引用', nodes.filter(n => !(usage[n.sourceId + '|' + n.name] || []).length));
+    } else push('all', '全部节点', nodes);
+
+    const selKeys = Object.keys(s.sel).filter(k => s.sel[k]);
+    const focusTag = def.tags.filter(t => s.openTag[t.id])[0];
+    const focusGroup = def.groups.filter(g => s.openCard[g.id])[0];
+
+    return {
+      planName: def.name,
+      onPlanName: e => { const v = e.target.value; this.update(d => { d.name = v; }); },
+      saveText: s.save === 'saving' ? '保存中…' : '本地已保存',
+      saveStyle: this.pill(s.save === 'saving' ? '保存中…' : '本地已保存', s.save === 'saving' ? WN : GR),
+      exportStateText: s.exportedHash === null ? '未导出' : dirty ? '需重新导出' : '链接与当前定义一致',
+      exportStateStyle: this.pill(s.exportedHash === null ? '未导出' : dirty ? '需重新导出' : '链接与当前定义一致', s.exportedHash === null || dirty ? WN : GR),
+      issueText: blocking.length ? '问题 ' + blocking.length : diags.length ? '提示 ' + diags.length : '无问题',
+      issueStyle: { padding: '7px 12px', borderRadius: 8, border: '1px solid ' + (blocking.length ? '#5d3030' : BD), background: blocking.length ? '#1d1214' : 'transparent', color: blocking.length ? RD : DIM, fontSize: 12.5, cursor: 'pointer' },
+      openIssues: () => this.go({ mode: 'export' }),
+      sourceCount: def.sources.length,
+      toggleDrawer: () => this.setState({ drawerOpen: !s.drawerOpen }),
+      undo: this.undo, redo: this.redo,
+      undoStyle: Object.assign(this.icon(), { color: s.past.length ? '#eceef4' : '#474e61' }),
+      redoStyle: Object.assign(this.icon(), { color: s.future.length ? '#eceef4' : '#474e61' }),
+      ghostBtn: this.ghost(), ghostBtnSm: this.ghost(true),
+
+      demoOpen: s.demoOpen,
+      toggleDemo: () => this.setState({ demoOpen: !s.demoOpen }),
+      demoBtnStyle: { padding: '7px 12px', borderRadius: 8, border: '1px solid ' + (s.demoOpen ? AC : BD), background: 'transparent', color: DIM, fontSize: 12.5, cursor: 'pointer' },
+      snapOptions: ['A', 'B', 'X'].map(k => ({
+        label: SNAPSHOTS[k].label, desc: SNAPSHOTS[k].desc,
+        select: () => {
+          const before = {}, famBefore = famAll.map(g => g.name);
+          def.groups.forEach(g => { before[g.id] = this.resolveGroup(g.id).nodes.length; });
+          this.setState({ snap: k, demoOpen: false }, () => {
+            const rows = [];
+            this.state.def.groups.forEach(g => {
+              const n = this.resolveGroup(g.id).nodes.length, b = before[g.id] || 0;
+              if (n !== b) rows.push({ text: g.name + '：' + b + ' → ' + n + ' 个节点', up: n > b });
+            });
+            this.allFamGroups().forEach(g => { if (famBefore.indexOf(g.name) < 0) rows.push({ text: '动态新增组：' + g.name, up: true }); });
+            famBefore.forEach(nm => { if (!this.allFamGroups().some(g => g.name === nm)) rows.push({ text: '动态移除组：' + nm, up: false }); });
+            this.setState({ delta: rows.length ? rows : [{ text: '成员没有变化', up: true }] });
+            this.ping('已切换到 ' + SNAPSHOTS[k].label + '，编排定义未改动');
+          });
+        },
+        style: { display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-start', padding: '9px 11px', borderRadius: 9, border: '1px solid ' + (s.snap === k ? AC : BD), background: s.snap === k ? '#171b2b' : '#0d0f14', color: '#eceef4', fontSize: 12.5, cursor: 'pointer', textAlign: 'left' },
+      })),
+      demoToggles: [
+        { label: '模拟超长链接', on: s.forceLong, toggle: () => this.setState({ forceLong: !s.forceLong }) },
+        { label: '下次读取来源失败', on: s.failNext, toggle: () => this.setState({ failNext: !s.failNext }) },
+      ].map(t => ({ label: t.label, toggle: t.toggle, state: t.on ? '开' : '关', pill: this.pill(t.on ? '开' : '关', t.on ? GR : DIM) })),
+
+      // ---- left
+      leftTabs: [['nodes', '节点'], ['rawg', '原始组'], ['rawr', '原始规则']].map(([id, label]) => ({ label: label, select: () => this.go({ leftTab: id }), style: this.tab(s.leftTab === id) })),
+      leftIsNodes: s.leftTab === 'nodes', leftIsRaw: s.leftTab !== 'nodes',
+      leftIsRawGroups: s.leftTab === 'rawg', leftIsRawRules: s.leftTab === 'rawr',
+      search: s.search, onSearch: e => this.setState({ search: e.target.value }),
+      groupByDD: this.dd('groupby', GROUP_BYS, s.groupBy, v => this.go({ groupBy: v }), { w: 78 }),
+      rawSrcDD: this.dd('rawsrc', srcOptions, s.rawSrc, v => this.go({ rawSrc: v }), { w: 92 }),
+      leftMeta: s.leftTab === 'nodes'
+        ? nodes.length + ' 个可用节点 · 共 ' + def.sources.reduce((a, x) => a + this.resolveSource(x.id).raw.length, 0) + ' 个原始节点 · 快照 ' + SNAPSHOTS[s.snap].time
+        : this.src(s.rawSrc).name + ' 的来源自带内容',
+      noNodes: nodes.length === 0,
+      nodeSections: sections.map(sec => {
+        const open = !s.collapsed[sec.key];
+        return {
+          label: sec.label, count: sec.list.length + ' 个', open: open, toggle: () => this.setState({ collapsed: Object.assign({}, s.collapsed, { [sec.key]: open }) }),
+          caret: { display: 'inline-block', color: '#565d72', fontSize: 12, transform: open ? 'rotate(90deg)' : 'none', transition: 'transform .15s ease' },
+          hasTagDot: !!sec.isTag, tagDot: { width: 7, height: 7, borderRadius: 99, background: AC },
+          nodes: sec.list.map(n => {
+            const key = n.sourceId + '|' + n.name, on = !!s.sel[key], use = usage[key] || [];
+            return {
+              name: n.name, meta: n.protocol + ' · ' + n.server.replace(/^[^.]+/, m => m.slice(0, 3) + '•••'),
+              usedIn: use.length ? use.length + ' 组' : '',
+              rowStyle: { display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px 9px 26px', background: on ? '#161b2a' : 'transparent', borderLeft: '2px solid ' + (on ? AC : 'transparent') },
+              checkStyle: { width: 16, height: 16, flex: 'none', borderRadius: 5, border: '1px solid ' + (on ? AC : '#39415a'), background: on ? AC : 'transparent', color: '#0d0f14', fontSize: 10, lineHeight: '14px', padding: 0, cursor: 'pointer' },
+              check: on ? '✓' : '',
+              toggle: () => this.setState(st => ({ sel: Object.assign({}, st.sel, { [key]: !st.sel[key] }) })),
+              nameStyle: { fontSize: 13, color: '#eceef4' },
+              tags: n.tags.map(t => ({
+                label: t.label, hint: t.origin === 'raw' ? '原始标签（来源提供）' : '自定义标签：' + t.label,
+                style: { padding: '2px 7px', borderRadius: 6, fontSize: 10.5, whiteSpace: 'nowrap', background: t.origin === 'custom' ? 'rgba(139,155,255,.14)' : 'transparent', border: '1px solid ' + (t.origin === 'custom' ? '#363e5c' : BD), color: t.origin === 'custom' ? '#a6b2ff' : DIM },
+              })),
+            };
+          }),
+        };
+      }),
+      rawGroupRows: this.rawGroups(s.rawSrc).map(g => ({
+        name: g.name, type: g.type,
+        summary: (g.members.length ? g.members.length + ' 个节点' : '') + (g.subs && g.subs.length ? (g.members.length ? ' · ' : '') + g.subs.length + ' 个子组' : ''),
+        members: g.members.map(m => ({ label: m, style: { padding: '3px 8px', borderRadius: 6, background: '#0d0f14', border: '1px solid ' + BD, color: '#c3c9db', fontSize: 11 } }))
+          .concat((g.subs || []).map(sb => this.chipGroup(sb))),
+      })),
+      rawRuleRows: this.rawRules(s.rawSrc).map(r => ({
+        type: r.t, value: r.v, target: r.t === 'RULE-SET' ? r.o + ' · 不支持' : r.o,
+        targetStyle: this.pill(r.t === 'RULE-SET' ? r.o + ' · 不支持' : r.o, r.t === 'RULE-SET' ? WN : r.o === 'REJECT' ? RD : r.o === 'DIRECT' ? GR : DIM),
+      })),
+      hasSelection: selKeys.length > 0, selCount: selKeys.length,
+      clearSelection: () => this.setState({ sel: {} }),
+      selActionLabel: s.mode === 'tags' ? (focusTag ? '生成条件加入「' + focusTag.name + '」' : '先展开一个标签') : (focusGroup ? '生成条件加入「' + focusGroup.name + '」' : '先展开一个组'),
+      selActionHint: s.mode === 'tags'
+        ? '勾选只是快捷生成「名称属于列表」条件；条件仍归属所选来源，之后可改成包含或正则。'
+        : '勾选只是快捷生成「名称属于列表」条件，写进当前展开的组；名称变了会失配，可随时改成条件式选取。',
+      selToCondition: () => {
+        const bySource = {};
+        selKeys.forEach(k => { const i = k.indexOf('|'); const sid = k.slice(0, i), nm = k.slice(i + 1); (bySource[sid] = bySource[sid] || []).push(nm); });
+        if (s.mode === 'tags') {
+          if (!focusTag) { this.ping('先展开一个标签容器'); return; }
+          this.update(d => {
+            const tg = d.tags.filter(x => x.id === focusTag.id)[0];
+            Object.keys(bySource).forEach(sid => tg.rules.push({ id: uid('tr'), sourceId: sid, mode: 'all', items: [{ id: uid('ti'), field: 'name', op: 'in', value: bySource[sid].join(', ') }] }));
+          });
+          this.ping('已写成「名称属于列表」条件，加入标签 ' + focusTag.name);
+        } else {
+          if (!focusGroup) { this.ping('先展开一个策略组'); return; }
+          this.update(d => {
+            const g = d.groups.filter(x => x.id === focusGroup.id)[0];
+            Object.keys(bySource).forEach(sid => g.members.push({ id: uid('mb'), kind: 'expr', sourceId: sid, mode: 'all', items: [{ id: uid('it'), field: 'name', op: 'in', value: bySource[sid].join(', ') }] }));
+          });
+          this.ping('已写成条件加入 ' + focusGroup.name);
+        }
+        this.setState({ sel: {} });
+      },
+
+      // ---- mode tabs
+      modeTabs: [['groups', '策略组编排'], ['tags', '打标签'], ['rules', '规则'], ['export', '预览与导出']].map(([id, label]) => ({ label: label, select: () => this.go({ mode: id }), style: this.tab(s.mode === id) })),
+      modeIsGroups: s.mode === 'groups', modeIsTags: s.mode === 'tags', modeIsRules: s.mode === 'rules', modeIsExport: s.mode === 'export',
+
+      // ---- groups
+      groupsSummary: def.groups.length + ' 个组 · ' + famAll.length + ' 个动态生成组 · 最终 ' + outNodes.length + ' 个不同节点',
+      groupCards: def.groups.map(g => {
+        const open = !!s.openCard[g.id], r = this.resolveGroup(g.id, [], errs);
+        const setG = fn => this.update(d => fn(d.groups.filter(x => x.id === g.id)[0]));
+        return {
+          name: g.name, open: open, closed: !open,
+          onName: e => { const v = e.target.value; setG(x => { x.name = v; }); },
+          toggle: () => this.setState({ openCard: Object.assign({}, s.openCard, { [g.id]: !open }) }),
+          caretStyle: { width: 22, height: 22, flex: 'none', borderRadius: 6, border: 'none', background: 'transparent', color: '#565d72', fontSize: 14, cursor: 'pointer', transform: open ? 'rotate(90deg)' : 'none' },
+          cardStyle: { display: 'flex', flexDirection: 'column', gap: 12, padding: '14px 15px', borderRadius: 13, border: '1px solid ' + (open ? '#2f3648' : '#1f2430'), background: open ? '#131721' : '#11141b' },
+          typeLabel: g.type === 'url-test' ? '自动测速' : '手动选择', typeChip: this.pill(g.type === 'url-test' ? '自动测速' : '手动选择', DIM),
+          countLabel: r.entries.length + ' 成员 · ' + r.nodes.length + ' 节点',
+          countStyle: this.pill(r.entries.length + ' 成员 · ' + r.nodes.length + ' 节点', r.entries.length ? GR : RD),
+          types: [['select', '手动选择'], ['url-test', '自动测速']].map(([id, label]) => ({
+            label: label, style: this.seg(g.type === id),
+            select: () => setG(x => { x.type = id; if (id === 'url-test' && !x.params.url) x.params = { url: 'http://www.gstatic.com/generate_204', interval: '600', tolerance: '120' }; }),
+          })),
+          params: g.type === 'url-test' ? [['url', '测速 URL', 220], ['interval', '间隔(秒)', 74], ['tolerance', '容差(ms)', 70]].map(([k, label, w]) => ({
+            label: label, value: g.params[k] || '',
+            inputStyle: { width: w, padding: '6px 9px', borderRadius: 8, border: '1px solid ' + BD, background: '#0d0f14', color: '#eceef4', fontFamily: "'JetBrains Mono',monospace", fontSize: 11.5 },
+            onChange: e => { const v = e.target.value; setG(x => { x.params[k] = v; }); },
+          })) : [],
+          dup: () => this.update(d => { const c = JSON.parse(JSON.stringify(g)); c.id = uid('g'); c.name = g.name + ' 副本'; (c.members || []).forEach(m => { m.id = uid('mb'); }); d.groups.push(c); }),
+          remove: () => {
+            const refs = [];
+            def.groups.forEach(o => (o.members || []).forEach(m => { if (m.kind === 'group' && m.groupId === g.id) refs.push('组「' + o.name + '」'); }));
+            def.blocks.forEach(b => { if (b.kind === 'custom') (b.rules || []).forEach(r2 => { if (r2.target === g.id) refs.push('规则 ' + r2.type + ',' + r2.value); }); else if (b.defaultTarget === g.id) refs.push('来源规则块目标'); });
+            if (def.fallback === g.id) refs.push('FINAL 兜底');
+            if (refs.length) { this.ping('无法删除：仍被 ' + refs.join('、') + ' 引用'); return; }
+            this.update(d => { d.groups = d.groups.filter(x => x.id !== g.id); });
+          },
+          members: (g.members || []).map((m, mi) => {
+            const mv = fn => this.update(d => fn(d.groups.filter(x => x.id === g.id)[0].members[mi]));
+            const move = dir => this.update(d => { const arr = d.groups.filter(x => x.id === g.id)[0].members, j = mi + dir; if (j < 0 || j >= arr.length) return; const t = arr[mi]; arr[mi] = arr[j]; arr[j] = t; });
+            const kindLabel = { expr: '条件选取', 'raw-expand': '展开原始组', 'raw-keep': '保留原始组结构', group: '引用组', family: '引用动态组族', builtin: '内置策略' }[m.kind];
+            let preview = [], count = 0, warn = '', title = '', subtitle = '';
+            if (m.kind === 'expr') {
+              const ns = this.exprNodes(m, errs);
+              count = ns.length; title = this.src(m.sourceId).name; subtitle = '从这个来源按条件选';
+              preview = ns.slice(0, 12).map(n => this.chipNode(n));
+              const exactMiss = [];
+              (m.items || []).forEach(it => { if (it.op === 'in' && it.field === 'name' && !it.neg) this.listVals(it.value).forEach(v => { if (!this.resolveSource(m.sourceId).kept.some(n => n.name === v)) exactMiss.push(v); }); });
+              if (exactMiss.length) warn = '精确名称失配：' + exactMiss.join('、') + '（改名或消失则失配，地址更新仍可匹配）';
+            } else if (m.kind === 'raw-expand' || m.kind === 'raw-keep') {
+              const ns = this.rawGroupNodes(m.sourceId, m.rawGroup, m.recursive);
+              count = ns.length; title = this.src(m.sourceId).name + ' · ' + m.rawGroup;
+              subtitle = m.kind === 'raw-keep' ? '作为子组导入' : '展开为节点';
+              preview = ns.map(n => this.chipNode(n));
+            } else if (m.kind === 'group') {
+              const t = def.groups.filter(x => x.id === m.groupId)[0];
+              title = t ? t.name : '（已删除的组）'; subtitle = '子组'; count = t ? this.resolveGroup(t.id).nodes.length : 0;
+              if (!t) warn = '引用的组不存在，请更换或移除';
+            } else if (m.kind === 'family') {
+              const f = def.families.filter(x => x.id === m.familyId)[0], gs = f ? this.famGroups(f) : [];
+              title = f ? f.name : '（组族不存在）'; subtitle = '整批动态组作为子组'; count = gs.length;
+              preview = gs.map(x => this.chipGroup(x.name, x.nodes.length));
+            } else { title = m.value; subtitle = '内置策略'; count = 1; }
+            return {
+              kindLabel: kindLabel, kindStyle: this.pill(kindLabel, m.kind === 'expr' ? AC : DIM),
+              title: title, subtitle: subtitle,
+              countLabel: m.kind === 'family' ? count + ' 组' : count + ' 项',
+              countStyle: this.pill(m.kind === 'family' ? count + ' 组' : count + ' 项', count ? GR : RD),
+              iconBtn: this.icon(), ghostBtn: this.ghost(true),
+              up: () => move(-1), down: () => move(1),
+              remove: () => this.update(d => { const gg = d.groups.filter(x => x.id === g.id)[0]; gg.members = gg.members.filter((_, j) => j !== mi); }),
+              isExpr: m.kind === 'expr', isRaw: m.kind === 'raw-expand' || m.kind === 'raw-keep',
+              srcDD: this.dd('ms-' + m.id, srcOptions, m.sourceId, v => mv(x => { x.sourceId = v; }), { w: 86 }),
+              modes: [['all', '全部满足'], ['any', '任一满足']].map(([id, label]) => ({ label: label, select: () => mv(x => { x.mode = id; }), style: this.seg(m.mode === id) })),
+              items: this.exprRows('m' + m.id, m, errs, mv, m.sourceId),
+              addItem: () => mv(x => { x.items = (x.items || []).concat([{ id: uid('it'), field: 'name', op: 'contains', value: '' }]); }),
+              addRegex: () => mv(x => { x.items = (x.items || []).concat([{ id: uid('it'), field: 'name', op: 'regex', value: '' }]); }),
+              toggleRecursive: () => mv(x => { x.recursive = !x.recursive; }),
+              recStyle: { padding: '6px 11px', borderRadius: 8, border: '1px solid ' + (m.recursive ? AC : BD), background: m.recursive ? '#171b2b' : '#0d0f14', color: m.recursive ? '#eceef4' : DIM, fontSize: 11.5, cursor: 'pointer' },
+              recLabel: m.recursive ? '递归展开子组：开' : '递归展开子组：关',
+              rawHint: m.kind === 'raw-keep' ? '保留结构：原始组作为子组出现在输出里，不拍平成节点。' : '展开：原始组里的节点直接成为本组成员。',
+              hasPreview: preview.length > 0, preview: preview,
+              warn: warn,
+            };
+          }),
+          addOptions: [
+            { label: '+ 条件选取节点', make: () => ({ id: uid('mb'), kind: 'expr', sourceId: def.sources[0].id, mode: 'all', items: [{ id: uid('it'), field: 'name', op: 'contains', value: '' }] }) },
+            { label: '+ 按标签选取', make: () => ({ id: uid('mb'), kind: 'expr', sourceId: def.sources[0].id, mode: 'all', items: [{ id: uid('it'), field: 'tag', op: 'contains', value: def.tags[0] ? def.tags[0].name : '' }] }) },
+            { label: '+ 展开原始组', make: () => ({ id: uid('mb'), kind: 'raw-expand', sourceId: 'backup', rawGroup: '地区集合', recursive: true }) },
+            { label: '+ 保留原始组为子组', make: () => ({ id: uid('mb'), kind: 'raw-keep', sourceId: 'backup', rawGroup: '香港' }) },
+            { label: '+ 引用其它组', make: () => ({ id: uid('mb'), kind: 'group', groupId: (def.groups.filter(x => x.id !== g.id)[0] || g).id }) },
+            { label: '+ 引用动态组族', make: () => ({ id: uid('mb'), kind: 'family', familyId: def.families[0].id }) },
+            { label: '+ DIRECT', make: () => ({ id: uid('mb'), kind: 'builtin', value: 'DIRECT' }) },
+            { label: '+ REJECT', make: () => ({ id: uid('mb'), kind: 'builtin', value: 'REJECT' }) },
+          ].map(o => ({ label: o.label, hint: '', style: this.ghost(true), add: () => this.update(d => { d.groups.filter(x => x.id === g.id)[0].members.push(o.make()); }) })),
+          resultSummary: '当前成员：' + r.nodes.length + ' 个节点 · ' + r.entries.filter(e => e.type === 'group').length + ' 个子组',
+          empty: r.entries.length === 0,
+          gotoTags: () => this.go({ mode: 'tags', openTag: { t_res: true } }),
+          result: r.entries.map(e => e.type === 'node' ? this.chipNode(e.node) : e.type === 'builtin' ? { label: e.name, style: { padding: '4px 9px', borderRadius: 7, background: '#0d0f14', border: '1px solid ' + BD, color: DIM, fontSize: 11 } } : this.chipGroup(e.name, (e.nodes || []).length))
+            .map(c => ({ label: c.label, style: c.style, hint: '' })),
+        };
+      }),
+      addGroup: () => { const id = uid('g'); this.update(d => { d.groups.push({ id: id, name: '新建组', type: 'select', params: {}, members: [] }); }); this.setState({ openCard: Object.assign({}, s.openCard, { [id]: true }) }); },
+      familyCards: def.families.map(f => ({
+        name: f.name, template: f.template, source: this.src(f.sourceId).name,
+        meta: '生成 ' + this.famGroups(f).length + ' 组',
+        onName: e => { const v = e.target.value; this.update(d => { d.families.filter(x => x.id === f.id)[0].name = v; }); },
+        onTemplate: e => { const v = e.target.value; this.update(d => { d.families.filter(x => x.id === f.id)[0].template = v; }); },
+        groups: this.famGroups(f).map(g => ({ name: g.name, count: g.nodes.length, nodes: g.nodes.map(n => this.chipNode(n)) })),
+      })),
+
+      // ---- tags
+      tagCards: def.tags.map(tg => {
+        const open = !!s.openTag[tg.id];
+        const hits = this.tagNodes(tg.id);
+        const srcs = [];
+        (tg.rules || []).forEach(rl => { if (srcs.indexOf(rl.sourceId) < 0) srcs.push(rl.sourceId); });
+        const usedBy = def.groups.filter(g => (g.members || []).some(m => m.kind === 'expr' && (m.items || []).some(it => it.field === 'tag' && String(it.value).indexOf(tg.name) >= 0)));
+        return {
+          name: tg.name, open: open, count: hits.length,
+          countStyle: this.pill('命中 ' + hits.length + ' 个节点', hits.length ? GR : RD),
+          srcMeta: '条件覆盖 ' + srcs.length + ' 个来源：' + srcs.map(x => this.src(x).name).join('、'),
+          onName: e => { const v = e.target.value; this.update(d => { d.tags.filter(x => x.id === tg.id)[0].name = v; }); },
+          toggle: () => this.setState({ openTag: Object.assign({}, s.openTag, { [tg.id]: !open }) }),
+          caretStyle: { width: 22, height: 22, flex: 'none', borderRadius: 6, border: 'none', background: 'transparent', color: '#565d72', fontSize: 14, cursor: 'pointer', transform: open ? 'rotate(90deg)' : 'none' },
+          cardStyle: { display: 'flex', flexDirection: 'column', gap: 12, padding: '14px 15px', borderRadius: 13, border: '1px solid ' + (open ? '#2f3648' : '#1f2430'), background: open ? '#131721' : '#11141b' },
+          remove: () => {
+            if (usedBy.length) { this.ping('无法删除：' + usedBy.map(g => g.name).join('、') + ' 正在按这个标签选节点'); return; }
+            this.update(d => { d.tags = d.tags.filter(x => x.id !== tg.id); });
+            this.ping('已删除标签，节点标签与相关组已重新计算');
+          },
+          rules: (tg.rules || []).map((rl, ri) => {
+            const mv = fn => this.update(d => fn(d.tags.filter(x => x.id === tg.id)[0].rules[ri]));
+            const ns = this.tagNodes(tg.id, rl.id);
+            const exactMiss = [];
+            (rl.items || []).forEach(it => { if (it.op === 'in' && it.field === 'name' && !it.neg) this.listVals(it.value).forEach(v => { if (!this.resolveSource(rl.sourceId).kept.some(n => n.name === v)) exactMiss.push(v); }); });
+            return {
+              count: ns.length, countStyle: this.pill(ns.length + ' 个节点', ns.length ? GR : WN),
+              iconBtn: this.icon(), ghostBtn: this.ghost(true),
+              hint: '这条条件只作用于 ' + this.src(rl.sourceId).name,
+              srcDD: this.dd('ts-' + rl.id, srcOptions, rl.sourceId, v => mv(x => { x.sourceId = v; }), { w: 86 }),
+              modes: [['all', '全部满足'], ['any', '任一满足']].map(([id, label]) => ({ label: label, select: () => mv(x => { x.mode = id; }), style: this.seg(rl.mode === id) })),
+              items: this.exprRows('t' + rl.id, rl, errs, mv, rl.sourceId),
+              addItem: () => mv(x => { x.items = (x.items || []).concat([{ id: uid('ti'), field: 'name', op: 'contains', value: '' }]); }),
+              addRegex: () => mv(x => { x.items = (x.items || []).concat([{ id: uid('ti'), field: 'name', op: 'regex', value: '' }]); }),
+              remove: () => this.update(d => { const t = d.tags.filter(x => x.id === tg.id)[0]; t.rules = t.rules.filter((_, j) => j !== ri); }),
+              preview: ns.map(n => this.chipNode(n)),
+              warn: exactMiss.length ? '精确名单失配：' + exactMiss.join('、') : '',
+            };
+          }),
+          addRuleOptions: def.sources.map(src => ({
+            label: '+ 在「' + src.name + '」里选节点', style: this.ghost(true),
+            add: () => this.update(d => { d.tags.filter(x => x.id === tg.id)[0].rules.push({ id: uid('tr'), sourceId: src.id, mode: 'all', items: [{ id: uid('ti'), field: 'name', op: 'contains', value: '' }] }); }),
+          })),
+          usedBy: usedBy.map(g => ({
+            label: g.name, style: Object.assign(this.ghost(true), { color: '#a6b2ff', borderColor: '#363e5c' }),
+            goto: () => this.go({ mode: 'groups', openCard: Object.assign({}, s.openCard, { [g.id]: true }) }),
+          })),
+          unused: usedBy.length === 0,
+        };
+      }),
+      addTag: () => { const id = uid('t'); this.update(d => { d.tags.push({ id: id, name: '新标签', rules: [] }); }); this.setState({ openTag: Object.assign({}, s.openTag, { [id]: true }) }); },
+
+      // ---- rules
+      ruleBlocks: def.blocks.map((b, bi) => {
+        const open = !!s.openBlock[b.id];
+        const move = dir => this.update(d => { const j = bi + dir; if (j < 0 || j >= d.blocks.length) return; const t = d.blocks[bi]; d.blocks[bi] = d.blocks[j]; d.blocks[j] = t; });
+        const isC = b.kind === 'custom';
+        return {
+          idx: String(bi + 1).padStart(2, '0'),
+          kindLabel: isC ? '自定义' : '来源规则', kindStyle: this.pill(isC ? '自定义' : '来源规则', isC ? AC : WN),
+          title: isC ? (b.title || '自定义规则') : this.src(b.sourceId).name,
+          meta: isC ? (b.rules || []).length + ' 条' : (b.keepDR ? 'DIRECT/REJECT 保留 · ' : '') + '其它 → ' + (b.defaultTarget && b.defaultTarget !== 'none' ? this.targetLabel(b.defaultTarget) : '未映射'),
+          cardStyle: { display: 'flex', flexDirection: 'column', gap: 12, padding: '13px 15px', borderRadius: 13, border: '1px solid ' + (open ? '#2f3648' : '#1f2430'), background: open ? '#131721' : '#11141b', cursor: 'grab' },
+          caretStyle: { width: 22, height: 22, flex: 'none', borderRadius: 6, border: 'none', background: 'transparent', color: '#565d72', fontSize: 14, cursor: 'pointer', transform: open ? 'rotate(90deg)' : 'none' },
+          toggle: () => this.go({ openBlock: Object.assign({}, s.openBlock, { [b.id]: !open }) }),
+          iconBtn: this.icon(), ghostBtn: this.ghost(true),
+          up: () => move(-1), down: () => move(1),
+          remove: () => this.update(d => { d.blocks = d.blocks.filter(x => x.id !== b.id); }),
+          dragStart: e => { this._drag = bi; try { e.dataTransfer.effectAllowed = 'move'; } catch (x) {} },
+          dragOver: e => e.preventDefault(),
+          drop: e => { e.preventDefault(); const from = this._drag; if (from == null || from === bi) return; this.update(d => { const it = d.blocks.splice(from, 1)[0]; d.blocks.splice(bi, 0, it); }); this._drag = null; },
+          openCustom: open && isC, openSource: open && !isC,
+          rules: isC ? (b.rules || []).map((r, ri) => {
+            const bm = fn => this.update(d => fn(d.blocks.filter(x => x.id === b.id)[0].rules[ri]));
+            const dangling = !this.targets().some(t => t.value === r.target);
+            return {
+              value: r.value, iconBtn: this.icon(),
+              typeDD: this.dd('rt-' + b.id + '-' + ri, RULE_TYPES.map(t => ({ value: t, label: t })), r.type, v => bm(x => { x.type = v; }), { w: 136, mono: true }),
+              targetDD: this.dd('rg-' + b.id + '-' + ri, this.targets(), r.target, v => bm(x => { x.target = v; }), { w: 112, tone: dangling ? 'bad' : null, empty: '（悬空目标）' }),
+              onValue: e => { const v = e.target.value; bm(x => { x.value = v; }); },
+              up: () => this.update(d => { const arr = d.blocks.filter(x => x.id === b.id)[0].rules; if (ri === 0) return; const t = arr[ri]; arr[ri] = arr[ri - 1]; arr[ri - 1] = t; }),
+              down: () => this.update(d => { const arr = d.blocks.filter(x => x.id === b.id)[0].rules; if (ri >= arr.length - 1) return; const t = arr[ri]; arr[ri] = arr[ri + 1]; arr[ri + 1] = t; }),
+              remove: () => this.update(d => { const bb = d.blocks.filter(x => x.id === b.id)[0]; bb.rules = bb.rules.filter((_, j) => j !== ri); }),
+            };
+          }) : [],
+          addRule: () => this.update(d => { const bb = d.blocks.filter(x => x.id === b.id)[0]; bb.rules = (bb.rules || []).concat([{ id: uid('r'), type: 'DOMAIN-SUFFIX', value: '', target: 'DIRECT' }]); }),
+          keepDRLabel: b.keepDR ? 'DIRECT / REJECT 保留：开' : 'DIRECT / REJECT 保留：关',
+          keepDRStyle: { padding: '6px 11px', borderRadius: 8, border: '1px solid ' + (b.keepDR ? AC : BD), background: b.keepDR ? '#171b2b' : '#0d0f14', color: b.keepDR ? '#eceef4' : DIM, fontSize: 11.5, cursor: 'pointer' },
+          toggleKeepDR: () => this.update(d => { const bb = d.blocks.filter(x => x.id === b.id)[0]; bb.keepDR = !bb.keepDR; }),
+          defDD: this.dd('sbd-' + b.id, [{ value: 'none', label: '（不映射，需逐项处理）' }].concat(this.targets()), b.defaultTarget || 'none', v => this.update(d => { d.blocks.filter(x => x.id === b.id)[0].defaultTarget = v; }), { w: 140 }),
+          unmappedLabel: isC ? '' : (this.unmapped(b) ? this.unmapped(b) + ' 条未映射' : '全部已处理'),
+          unmappedStyle: this.pill(isC ? '' : (this.unmapped(b) ? this.unmapped(b) + ' 条未映射' : '全部已处理'), !isC && this.unmapped(b) ? RD : GR),
+          sourceRules: isC ? [] : this.rawRules(b.sourceId).map((r, i) => {
+            const key = b.sourceId + ':' + i, unsupported = r.t === 'RULE-SET';
+            const locked = unsupported || ((r.o === 'DIRECT' || r.o === 'REJECT') && b.keepDR);
+            const cur = (b.map && b.map[key]) || (b.defaultTarget && b.defaultTarget !== 'none' ? b.defaultTarget : '');
+            return {
+              type: r.t, value: r.v, origin: r.o,
+              rowStyle: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 11px', borderBottom: '1px solid #171b23', background: !locked && !cur ? '#221a0c' : 'transparent' },
+              editable: !locked, locked: locked,
+              lockLabel: unsupported ? '不支持，已跳过' : '保留 ' + r.o,
+              lockStyle: this.pill(unsupported ? '不支持，已跳过' : '保留 ' + r.o, unsupported ? WN : GR),
+              targetDD: this.dd('sr-' + b.id + '-' + i, [{ value: 'none', label: '未处理' }].concat(this.targets()), cur || 'none', v => this.update(d => { const bb = d.blocks.filter(x => x.id === b.id)[0]; bb.map = bb.map || {}; if (v === 'none') delete bb.map[key]; else bb.map[key] = v; }), { w: 124, tone: cur ? null : 'warn' }),
+            };
+          }),
+        };
+      }),
+      fallbackDD: this.dd('fallback', this.targets(), def.fallback, v => this.update(d => { d.fallback = v; }), { w: 110, empty: '（无效目标）', tone: this.targets().some(t => t.value === def.fallback) ? null : 'bad' }),
+      addCustomBlock: () => { const id = uid('rb'); this.update(d => { d.blocks.push({ id: id, kind: 'custom', title: '新自定义块', rules: [] }); }); this.go({ openBlock: Object.assign({}, s.openBlock, { [id]: true }) }); },
+      addSourceBlock: () => { const id = uid('rb'); this.update(d => { d.blocks.push({ id: id, kind: 'source', sourceId: 'backup', keepDR: true, defaultTarget: 'none', map: {} }); }); this.go({ openBlock: Object.assign({}, s.openBlock, { [id]: true }) }); },
+      finalRuleCount: fr.length + 1,
+      finalRules: fr.map((r, i) => ({
+        idx: String(i + 1).padStart(2, '0'), origin: r.origin, text: r.type + ',' + r.value, target: this.targetLabel(r.target),
+        rowStyle: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderBottom: '1px solid #171b23', background: r.dangling ? '#1d1214' : 'transparent' },
+        targetStyle: this.pill(this.targetLabel(r.target), r.dangling ? RD : r.target === 'REJECT' ? RD : r.target === 'DIRECT' ? GR : AC),
+      })).concat([{
+        idx: String(fr.length + 1).padStart(2, '0'), origin: '兜底', text: 'FINAL', target: this.targetLabel(def.fallback),
+        rowStyle: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: '#161a23' },
+        targetStyle: this.pill(this.targetLabel(def.fallback), AC),
+      }]),
+
+      // ---- export
+      structureSummary: def.groups.length + ' 个输出组 · ' + famAll.length + ' 个动态组 · ' + outNodes.length + ' 个不同节点 · ' + (fr.length + 1) + ' 条规则',
+      structureRows: (() => {
+        const rows = [];
+        def.groups.forEach(g => {
+          const r = this.resolveGroup(g.id);
+          rows.push({ depth: 0, kind: g.type === 'url-test' ? 'url-test' : 'select', name: g.name, meta: r.entries.length + ' 成员 · ' + r.nodes.length + ' 节点' });
+          r.entries.slice(0, 8).forEach(e => rows.push({
+            depth: 1, kind: e.type === 'group' ? '组' : e.type === 'builtin' ? '内置' : '节点',
+            name: e.type === 'node' ? e.node.name : e.name,
+            meta: e.type === 'group' ? (e.nodes || []).length + ' 节点' + (e.dyn ? ' · 动态' : e.kept ? ' · 保留结构' : '') : e.type === 'node' ? e.node.protocol : '',
+          }));
+          if (r.entries.length > 8) rows.push({ depth: 1, kind: '…', name: '其余 ' + (r.entries.length - 8) + ' 项', meta: '' });
+        });
+        famAll.forEach(g => rows.push({ depth: 0, kind: '动态', name: g.name, meta: g.nodes.length + ' 节点' }));
+        return rows;
+      })().map(r => ({
+        kind: r.kind, name: r.name, meta: r.meta,
+        indentStyle: { width: r.depth * 20, flex: 'none' },
+        kindStyle: { padding: '2px 7px', borderRadius: 6, background: '#0d0f14', border: '1px solid ' + BD, color: '#6d7488', fontSize: 10, whiteSpace: 'nowrap' },
+        nameStyle: { fontSize: r.depth ? 12 : 13, fontWeight: r.depth ? 400 : 600, color: r.depth ? '#c3c9db' : '#eceef4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+        rowStyle: { display: 'flex', alignItems: 'center', gap: 9, padding: '7px 12px', borderBottom: '1px solid #171b23', background: r.depth ? 'transparent' : '#131721' },
+      })),
+      configText: this.configText(),
+      copyConfig: () => { try { navigator.clipboard.writeText(this.configText()); } catch (e) {} this.ping('配置文本已复制'); },
+      diagnostics: diags.map(d => ({
+        title: d.title, detail: d.detail, level: d.level === 'block' ? '阻断' : '提示',
+        levelStyle: this.pill(d.level === 'block' ? '阻断' : '提示', d.level === 'block' ? RD : WN), goto: d.go,
+        style: { display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'flex-start', padding: '11px 12px', borderRadius: 10, border: '1px solid ' + (d.level === 'block' ? '#5d3030' : '#5f4620'), background: d.level === 'block' ? '#18101250' : '#1a14074d', color: '#eceef4', cursor: 'pointer', textAlign: 'left' },
+      })),
+      diagClean: diags.length === 0,
+      diagCountText: diags.length ? blocking.length + ' 阻断 · ' + (diags.length - blocking.length) + ' 提示' : '无',
+      diagCountStyle: this.pill(diags.length ? blocking.length + ' 阻断 · ' + (diags.length - blocking.length) + ' 提示' : '无', blocking.length ? RD : DIM),
+      hasDelta: !!s.delta,
+      deltaRows: (s.delta || []).map(d => ({ text: (d.up ? '+ ' : '- ') + d.text, style: { fontSize: 12, color: d.up ? GR : WN } })),
+      exportChipText: blocking.length ? '有 ' + blocking.length + ' 个阻断问题' : s.exportedHash === null ? '尚未导出' : dirty ? '方案已修改' : '链接与当前定义一致',
+      exportChipStyle: this.pill(blocking.length ? '有 ' + blocking.length + ' 个阻断问题' : s.exportedHash === null ? '尚未导出' : dirty ? '方案已修改' : '链接与当前定义一致', blocking.length ? RD : dirty || s.exportedHash === null ? WN : GR),
+      exportBtnLabel: blocking.length ? '修复阻断问题后才能生成' : '生成 Surge 订阅链接',
+      exportBtnStyle: { width: '100%', padding: '12px', borderRadius: 9, border: 'none', background: blocking.length ? '#2a3040' : AC, color: blocking.length ? '#6d7488' : '#0d0f14', fontSize: 13.5, fontWeight: 600, cursor: blocking.length ? 'not-allowed' : 'pointer' },
+      doExport: () => {
+        if (blocking.length) { this.ping('存在阻断问题，请先处理'); return; }
+        this.setState({ exportedHash: this.defHash(), exportLink: linkBase });
+        this.ping('已生成演示链接');
+      },
+      hasLink: !!s.exportLink, exportLink: s.exportLink,
+      copyLink: () => { try { navigator.clipboard.writeText(s.exportLink); } catch (e) {} this.ping('链接已复制'); },
+      linkLength: linkLen + ' 字符', tooLong: s.forceLong, lenStyle: this.pill(linkLen + ' 字符', s.forceLong ? WN : DIM),
+      downloadPlan: () => {
+        try {
+          const blob = new Blob([JSON.stringify(def, null, 2)], { type: 'application/json' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob); a.download = def.name + '.convertor-plan.json'; a.click();
+          this.ping('已下载方案文件（原型格式）');
+        } catch (e) { this.ping('当前环境无法下载文件'); }
+      },
+      importPlan: () => {
+        try {
+          const inp = document.createElement('input');
+          inp.type = 'file'; inp.accept = '.json';
+          inp.onchange = () => {
+            const f = inp.files[0]; if (!f) return;
+            const rd = new FileReader();
+            rd.onload = () => {
+              try {
+                const obj = JSON.parse(rd.result);
+                if (!obj.groups || !obj.sources) throw new Error('格式不符');
+                this.setState(st => ({ def: obj, past: st.past.concat([st.def]), future: [], exportedHash: null, exportLink: '' }));
+                this.ping('已导入方案文件，恢复编辑状态');
+              } catch (e) { this.ping('方案文件无法解析：' + e.message); }
+            };
+            rd.readAsText(f);
+          };
+          inp.click();
+        } catch (e) { this.ping('当前环境不支持选择文件'); }
+      },
+      injectLocal: () => this.setState({ localNote: '当前环境不支持访问本地配置目录，无法注入。可以先复制链接在 Surge 中替换；其它操作不受影响。' }),
+      localNote: s.localNote,
+
+      // ---- drawer
+      drawerOpen: s.drawerOpen,
+      drawerSources: def.sources.map(src => {
+        const r = this.resolveSource(src.id), st = s.srcStatus[src.id] || 'ok';
+        return {
+          name: src.name, url: src.url, iconBtn: this.icon(),
+          onName: e => { const v = e.target.value; this.update(d => { d.sources.filter(x => x.id === src.id)[0].name = v; }); },
+          statusText: st === 'loading' ? '解析中…' : st === 'error' ? '读取失败' : '已读取 · ' + SNAPSHOTS[s.snap].time,
+          statusStyle: this.pill(st === 'loading' ? '解析中…' : st === 'error' ? '读取失败' : '已读取 · ' + SNAPSHOTS[s.snap].time, st === 'error' ? RD : st === 'loading' ? WN : GR),
+          stale: st === 'error',
+          counts: '原始 ' + r.raw.length + ' · 过滤后 ' + r.kept.length + ' · 标签命中 ' + r.kept.filter(n => n.tags.some(t => t.origin === 'custom')).length,
+          refresh: () => {
+            this.setState({ srcStatus: Object.assign({}, s.srcStatus, { [src.id]: 'loading' }) });
+            setTimeout(() => {
+              const fail = this.state.failNext;
+              this.setState(st2 => ({ srcStatus: Object.assign({}, st2.srcStatus, { [src.id]: fail ? 'error' : 'ok' }), failNext: false }));
+              this.ping(fail ? '读取失败，保留上次快照' : '已重新读取来源');
+            }, 900);
+          },
+          filters: (src.filter || []).map(f => ({
+            value: f.value, count: r.raw.filter(n => f.value && n.name.indexOf(f.value) >= 0).length + ' 个',
+            onValue: e => { const v = e.target.value; this.update(d => { d.sources.filter(x => x.id === src.id)[0].filter.filter(x => x.id === f.id)[0].value = v; }); },
+            remove: () => this.update(d => { const ss = d.sources.filter(x => x.id === src.id)[0]; ss.filter = ss.filter.filter(x => x.id !== f.id); }),
+          })),
+          addFilter: () => this.update(d => { d.sources.filter(x => x.id === src.id)[0].filter.push({ id: uid('fl'), value: '' }); }),
+          dropped: r.dropped.map(n => ({ name: n.name + ' · ' + n.reason })),
+        };
+      }),
+      newSrcName: s.newSrcName || '', newSrcUrl: s.newSrcUrl || '',
+      onNewSrcName: e => this.setState({ newSrcName: e.target.value }),
+      onNewSrcUrl: e => this.setState({ newSrcUrl: e.target.value }),
+      addSource: () => {
+        if (!(s.newSrcName || '').trim() || !(s.newSrcUrl || '').trim()) { this.ping('请填写名称和订阅地址'); return; }
+        this.ping('原型只内置两个来源的快照数据，新来源会停在读取中');
+        this.setState({ newSrcName: '', newSrcUrl: '' });
+      },
+      pasteConfig: () => this.ping('演示：可粘贴配置文本或导入文件，原型使用预置内容'),
+      toast: s.toast,
+      ddOpen: !!s.openDD, closeDD: () => this.setState({ openDD: null }),
+    };
+  }
+}
+</script>
+</body>
+</html>

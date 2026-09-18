@@ -49,5 +49,5 @@ pub fn policies() -> [Policy; 7] {
     ]
 }
 
-pub const SURGE_PROFILE: &str = include_str!("../test-assets/surge/mock_profile.conf");
-pub const CLASH_PROFILE: &str = include_str!("../test-assets/clash/mock_profile.yaml");
+pub const SURGE_PROFILE: &str = include_str!("../test-assets/surge/conversion_profile.conf");
+pub const CLASH_PROFILE: &str = include_str!("../test-assets/clash/conversion_profile.yaml");

@@ -1,0 +1,136 @@
+<section class="predicate" [class.compound]="predicate().op !== 'atom'">
+  <div class="predicate-head">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>逻辑</mat-label>
+      <mat-select [ngModel]="predicate().op" (ngModelChange)="setOperation($event)">
+        @for (operation of operations; track operation.value) {
+          <mat-option [value]="operation.value">{{ operation.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    @if (predicate().op === 'all') {
+      <span class="hint">空列表表示始终满足</span>
+    } @else if (predicate().op === 'any') {
+      <span class="hint">空列表表示始终不满足</span>
+    }
+  </div>
+
+  @if (predicate().op === 'all' || predicate().op === 'any') {
+    <div class="children">
+      @for (child of asList(predicate()); track $index; let index = $index) {
+        <div class="child">
+          <app-predicate-editor
+            [predicate]="child"
+            [domain]="domain()"
+            (predicateChange)="replaceChild(index, $event)"
+          />
+          <button mat-button class="remove" type="button" (click)="removeChild(index)">删除</button>
+        </div>
+      }
+      <button mat-stroked-button type="button" (click)="addChild()">添加条件</button>
+    </div>
+  } @else if (predicate().op === 'not') {
+    <div class="children single">
+      <app-predicate-editor
+        [predicate]="asNot(predicate())"
+        [domain]="domain()"
+        (predicateChange)="replaceNot($event)"
+      />
+    </div>
+  } @else {
+    @let atom = asAtom(predicate());
+    <div class="atom-row">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>字段</mat-label>
+        <mat-select [ngModel]="atomField(atom)" (ngModelChange)="setAtomField($event)">
+          @if (domain() === 'node') {
+            <mat-option value="name">名称</mat-option>
+            <mat-option value="protocol">协议</mat-option>
+            <mat-option value="server">服务器</mat-option>
+            <mat-option value="port">端口</mat-option>
+            <mat-option value="has_tag">包含标签</mat-option>
+          } @else if (domain() === 'source-group') {
+            <mat-option value="name">名称</mat-option>
+            <mat-option value="kind">类型</mat-option>
+          } @else {
+            <mat-option value="name">名称</mat-option>
+            <mat-option value="depth">深度</mat-option>
+            <mat-option value="dimension">维度</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      @if (isStringAtom(atom)) {
+        @let match = stringTest(atom);
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>匹配</mat-label>
+          <mat-select [ngModel]="match.op" (ngModelChange)="setMatchOperation(atom, $event)">
+            @for (operation of matchOperations; track operation.value) {
+              <mat-option [value]="operation.value">{{ operation.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="value" appearance="outline" subscriptSizing="dynamic">
+          <mat-label>{{
+            match.op === 'one_of' ? '值（逗号分隔）' : match.op === 'regex' ? '正则表达式' : '值'
+          }}</mat-label>
+          <input
+            matInput
+            [ngModel]="matchText(match)"
+            (ngModelChange)="setMatchText(atom, $event)"
+          />
+        </mat-form-field>
+        @if (match.op === 'regex') {
+          <mat-checkbox
+            [ngModel]="regexCaseInsensitive(match)"
+            (ngModelChange)="setRegexCaseInsensitive(atom, $event)"
+            >忽略大小写</mat-checkbox
+          >
+        }
+      } @else if (atomField(atom) === 'dimension') {
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>维度</mat-label>
+          <mat-select
+            [ngModel]="dimensionKind(atom)"
+            (ngModelChange)="setDimensionKind(atom, $event)"
+          >
+            <mat-option value="region">地区</mat-option>
+            <mat-option value="source">来源</mat-option>
+            <mat-option value="protocol">协议</mat-option>
+            <mat-option value="has_tag">标签</mat-option>
+          </mat-select>
+        </mat-form-field>
+        @if (dimensionKind(atom) === 'has_tag') {
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>标签名</mat-label>
+            <input
+              matInput
+              [ngModel]="dimensionTag(atom)"
+              (ngModelChange)="setDimensionTag(atom, $event)"
+            />
+          </mat-form-field>
+        }
+        <mat-form-field class="value" appearance="outline" subscriptSizing="dynamic">
+          <mat-label>维度值</mat-label>
+          <input
+            matInput
+            [ngModel]="scalarValue(atom)"
+            (ngModelChange)="setScalarValue(atom, $event)"
+          />
+        </mat-form-field>
+      } @else {
+        <mat-form-field class="value" appearance="outline" subscriptSizing="dynamic">
+          <mat-label>{{
+            atomField(atom) === 'port' ? '端口' : atomField(atom) === 'depth' ? '深度' : '标签'
+          }}</mat-label>
+          <input
+            matInput
+            [type]="atomField(atom) === 'port' || atomField(atom) === 'depth' ? 'number' : 'text'"
+            [ngModel]="scalarValue(atom)"
+            (ngModelChange)="setScalarValue(atom, $event)"
+          />
+        </mat-form-field>
+      }
+    </div>
+  }
+</section>
