@@ -1,0 +1,60 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+mat-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--ui-card-border, var(--ui-outline));
+  border-radius: var(--ui-radius-card);
+  background: var(--ui-card-background, var(--ui-surface));
+  overflow: clip;
+}
+:host(.subtle) mat-card {
+  border-color: transparent;
+  background: var(--ui-surface-low);
+}
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: var(--ui-card-padding) var(--ui-card-padding) 0;
+}
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+h3 {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--ui-text);
+}
+p {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--ui-muted);
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+}
+.body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: var(--ui-gap);
+  padding: var(--ui-card-padding);
+}
+
+.body.unpadded {
+  padding: 0;
+  gap: 0;
+}

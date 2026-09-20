@@ -1,12 +1,17 @@
-import { UiButtonDirective, UiPanelDirective, UiCloseButton } from '../../shared/ui';
+import {
+  UiButtonComponent,
+  UiTextFieldComponent,
+  UiSelectComponent,
+  UiOptionComponent,
+  UiCollapseComponent,
+} from '../../shared/ui';
+import { UiIconButtonComponent } from '../../shared/ui';
+import { UiIconComponent } from '../../shared/ui';
 import { ChangeDetectionStrategy, Component, effect, inject, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import {
   AllPredicate,
@@ -26,16 +31,17 @@ type SourceKind = 'remote' | 'inline';
 @Component({
   selector: 'app-source-manager',
   imports: [
-    UiButtonDirective,
-    UiPanelDirective,
-    UiCloseButton,
+    UiButtonComponent,
+    UiTextFieldComponent,
+    UiSelectComponent,
+    UiOptionComponent,
+    UiCollapseComponent,
+    UiIconButtonComponent,
+    UiIconComponent,
     FormsModule,
     MatButtonModule,
     MatExpansionModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatProgressBarModule,
-    MatSelectModule,
     MatSlideToggleModule,
     PredicateEditor,
   ],

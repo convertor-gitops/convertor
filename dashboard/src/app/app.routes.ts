@@ -1,10 +1,17 @@
 import { Routes } from "@angular/router";
-import { PlanBoard } from "./page/plan-board/plan-board";
 
 export const routes: Routes = [
     {
         path: "",
-        component: PlanBoard,
+        redirectTo: "ui-component",
         pathMatch: "full",
+    },
+    {
+        path: "ui-component",
+        loadComponent: () => import("./page/ui-component/ui-component.component").then(m => m.UiComponentComponent),
+    },
+    {
+        path: "plan-board",
+        loadComponent: () => import("./page/plan-board/plan-board").then(m => m.PlanBoard),
     },
 ];

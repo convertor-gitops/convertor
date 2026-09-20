@@ -1,6 +1,5 @@
 use super::{
     Builtin, GroupId, GroupPredicate, GroupStrategy, GroupingPolicyId, NodeDimension, NodePredicate, Predicate, SourceId, StringMatch,
-    Target,
 };
 use serde::{Deserialize, Serialize};
 
@@ -15,9 +14,6 @@ pub struct CustomGroup {
     pub strategy: GroupStrategy,
     /// 按声明顺序收集节点、基础组、原始组或其它自定义组。
     pub member_selectors: Vec<MemberSelector>,
-    /// 没有选到任何成员时的处理方式。
-    #[serde(default)]
-    pub on_empty: EmptyGroupPolicy,
 }
 
 /// 从一个来源中选择节点。
@@ -71,8 +67,10 @@ pub enum ExpandDepth {
 /// 从一项自动分组策略产生的基础组树中选择组。
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BaseGroupSelection {
-    /// 基础组所属分组策略。
-    pub policy: GroupingPolicyId,
+    /// 可选的历史策略范围。`None` 表示跨全部自动策略按组属性匹配，
+    /// 从而让自定义组不依赖某一项自动策略的稳定 ID。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub policy: Option<GroupingPolicyId>,
     /// 只检查根组，或检查树中所有层级。
     pub scope: GroupScope,
     /// 针对基础组的名称、深度和维度路径执行的条件。
@@ -98,14 +96,4 @@ pub enum BaseGroupPredicate {
     Depth(usize),
     /// 匹配完整维度路径中的一项值。
     Dimension { dimension: NodeDimension, value: String },
-}
-
-/// 固定组没有成员时的行为。
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub enum EmptyGroupPolicy {
-    /// 将空组视为执行错误。
-    #[default]
-    Error,
-    /// 使用另一个组或内置动作作为备用成员。
-    Use(Target),
 }

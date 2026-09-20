@@ -234,7 +234,6 @@ async fn both_clients_complete_download_evaluation_and_rendering() {
                     source: SourceId(1),
                     predicate: Predicate::All(vec![]),
                 })],
-                on_empty: EmptyGroupPolicy::Error,
             }],
             rules: vec![],
             output: Output {

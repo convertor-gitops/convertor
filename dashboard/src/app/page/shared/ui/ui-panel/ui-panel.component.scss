@@ -1,0 +1,90 @@
+:host {
+  --ui-panel-padding: 12px;
+  --ui-panel-body-flex: initial;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  border-radius: var(--ui-radius-panel, 16px);
+  border: 1px solid color-mix(in srgb, var(--ui-text) 5%, transparent);
+  color: var(--ui-text);
+  background: var(--ui-surface);
+  box-shadow:
+    0 1px 3px #00000020,
+    0 4px 10px #00000018;
+  z-index: 1;
+}
+:host([data-elevation='2']) {
+  z-index: 2;
+  box-shadow:
+    0 3px 8px #00000030,
+    0 12px 28px #00000030;
+}
+:host([data-elevation='3']) {
+  z-index: 3;
+  background: color-mix(in srgb, var(--ui-surface) 96%, transparent);
+  backdrop-filter: blur(24px) saturate(125%);
+  box-shadow:
+    0 6px 12px #00000040,
+    0 24px 48px #00000048;
+}
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 12px 0;
+}
+.heading,
+.body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: var(--ui-gap);
+}
+h3 {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 600;
+}
+p {
+  margin: 0;
+  color: var(--ui-muted);
+  font-size: 11px;
+  line-height: 16px;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.body {
+  // Clip only the inset content surface; the host shadow stays outside.
+  margin: 4px;
+  padding: max(0px, calc(var(--ui-panel-padding, 12px) - 4px));
+  border-radius: var(--ui-radius-panel, 16px);
+  overflow: clip;
+  flex: var(--ui-panel-body-flex, initial);
+  min-height: 0;
+}
+@media (prefers-reduced-transparency: reduce) {
+  :host([data-elevation='3']) {
+    background: var(--ui-surface);
+    backdrop-filter: none;
+  }
+}
+
+mat-card {
+  display: flex;
+  flex-direction: column;
+  flex: var(--ui-panel-body-flex, initial);
+  min-height: 0;
+  min-width: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+}

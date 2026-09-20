@@ -1,8 +1,8 @@
 :host {
   display: block;
   height: 100%;
-  background: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
+  background: var(--ui-bg);
+  color: var(--ui-text);
 }
 .shell {
   height: 100%;
@@ -18,8 +18,8 @@ mat-drawer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--mat-sys-outline-variant);
-  background: var(--mat-sys-surface-container-low);
+  border-bottom: 1px solid var(--ui-outline);
+  background: var(--ui-surface);
 }
 .brand,
 .top-actions,
@@ -41,13 +41,13 @@ mat-drawer {
 }
 .brand span {
   font-size: 12px;
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--ui-muted);
 }
 .stale {
   padding: 5px 9px;
   border-radius: var(--ui-radius-md, 8px);
-  color: var(--mat-sys-on-tertiary-container);
-  background: var(--mat-sys-tertiary-container);
+  color: var(--ui-text);
+  background: var(--ui-active);
   font-size: 12px;
 }
 .error-banner {
@@ -55,15 +55,15 @@ mat-drawer {
   align-items: center;
   justify-content: space-between;
   padding: 8px 16px;
-  color: var(--mat-sys-on-error-container);
-  background: var(--mat-sys-error-container);
+  color: var(--ui-error);
+  background: var(--ui-surface);
 }
 .workspace {
   flex: 1;
   min-width: 0;
   min-height: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.65fr) minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
 }
 .shell mat-drawer-content {
   display: flex;
@@ -76,6 +76,7 @@ mat-drawer {
   min-width: 0;
   min-height: 0;
   overflow: auto;
+  scrollbar-gutter: stable;
 }
 .focus-banner {
   position: sticky;
@@ -86,16 +87,16 @@ mat-drawer {
   justify-content: space-between;
   gap: 8px;
   padding: 7px 10px;
-  background: var(--mat-sys-primary-container);
-  color: var(--mat-sys-on-primary-container);
+  background: var(--ui-active);
+  color: var(--ui-text);
 }
 .left-pane,
 .center-pane {
-  border-right: 1px solid var(--mat-sys-outline-variant);
+  border-right: 1px solid var(--ui-outline);
 }
 .left-pane,
 .right-pane {
-  background: var(--mat-sys-surface-container-lowest);
+  background: var(--ui-surface-low);
 }
 .center-pane {
   display: flex;
@@ -114,70 +115,200 @@ mat-tab-group {
   justify-content: space-between;
   gap: 12px;
   padding: 14px 16px;
-  background: var(--mat-sys-surface);
-  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  background: var(--ui-bg);
+  border-bottom: 1px solid var(--ui-outline);
 }
 .tab-toolbar p {
   margin: 0;
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--ui-muted);
 }
 .editor-list {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
   padding: 14px;
 }
-.editor-list mat-expansion-panel {
+.editor-list app-ui-collapse {
   box-shadow: none;
-  border: 1px solid var(--mat-sys-outline-variant);
+  border: 0;
 }
-.dimension-list,
 .selector-list {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 10px;
   margin: 14px 0;
 }
-.dimension-row {
-  flex-wrap: wrap;
-  padding: 8px;
-  border-radius: var(--ui-radius-md, 8px);
-  background: var(--mat-sys-surface-container-low);
+.dimension-builder,
+.dimension-palette,
+.dimension-selection,
+.dimension-list {
+  display: flex;
+  flex-direction: column;
 }
-.dimension-row mat-form-field {
-  flex: 1 1 150px;
+.dimension-builder {
+  gap: 12px;
+  margin-top: 4px;
+}
+.dimension-palette,
+.dimension-selection {
+  gap: 8px;
+  padding: 10px;
+  border-radius: var(--ui-radius-md, 8px);
+  background: color-mix(in srgb, var(--ui-surface-high) 72%, transparent);
+}
+.dimension-section-title,
+.dimension-options,
+.dimension-actions,
+.dimension-name {
+  display: flex;
+  align-items: center;
+}
+.dimension-section-title {
+  justify-content: space-between;
+  gap: 8px;
+}
+.dimension-section-title strong {
+  font-size: 12px;
+}
+.dimension-section-title span,
+.dimension-name small {
+  color: var(--ui-muted);
+  font-size: 11px;
+}
+.dimension-options {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.dimension-list {
+  gap: 6px;
+  min-height: 42px;
+}
+.dimension-row {
+  min-height: 42px;
+  padding: 6px 8px;
+  border: 1px solid color-mix(in srgb, var(--ui-outline) 80%, transparent);
+  border-radius: var(--ui-radius-md, 8px);
+  background: var(--ui-surface);
+  cursor: default;
+}
+.dimension-drag-preview {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: min(420px, calc(100vw - 32px));
+  height: 42px;
+  max-width: 100%;
+  gap: 10px;
+  overflow: hidden;
+  padding: 6px 8px;
+  border: 1px solid color-mix(in srgb, var(--ui-outline) 80%, transparent);
+  border-radius: var(--ui-radius-md, 8px);
+  background: var(--ui-surface);
+  color: var(--ui-text);
+  box-shadow: 0 10px 28px #00000036;
+}
+.dimension-row.cdk-drag-placeholder {
+  opacity: 0.24;
+}
+.dimension-list.cdk-drop-list-dragging .dimension-row:not(.cdk-drag-placeholder) {
+  transition: transform 150ms ease;
+}
+.drag-handle {
+  display: flex;
+  width: 24px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: var(--ui-muted);
+  cursor: grab;
+  touch-action: none;
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
+.drag-handle app-ui-icon {
+  width: 16px;
+  height: 16px;
+}
+.dimension-order {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  border-radius: 6px;
+  background: var(--ui-active);
+  color: var(--ui-accent-text);
+  font-size: 11px;
+  font-weight: 700;
+}
+.dimension-name {
+  min-width: 90px;
+  align-items: flex-start;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.dimension-row app-ui-text-field {
+  min-width: 120px;
+  flex: 1 1 160px;
+}
+.dimension-actions {
+  gap: 2px;
+  margin-left: auto;
 }
 .group-head {
   align-items: flex-start;
   flex-wrap: wrap;
 }
-.group-head > mat-form-field {
+.group-head > :is(mat-form-field, app-ui-text-field, app-ui-select) {
   flex: 1 1 170px;
 }
 .group-head app-strategy-editor {
   flex: 2 1 280px;
 }
 .selector-card {
-  padding: 12px;
-  border: 1px solid var(--mat-sys-outline-variant);
-  border-radius: 12px;
-  background: var(--mat-sys-surface-container-lowest);
+  --ui-panel-padding: 10px;
+  --ui-radius-panel: 12px;
+  margin-top: 2px;
+  background: color-mix(in srgb, var(--ui-surface-high) 88%, var(--ui-surface));
+  box-shadow:
+    0 2px 5px #00000024,
+    0 8px 18px #0000001f;
 }
 .selector-card.focused {
-  border-color: var(--mat-sys-primary);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--mat-sys-primary) 22%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-accent-text) 22%, transparent);
 }
 .selector-title {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 4px;
+  padding-bottom: 8px;
   margin-bottom: 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ui-text) 7%, transparent);
+}
+.selector-title strong {
+  margin-right: auto;
+  font-size: 13px;
 }
 .tag-name-row {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--ui-surface-high) 68%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ui-text) 5%, transparent);
 }
-.tag-name-row mat-form-field {
+.tag-name-row :is(mat-form-field, app-ui-text-field, app-ui-select) {
   flex: 1;
+}
+.tag-name-row app-ui-button {
+  margin-bottom: 0;
+}
+.tag-panel {
+  --ui-panel-padding: 10px;
 }
 .row-actions {
   justify-content: flex-end;
@@ -187,32 +318,46 @@ mat-tab-group {
   flex-wrap: wrap;
   margin-top: 12px;
 }
-.panel-actions mat-form-field {
+.panel-actions :is(mat-form-field, app-ui-text-field, app-ui-select) {
   min-width: 0;
   flex: 1 1 180px;
+}
+.automatic-output-status {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 2px;
+  color: var(--ui-muted);
+  font-size: 12px;
+}
+.automatic-output-status::before {
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--ui-accent);
+  content: '';
 }
 .drop-hint {
   padding: 8px 10px;
   border-radius: 8px;
-  color: var(--mat-sys-on-secondary-container);
-  background: var(--mat-sys-secondary-container);
+  color: var(--ui-text);
+  background: var(--ui-active);
   font-size: 12px;
 }
 .tools {
   flex: 0 0 auto;
-  border-top: 1px solid var(--mat-sys-outline-variant);
+  border-top: 1px solid var(--ui-outline);
 }
-.tools mat-expansion-panel {
+.tools app-ui-collapse {
   box-shadow: none;
 }
 .tool-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 12px;
 }
 .wide {
-  grid-column: 1 / -1;
 }
 .url {
   display: flex;
@@ -229,25 +374,23 @@ mat-tab-group {
   max-height: 260px;
   overflow: auto;
   padding: 12px;
-  background: var(--mat-sys-surface-container-low);
+  background: var(--ui-surface);
 }
 .empty {
   padding: 32px 18px;
   text-align: center;
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--ui-muted);
 }
 .danger {
-  color: var(--mat-sys-error);
+  color: var(--ui-error);
 }
 @media (max-width: 760px) {
   .topbar {
     padding: 0 12px;
   }
   .tool-grid {
-    grid-template-columns: 1fr;
   }
   .wide {
-    grid-column: auto;
   }
 }
 
@@ -257,7 +400,7 @@ mat-tab-group {
 .selector-title {
   flex-wrap: wrap;
 }
-mat-form-field,
+:is(mat-form-field, app-ui-text-field, app-ui-select),
 app-strategy-editor,
 .editor-list > *,
 .tool-grid > * {
@@ -269,13 +412,19 @@ app-strategy-editor,
 }
 @container (max-width: 460px) {
   .tool-grid {
-    grid-template-columns: minmax(0, 1fr);
   }
   .editor-list {
     padding: 10px;
   }
   .selector-card {
-    padding: 8px;
+    --ui-panel-padding: 8px;
+  }
+  .tag-name-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .tag-name-row app-ui-button {
+    align-self: flex-end;
   }
 }
 @media (max-width: 850px) {
@@ -290,7 +439,7 @@ app-strategy-editor,
     flex: none;
     overflow: visible;
     border-right: 0;
-    border-bottom: 1px solid var(--mat-sys-outline-variant);
+    border-bottom: 1px solid var(--ui-outline);
   }
   .left-pane {
     max-height: 420px;
@@ -300,5 +449,101 @@ app-strategy-editor,
     padding: 10px 12px;
     gap: 12px;
     flex-wrap: wrap;
+  }
+}
+
+// Shared panel shells own their surface, inset clipping and elevation.
+.shell {
+  background: var(--ui-bg);
+}
+.top-panel {
+  --ui-panel-padding: 0px;
+  margin: 8px 8px 0;
+  flex: none;
+}
+.topbar {
+  min-height: 48px;
+  padding: 4px 12px;
+  background: transparent;
+  border: 0;
+}
+.brand strong {
+  font-size: 15px;
+}
+.workspace {
+  flex-direction: row;
+  gap: 8px;
+  padding: 8px;
+}
+.pane-shell {
+  --ui-panel-padding: 0px;
+  --ui-panel-body-flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+.left-shell {
+  flex: 0.85;
+}
+.center-shell {
+  flex: 1.55;
+}
+.right-shell {
+  flex: 1;
+}
+.left-pane,
+.center-pane,
+.right-pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  border: 0;
+  background: transparent;
+}
+.editor-list {
+  padding: 8px;
+  gap: 8px;
+}
+.editor-list app-ui-collapse {
+  border: 0;
+}
+.tab-toolbar {
+  padding: 8px;
+  gap: 8px;
+  background: var(--ui-surface);
+}
+.tool-grid {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tool-grid > * {
+  flex: 1 1 180px;
+}
+.tool-grid > .wide {
+  flex-basis: 100%;
+}
+.board-appearance {
+  padding: 12px;
+  gap: 16px;
+}
+@media (max-width: 850px) {
+  .workspace {
+    flex-direction: column;
+    flex: none;
+    overflow: visible;
+  }
+  .shell mat-drawer-content {
+    overflow-y: auto;
+  }
+  .pane-shell {
+    flex: none;
+    --ui-panel-body-flex: initial;
+  }
+  .left-pane,
+  .center-pane,
+  .right-pane {
+    flex: none;
+    overflow: visible;
+    max-height: none;
   }
 }

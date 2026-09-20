@@ -1,0 +1,16 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+app-ui-select,
+app-ui-text-field {
+  flex: 1 1 140px;
+  min-width: 0;
+  max-width: 100%;
+}

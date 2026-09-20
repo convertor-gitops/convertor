@@ -697,14 +697,14 @@ export class BaseGroupDimensionPredicate extends BaseGroupPredicate {
 
 export class BaseGroupSelection {
   constructor(
-    public policy: number,
+    public policy: number | null,
     public scope: GroupScope,
     public predicate: Predicate<BaseGroupPredicate>,
   ) {}
   static deserialize(value: unknown, path = '$'): BaseGroupSelection {
     const object = asObject(value, path);
     return new BaseGroupSelection(
-      field(object, 'policy', path, asInteger),
+      Object.hasOwn(object, 'policy') ? nullableField(object, 'policy', path, asInteger) : null,
       field(object, 'scope', path, (item, itemPath) => asEnum(item, GROUP_SCOPES, itemPath)),
       field(object, 'predicate', path, (item, itemPath) =>
         Predicate.deserialize(item, BaseGroupPredicate.deserialize, itemPath),
@@ -712,7 +712,11 @@ export class BaseGroupSelection {
     );
   }
   serialize(): unknown {
-    return { policy: this.policy, scope: this.scope, predicate: this.predicate.serialize() };
+    return {
+      ...(this.policy === null ? {} : { policy: this.policy }),
+      scope: this.scope,
+      predicate: this.predicate.serialize(),
+    };
   }
 }
 
@@ -813,44 +817,12 @@ export class BuiltinMemberSelector extends MemberSelector {
   }
 }
 
-export abstract class EmptyGroupPolicy implements Model {
-  abstract serialize(): unknown;
-  static deserialize(value: unknown, path = '$'): EmptyGroupPolicy {
-    const [kind, raw] = externallyTagged(value, path);
-    switch (kind) {
-      case 'Error':
-        return new ErrorEmptyGroupPolicy();
-      case 'Use':
-        return new UseEmptyGroupPolicy(Target.deserialize(raw, childPath(path, kind)));
-      default:
-        throw new DeserializeError(
-          path,
-          `unknown EmptyGroupPolicy variant ${JSON.stringify(kind)}`,
-        );
-    }
-  }
-}
-export class ErrorEmptyGroupPolicy extends EmptyGroupPolicy {
-  serialize(): unknown {
-    return 'Error';
-  }
-}
-export class UseEmptyGroupPolicy extends EmptyGroupPolicy {
-  constructor(public target: Target) {
-    super();
-  }
-  serialize(): unknown {
-    return { Use: this.target.serialize() };
-  }
-}
-
 export class CustomGroup {
   constructor(
     public id: number,
     public name: string,
     public strategy: GroupStrategy,
     public member_selectors: MemberSelector[],
-    public on_empty: EmptyGroupPolicy,
   ) {}
   static deserialize(value: unknown, path = '$'): CustomGroup {
     const object = asObject(value, path);
@@ -861,7 +833,6 @@ export class CustomGroup {
       field(object, 'member_selectors', path, (item, itemPath) =>
         asArray(item, MemberSelector.deserialize, itemPath),
       ),
-      field(object, 'on_empty', path, EmptyGroupPolicy.deserialize),
     );
   }
   serialize(): unknown {
@@ -870,7 +841,6 @@ export class CustomGroup {
       name: this.name,
       strategy: this.strategy.serialize(),
       member_selectors: this.member_selectors.map((item) => item.serialize()),
-      on_empty: this.on_empty.serialize(),
     };
   }
 }

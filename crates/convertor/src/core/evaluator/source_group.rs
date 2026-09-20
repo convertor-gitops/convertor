@@ -116,7 +116,7 @@ impl Engine<'_> {
     }
     pub(super) fn import_raw(&mut self, s: SourceId, i: usize) -> Result<String> {
         let key = format!("raw/{}/{i}", s.0);
-        if self.groups.contains_key(&key) {
+        if self.groups.contains_key(&key) || self.omitted_groups.contains(&key) {
             return Ok(key);
         }
         if self.active.contains(&key) {
@@ -124,15 +124,21 @@ impl Engine<'_> {
         }
         self.active.push(key.clone());
         let mut profile = self.source(s).proxy_groups()[i].clone();
-        let members = self.raw_members(s, i)?;
+        let mut members = self.raw_members(s, i)?;
         for m in &members {
             if let Ref::Group(k) = m {
                 let (s, i) = Self::raw_index(k);
                 self.import_raw(s, i)?;
             }
         }
+        members.retain(|member| match member {
+            Ref::Group(key) => !self.omitted_groups.contains(key),
+            _ => true,
+        });
         if members.is_empty() {
-            return Err(error("empty_imported_group", key));
+            self.active.pop();
+            self.omitted_groups.insert(key.clone());
+            return Ok(key);
         }
         profile.uses = None;
         profile.filter = None;

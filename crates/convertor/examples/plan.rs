@@ -49,11 +49,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             name: "all".into(),
             strategy: GroupStrategy::Select,
             member_selectors: vec![MemberSelector::BaseGroups(BaseGroupSelection {
-                policy: GroupingPolicyId(1),
+                policy: Some(GroupingPolicyId(1)),
                 scope: GroupScope::Roots,
                 predicate: Predicate::All(vec![]),
             })],
-            on_empty: EmptyGroupPolicy::Error,
         }],
         rules: vec![],
         output: Output {

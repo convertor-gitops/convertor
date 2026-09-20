@@ -1,0 +1,30 @@
+<app-ui-panel [elevation]="elevation()">
+  <mat-expansion-panel
+    [expanded]="expanded()"
+    [disabled]="disabled()"
+    (expandedChange)="expanded.set($event)"
+    hideToggle
+    (opened)="opened.emit()"
+    (closed)="closed.emit()"
+  >
+    <mat-expansion-panel-header collapsedHeight="48px" expandedHeight="48px">
+      <app-ui-icon class="indicator" [class.expanded]="expanded()" name="chevron" />
+      <mat-panel-title
+        ><span class="heading"
+          ><strong>{{ heading() }}</strong>
+          @if (description()) {
+            <span>{{ description() }}</span>
+          }
+          <span class="description"><ng-content select="[collapse-description]" /></span></span
+      ></mat-panel-title>
+      <span
+        class="trailing"
+        (click)="$event.stopPropagation()"
+        (keydown)="$event.stopPropagation()"
+      >
+        <ng-content select="[collapse-trailing]" />
+      </span>
+    </mat-expansion-panel-header>
+    <div class="inner"><ng-content /></div>
+  </mat-expansion-panel>
+</app-ui-panel>

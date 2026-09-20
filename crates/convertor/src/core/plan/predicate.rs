@@ -50,7 +50,7 @@ pub enum StringMatch {
     Equals(String),
     /// 与给定列表中的任一完整字符串相等。
     OneOf(Vec<String>),
-    /// 包含给定子串。
+    /// 包含逗号分隔列表中的任一非空子串。
     Contains(String),
     /// 以给定子串开头。
     StartsWith(String),
@@ -66,7 +66,11 @@ impl StringMatch {
         match self {
             Self::Equals(v) => s == v,
             Self::OneOf(v) => v.iter().any(|v| v == s),
-            Self::Contains(v) => s.contains(v),
+            Self::Contains(v) => v
+                .split([',', '，'])
+                .map(str::trim)
+                .filter(|candidate| !candidate.is_empty())
+                .any(|candidate| s.contains(candidate)),
             Self::StartsWith(v) => s.starts_with(v),
             Self::EndsWith(v) => s.ends_with(v),
             Self::Regex { pattern, case_insensitive } => RegexBuilder::new(pattern)
@@ -114,4 +118,25 @@ pub enum RulePredicate {
     Kind(StringMatch),
     Value(StringMatch),
     OriginalTargetName(StringMatch),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::StringMatch;
+
+    #[test]
+    fn contains_matches_any_comma_separated_substring() {
+        let matcher = StringMatch::Contains("🇺🇸 美国 07, 🇺🇸 美国 08，🇺🇸 美国 10".to_owned());
+
+        assert!(matcher.matches("🇺🇸 美国 08"));
+        assert!(matcher.matches("节点 🇺🇸 美国 10 - BosLife"));
+        assert!(!matcher.matches("🇺🇸 美国 06"));
+    }
+
+    #[test]
+    fn contains_ignores_empty_list_items() {
+        let matcher = StringMatch::Contains(" , ， ".to_owned());
+
+        assert!(!matcher.matches("any node"));
+    }
 }

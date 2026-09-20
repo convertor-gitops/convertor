@@ -11,8 +11,8 @@ use convd::server::{app_state::AppState, router};
 use convertor::{
     config::proxy_client::ProxyClient,
     core::plan::{
-        Builtin, CustomGroup, EmptyGroupPolicy, GroupId, GroupStrategy, NodePredicate, NodeSelection, Output, Plan, Predicate, Source,
-        SourceId, SourceInput, StringMatch, Target, encode_plan,
+        Builtin, CustomGroup, GroupId, GroupStrategy, NodePredicate, NodeSelection, Output, Plan, Predicate, Source, SourceId, SourceInput,
+        StringMatch, Target, encode_plan,
     },
     subscription::SourceProfile,
 };
@@ -170,7 +170,6 @@ async fn workbench_flow_loads_evaluates_builds_decodes_and_executes() -> color_e
             source: SourceId(1),
             predicate: Predicate::Atom(NodePredicate::Name(StringMatch::Equals("missing".into()))),
         })],
-        on_empty: EmptyGroupPolicy::Error,
     });
     blocked.output.roots = vec![GroupId(1)];
     blocked.output.fallback = Target::Group(GroupId(1));

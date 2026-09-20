@@ -1,0 +1,44 @@
+:host {
+  display: flex;
+  min-width: 0;
+}
+mat-button-toggle-group {
+  display: flex;
+  width: 100%;
+  position: relative;
+  isolation: isolate;
+  padding: 2px;
+  border: 1px solid var(--ui-outline);
+  border-radius: 8px;
+  background: var(--ui-bg);
+}
+mat-button-toggle {
+  flex: 1 1 0;
+  min-width: 0;
+  border: 0 !important;
+  background: transparent;
+  color: var(--ui-muted);
+}
+mat-button-toggle.mat-button-toggle-checked {
+  color: var(--ui-text);
+  background: transparent;
+}
+mat-button-toggle-group::before {
+  content: '';
+  position: absolute;
+  inset: 2px auto 2px 2px;
+  width: calc((100% - 4px) / var(--segment-count));
+  border-radius: 8px;
+  background: var(--ui-active);
+  transform: translateX(calc(var(--segment-index) * 100%));
+  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: -1;
+}
+app-ui-icon {
+  margin-right: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  mat-button-toggle-group::before {
+    transition: none;
+  }
+}

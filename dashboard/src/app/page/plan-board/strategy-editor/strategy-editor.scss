@@ -1,0 +1,9 @@
+:host {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+:is(mat-form-field, app-ui-text-field, app-ui-select) {
+  flex: 1 1 130px;
+  min-width: 0;
+}

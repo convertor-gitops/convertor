@@ -1,0 +1,26 @@
+<div class="palette-collection">
+  @for (palette of theme.palettes(); track palette.id) {
+    <button
+      class="palette-card"
+      type="button"
+      [class.selected]="theme.palette().id === palette.id"
+      [attr.aria-pressed]="theme.palette().id === palette.id"
+      (click)="theme.selectPalette(palette.id)"
+      [style.--preview-bg]="palette.colors.background"
+      [style.--preview-fg]="palette.colors.foreground"
+    >
+      <span class="palette-name"
+        >{{ palette.name }}
+        @if (theme.palette().id === palette.id) {
+          <app-ui-icon name="check" />
+        }</span
+      ><span class="palette-bars"
+        ><i [style.background]="palette.colors.accent"></i
+        ><i [style.background]="palette.colors.blue"></i
+        ><i [style.background]="palette.colors.green"></i
+        ><i [style.background]="palette.colors.purple"></i
+        ><i [style.background]="palette.colors.error"></i
+      ></span>
+    </button>
+  }
+</div>

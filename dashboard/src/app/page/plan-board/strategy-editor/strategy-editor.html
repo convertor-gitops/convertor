@@ -1,0 +1,27 @@
+<app-ui-select label="组行为" [ngModel]="strategy().kind" (ngModelChange)="setKind($event)">
+  <app-ui-option value="select" label="手动选择" /><app-ui-option
+    value="url_test"
+    label="自动测速"
+  />
+</app-ui-select>
+@if (urlTest(); as test) {
+  <app-ui-text-field
+    label="容差（毫秒）"
+    type="number"
+    [min]="0"
+    [ngModel]="test.tolerance_ms"
+    (ngModelChange)="update('tolerance_ms', $event)"
+  />
+  <app-ui-text-field
+    label="间隔（秒）"
+    type="number"
+    [min]="1"
+    [ngModel]="test.interval_secs"
+    (ngModelChange)="update('interval_secs', $event)"
+  />
+  <app-ui-text-field
+    label="测速 URL"
+    [ngModel]="test.url"
+    (ngModelChange)="update('url', $event)"
+  />
+}

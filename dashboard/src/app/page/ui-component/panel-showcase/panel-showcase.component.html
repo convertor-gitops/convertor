@@ -1,0 +1,43 @@
+<div class="levels">
+  @for (level of levels; track level) {
+    <app-ui-panel
+      [elevation]="level"
+      [heading]="['基础容器', '抬升容器', '悬浮容器'][level - 1]"
+      [description]="'LEVEL 0' + level"
+      ><div class="surface-sample">
+        <span class="dot"></span
+        ><span>{{ ['收拢同一组内容', '强调当前工作区域', '轻透表面与更深投影'][level - 1] }}</span>
+      </div></app-ui-panel
+    >
+  }
+</div>
+<app-ui-panel heading="策略组" description="容器 → 分组 → 节点，层次逐级展开。"
+  ><app-ui-button panel-actions variant="text" (pressed)="elevated.set(!elevated())">{{
+    elevated() ? '降低分组层级' : '抬升分组层级'
+  }}</app-ui-button>
+  <div class="nested-layout">
+    <app-ui-panel
+      heading="自动选择"
+      description="2 个节点 · 按延迟排序"
+      [elevation]="elevated() ? 3 : 1"
+      ><app-ui-node-card
+        name="香港 · 中环 01"
+        region="HK"
+        protocol="Trojan"
+        source="主力订阅"
+        [selected]="selected()"
+        [showActions]="false"
+        (selectedChange)="selected.set($event)" /><app-ui-node-card
+        name="日本 · 东京 01"
+        region="JP"
+        protocol="VMess"
+        source="备用订阅"
+        [showActions]="false"
+    /></app-ui-panel>
+    <div class="nesting-note">
+      <strong>浮起，但仍然紧凑</strong>
+      <p>柔和投影划分工作区域，细亮边勾勒表面。节点保留独立卡片，圆角与 Panel 分开调节。</p>
+      <span>右侧「容器圆角」可实时微调</span>
+    </div>
+  </div></app-ui-panel
+>

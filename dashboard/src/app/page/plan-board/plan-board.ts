@@ -1,5 +1,22 @@
-import { UiButtonDirective, UiPanelDirective } from '../shared/ui';
-import { CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
+import { UiPanelComponent } from '../shared/ui';
+import { AppearancePanelComponent } from '../ui-component/appearance-panel/appearance-panel.component';
+import { UiThemeService } from '../../service/ui-theme';
+import {
+  UiButtonComponent,
+  UiTextFieldComponent,
+  UiSelectComponent,
+  UiOptionComponent,
+  UiCollapseComponent,
+  UiIconComponent,
+} from '../shared/ui';
+import {
+  CdkDrag,
+  CdkDragDrop,
+  CdkDragHandle,
+  CdkDragPreview,
+  CdkDropList,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
 import {
   ChangeDetectionStrategy,
   afterNextRender,
@@ -15,9 +32,6 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { MatTabsModule } from '@angular/material/tabs';
 import { SurgeBinding } from '../../common/model/local/surge-binding';
@@ -59,17 +73,24 @@ interface TagContainer {
 
 @Component({
   selector: 'app-plan-board',
+  host: { class: 'ui-kit' },
   imports: [
-    UiButtonDirective,
-    UiPanelDirective,
+    UiPanelComponent,
+    AppearancePanelComponent,
+    UiButtonComponent,
+    UiTextFieldComponent,
+    UiSelectComponent,
+    UiOptionComponent,
+    UiCollapseComponent,
+    UiIconComponent,
     FormsModule,
+    CdkDrag,
+    CdkDragHandle,
+    CdkDragPreview,
     CdkDropList,
     MatButtonModule,
     MatCheckboxModule,
     MatExpansionModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
     MatSidenavModule,
     MatTabsModule,
     CopyAction,
@@ -86,6 +107,16 @@ interface TagContainer {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlanBoard {
+  readonly dimensionOptions: ReadonlyArray<{
+    kind: P.NodeDimension['kind'];
+    label: string;
+  }> = [
+    { kind: 'region', label: '地区' },
+    { kind: 'source', label: '来源' },
+    { kind: 'protocol', label: '协议' },
+    { kind: 'has_tag', label: '标签' },
+  ];
+  readonly theme = inject(UiThemeService);
   private readonly injector = inject(Injector);
   readonly board = inject(PlanBoardService);
   readonly metadata = inject(MetadataService);
@@ -142,15 +173,7 @@ export class PlanBoard {
     if (!nodes.length) return;
     const groups = this.cloneGroups();
     const id = Math.max(0, ...groups.map((group) => group.id)) + 1;
-    groups.push(
-      new P.CustomGroup(
-        id,
-        `节点组 ${id}`,
-        new P.SelectGroupStrategy(),
-        [],
-        new P.ErrorEmptyGroupPolicy(),
-      ),
-    );
+    groups.push(new P.CustomGroup(id, `节点组 ${id}`, new P.SelectGroupStrategy(), []));
     const plan = this.board.plan().clone();
     plan.groups = groups;
     if (this.applyPickedNodes(plan, id, nodes)) {
@@ -190,12 +213,13 @@ export class PlanBoard {
     const policies = this.clonePolicies();
     const policy = policies.find((item) => item.id === policyId);
     if (!policy) return;
-    policy.group_by.push(this.dimension(kind));
+    const next = this.dimension(kind);
+    if (
+      policy.group_by.some((dimension) => this.dimensionKey(dimension) === this.dimensionKey(next))
+    )
+      return;
+    policy.group_by.push(next);
     this.board.setGroupingPolicies(policies);
-  }
-
-  changeDimension(policyId: number, index: number, kind: P.NodeDimension['kind']): void {
-    this.mutatePolicy(policyId, (policy) => (policy.group_by[index] = this.dimension(kind)));
   }
 
   setDimensionTag(policyId: number, index: number, tag: string): void {
@@ -209,37 +233,36 @@ export class PlanBoard {
     return dimension instanceof P.HasTagDimension ? dimension.tag : '';
   }
 
-  moveDimension(policyId: number, index: number, offset: -1 | 1): void {
-    this.mutatePolicy(policyId, (policy) => move(policy.group_by, index, offset));
+  dropDimension(policyId: number, event: CdkDragDrop<P.NodeDimension[]>): void {
+    if (event.previousIndex === event.currentIndex) return;
+    this.mutatePolicy(policyId, (policy) =>
+      moveItemInArray(policy.group_by, event.previousIndex, event.currentIndex),
+    );
   }
 
   removeDimension(policyId: number, index: number): void {
-    this.mutatePolicy(policyId, (policy) => policy.group_by.splice(index, 1));
+    const policy = this.board.plan().grouping_policies.find((item) => item.id === policyId);
+    if (policy?.group_by.length === 1) {
+      this.removePolicy(policyId);
+      return;
+    }
+    this.mutatePolicy(policyId, (policy) => {
+      policy.group_by.splice(index, 1);
+    });
   }
 
   setPolicyStrategy(policyId: number, strategy: P.GroupStrategy): void {
     this.mutatePolicy(policyId, (policy) => (policy.strategy = strategy));
   }
 
-  wrapPolicy(policy: P.GroupingPolicy): void {
-    const groups = this.cloneGroups();
-    const id = Math.max(0, ...groups.map((group) => group.id)) + 1;
-    groups.push(
-      new P.CustomGroup(
-        id,
-        `自动组 ${policy.id}`,
-        new P.SelectGroupStrategy(),
-        [
-          new P.BaseGroupsMemberSelector(
-            new P.BaseGroupSelection(policy.id, 'Roots', new P.AllPredicate([])),
-          ),
-        ],
-        new P.ErrorEmptyGroupPolicy(),
-      ),
-    );
-    this.board.setGroups(groups);
-    this.board.updateOutput(
-      (plan) => (plan.output.roots = [...new Set([...plan.output.roots, id])]),
+  hasDimension(policy: P.GroupingPolicy, kind: P.NodeDimension['kind'], except = -1): boolean {
+    return policy.group_by.some((dimension, index) => index !== except && dimension.kind === kind);
+  }
+
+  dimensionLabel(dimension: P.NodeDimension): string {
+    return (
+      this.dimensionOptions.find((option) => option.kind === dimension.kind)?.label ??
+      dimension.kind
     );
   }
 
@@ -247,13 +270,9 @@ export class PlanBoard {
     const groups = this.cloneGroups();
     const id = Math.max(0, ...groups.map((group) => group.id)) + 1;
     groups.push(
-      new P.CustomGroup(
-        id,
-        `节点组 ${id}`,
-        new P.SelectGroupStrategy(),
-        [new P.BuiltinMemberSelector('Direct')],
-        new P.ErrorEmptyGroupPolicy(),
-      ),
+      new P.CustomGroup(id, `节点组 ${id}`, new P.SelectGroupStrategy(), [
+        new P.BuiltinMemberSelector('Direct'),
+      ]),
     );
     this.board.setGroups(groups);
     this.focusGroup(id);
@@ -306,27 +325,6 @@ export class PlanBoard {
 
   removeSelector(groupId: number, index: number): void {
     this.updateGroup(groupId, (group) => group.member_selectors.splice(index, 1));
-  }
-
-  emptyPolicyValue(group: P.CustomGroup): string {
-    if (group.on_empty instanceof P.ErrorEmptyGroupPolicy) return 'error';
-    const target = (group.on_empty as P.UseEmptyGroupPolicy).target;
-    return target instanceof P.GroupTarget
-      ? `group:${target.group}`
-      : `builtin:${(target as P.BuiltinTarget).builtin}`;
-  }
-
-  setEmptyPolicy(groupId: number, value: string): void {
-    this.updateGroup(groupId, (group) => {
-      group.on_empty =
-        value === 'error'
-          ? new P.ErrorEmptyGroupPolicy()
-          : new P.UseEmptyGroupPolicy(
-              value.startsWith('group:')
-                ? new P.GroupTarget(Number(value.slice(6)))
-                : new P.BuiltinTarget(value.endsWith('Reject') ? 'Reject' : 'Direct'),
-            );
-    });
   }
 
   toggleRoot(groupId: number, checked: boolean): void {
@@ -638,6 +636,10 @@ export class PlanBoard {
     if (kind === 'protocol') return new P.ProtocolDimension();
     if (kind === 'has_tag') return new P.HasTagDimension('');
     return new P.RegionDimension();
+  }
+
+  private dimensionKey(dimension: P.NodeDimension): string {
+    return dimension instanceof P.HasTagDimension ? `has_tag:${dimension.tag}` : dimension.kind;
   }
 
   private async restoreLocalBinding(): Promise<void> {

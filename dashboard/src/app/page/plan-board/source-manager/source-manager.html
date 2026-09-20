@@ -1,123 +1,105 @@
 <header class="drawer-header">
-  <div>
-    <h2>来源管理</h2>
-    <p>添加、加载和刷新订阅来源</p>
+  <div class="drawer-title">
+    <span class="drawer-mark"><app-ui-icon name="server" /></span>
+    <div class="drawer-copy">
+      <h2>来源管理</h2>
+      <p>添加、加载和刷新订阅来源</p>
+    </div>
   </div>
-  <app-ui-close-button (closed)="closeRequested.emit()" />
+  <app-ui-icon-button icon="close" label="关闭" (pressed)="closeRequested.emit()" />
 </header>
 
 <section class="client-section">
-  <mat-form-field appearance="outline" subscriptSizing="dynamic">
-    <mat-label>目标客户端</mat-label>
-    <mat-select [ngModel]="board.plan().client" (ngModelChange)="setClient($event)">
-      @for (client of clientOptions; track client) {
-        <mat-option [value]="client">{{ client }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
+  <app-ui-select
+    label="目标客户端"
+    [ngModel]="board.plan().client"
+    (ngModelChange)="setClient($event)"
+  >
+    @for (client of clientOptions; track client) {
+      <app-ui-option [value]="client" label="{{ client }}" />
+    }
+  </app-ui-select>
   <span>用于来源加载和最终配置输出。切换 Surge / Clash 后，将重新加载来源并更新编排结果。</span>
 </section>
 
-<mat-expansion-panel class="create-panel" expanded>
-  <mat-expansion-panel-header>
-    <mat-panel-title>添加来源</mat-panel-title>
-    <mat-panel-description>提交前不会写入方案</mat-panel-description>
-  </mat-expansion-panel-header>
+<app-ui-collapse class="create-panel" [expanded]="true" heading="添加来源"
+  ><span collapse-description>提交前不会写入方案</span>
   <div class="create-form">
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-      <mat-label>来源名称</mat-label>
-      <input matInput [ngModel]="draftName()" (ngModelChange)="draftName.set($event)" />
-    </mat-form-field>
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-      <mat-label>来源类型</mat-label>
-      <mat-select [ngModel]="draftKind()" (ngModelChange)="draftKind.set($event)">
-        <mat-option value="remote">远程 URL</mat-option>
-        <mat-option value="inline">内嵌配置</mat-option>
-      </mat-select>
-    </mat-form-field>
-    <mat-form-field class="wide" appearance="outline" subscriptSizing="dynamic">
-      <mat-label>{{ draftKind() === 'remote' ? '订阅 URL' : '配置内容' }}</mat-label>
-      @if (draftKind() === 'remote') {
-        <input matInput [ngModel]="draftContent()" (ngModelChange)="draftContent.set($event)" />
-      } @else {
-        <textarea
-          matInput
-          rows="6"
-          [ngModel]="draftContent()"
-          (ngModelChange)="draftContent.set($event)"
-        ></textarea>
-      }
-    </mat-form-field>
-    <button
-      mat-flat-button
+    <app-ui-text-field
+      label="来源名称"
+      [ngModel]="draftName()"
+      (ngModelChange)="draftName.set($event)"
+    />
+    <app-ui-select label="来源类型" [ngModel]="draftKind()" (ngModelChange)="draftKind.set($event)">
+      <app-ui-option value="remote" label="远程 URL" />
+      <app-ui-option value="inline" label="内嵌配置" />
+    </app-ui-select>
+    <app-ui-text-field
+      class="wide"
+      label="{{ draftKind() === 'remote' ? '订阅 URL' : '配置内容' }}"
+      [multiline]="draftKind() !== 'remote'"
+      [rows]="6"
+      [ngModel]="draftContent()"
+      (ngModelChange)="draftContent.set($event)"
+    />
+    <app-ui-button
+      variant="filled"
       type="button"
       [disabled]="!draftContent().trim()"
-      (click)="addAndLoad()"
+      (pressed)="addAndLoad()"
     >
       添加并加载
-    </button>
+    </app-ui-button>
   </div>
-</mat-expansion-panel>
+</app-ui-collapse>
 
 <mat-accordion multi class="source-list">
   @for (source of board.plan().sources; track source.id; let index = $index) {
     @let profile = board.sourceProfiles().get(source.id);
     @let loading = board.loadingSourceIds().has(source.id);
     @let sourceError = board.sourceErrors().get(source.id);
-    <mat-expansion-panel
+    <app-ui-collapse
       [id]="'source-' + source.id"
       [expanded]="board.selectedSourceId() === source.id"
       (opened)="board.selectSource(source.id)"
-    >
-      <mat-expansion-panel-header>
-        <mat-panel-title>{{ index + 1 }}. {{ source.name || '未命名来源' }}</mat-panel-title>
-        <mat-panel-description>
-          @if (loading) {
-            正在加载
-          } @else if (sourceError) {
-            加载失败
-          } @else if (profile) {
-            已加载 · {{ profile.input_nodes.length }} 个输入节点
-          } @else {
-            尚未加载
-          }
-        </mat-panel-description>
-      </mat-expansion-panel-header>
+      heading="{{ index + 1 }}. {{ source.name || '未命名来源' }}"
+      ><span collapse-description>
+        @if (loading) {
+          正在加载
+        } @else if (sourceError) {
+          加载失败
+        } @else if (profile) {
+          已加载 · {{ profile.input_nodes.length }} 个输入节点
+        } @else {
+          尚未加载
+        }
+      </span>
 
       @if (loading) {
         <mat-progress-bar mode="indeterminate" />
       }
       <div class="source-form">
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>来源名称</mat-label>
-          <input matInput [ngModel]="source.name" (ngModelChange)="updateName(source, $event)" />
-        </mat-form-field>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>来源类型</mat-label>
-          <mat-select [ngModel]="source.input.kind" (ngModelChange)="updateKind(source, $event)">
-            <mat-option value="remote">远程 URL</mat-option>
-            <mat-option value="inline">内嵌配置</mat-option>
-          </mat-select>
-        </mat-form-field>
-        <mat-form-field class="wide" appearance="outline" subscriptSizing="dynamic">
-          <mat-label>{{
-            source.input.kind === 'remote' ? '当前保存的 URL' : '当前保存的配置'
-          }}</mat-label>
-          @if (source.input.kind === 'remote') {
-            <input
-              matInput
-              [ngModel]="inputValue(source.input)"
-              (ngModelChange)="updateInput(source, $event)"
-            />
-          } @else {
-            <textarea
-              matInput
-              rows="7"
-              [ngModel]="inputValue(source.input)"
-              (ngModelChange)="updateInput(source, $event)"
-            ></textarea>
-          }
-        </mat-form-field>
+        <app-ui-text-field
+          label="来源名称"
+          [ngModel]="source.name"
+          (ngModelChange)="updateName(source, $event)"
+        />
+        <app-ui-select
+          label="来源类型"
+          [ngModel]="source.input.kind"
+          (ngModelChange)="updateKind(source, $event)"
+        >
+          <app-ui-option value="remote" label="远程 URL" />
+          <app-ui-option value="inline" label="内嵌配置" />
+        </app-ui-select>
+        <app-ui-text-field
+          class="wide"
+          label="{{ source.input.kind === 'remote' ? '当前保存的 URL' : '当前保存的配置' }}"
+          [multiline]="source.input.kind !== 'remote'"
+          [rows]="7"
+          [ngModel]="inputValue(source.input)"
+          (ngModelChange)="updateInput(source, $event)"
+        />
 
         @if (inputChangedSinceLoad(source)) {
           <div class="snapshot wide">
@@ -127,31 +109,31 @@
         }
 
         <div class="actions wide">
-          <button
-            mat-flat-button
+          <app-ui-button
+            variant="filled"
             type="button"
             [disabled]="loading || !inputValue(source.input).trim()"
-            (click)="load(source, false)"
+            (pressed)="load(source, false)"
           >
             {{ sourceError ? '重试加载' : profile ? '重新加载' : '加载来源' }}
-          </button>
-          <button
-            mat-stroked-button
+          </app-ui-button>
+          <app-ui-button
+            variant="outlined"
             type="button"
             [disabled]="loading || !inputValue(source.input).trim()"
-            (click)="load(source, true)"
+            (pressed)="load(source, true)"
           >
             强制刷新
-          </button>
-          <button
-            mat-button
+          </app-ui-button>
+          <app-ui-button
+            variant="text"
             class="danger"
             type="button"
             [disabled]="loading"
-            (click)="remove(source)"
+            (pressed)="remove(source)"
           >
             删除来源
-          </button>
+          </app-ui-button>
         </div>
 
         @if (sourceError) {
@@ -202,7 +184,7 @@
           }
         </div>
       </div>
-    </mat-expansion-panel>
+    </app-ui-collapse>
   } @empty {
     <div class="empty">暂无来源。请先在上方填写并提交来源。</div>
   }

@@ -1,0 +1,41 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.label {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ui-muted);
+}
+mat-select {
+  display: flex;
+  align-items: center;
+  min-height: var(--ui-field-height);
+  padding: 0;
+  border: 0;
+  border-radius: var(--ui-radius-control);
+  background: var(--ui-field);
+}
+mat-select:hover:not(.mat-mdc-select-disabled) {
+  border-color: var(--ui-muted);
+}
+mat-select:focus {
+  border-color: var(--ui-accent-text);
+  outline: 1px solid var(--ui-accent-text);
+}
+mat-select.invalid {
+  border-color: var(--ui-error);
+}
+mat-select.mat-mdc-select-disabled {
+  opacity: 0.45;
+}
+.help {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--ui-muted);
+}
+.help.error {
+  color: var(--ui-error);
+}

@@ -62,11 +62,10 @@ fn setup(client: ProxyClient) -> (Plan, Vec<EvaluationSource>) {
             name: "all".into(),
             strategy: GroupStrategy::Select,
             member_selectors: vec![MemberSelector::BaseGroups(BaseGroupSelection {
-                policy: GroupingPolicyId(1),
+                policy: Some(GroupingPolicyId(1)),
                 scope: GroupScope::Roots,
                 predicate: Predicate::All(vec![]),
             })],
-            on_empty: EmptyGroupPolicy::Error,
         }],
         rules: vec![],
         output: Output {
@@ -121,6 +120,113 @@ fn hierarchical_grouping_for_both_clients() {
         assert_eq!(parsed.proxies.iter().filter_map(SectionEntry::item).count(), 4);
         assert_eq!(parsed.proxy_groups.iter().filter_map(SectionEntry::item).count(), 8);
     }
+}
+
+#[test]
+fn automatic_policies_are_output_without_custom_wrapper_groups() {
+    let (mut plan, sources) = setup(ProxyClient::Surge);
+    plan.groups.clear();
+    plan.output.roots.clear();
+    plan.output.fallback = Target::Builtin(Builtin::Direct);
+
+    let result = evaluate(&plan, &sources, &Default::default()).unwrap();
+
+    assert_eq!(result.profile.proxies.iter().filter_map(SectionEntry::item).count(), 4);
+    assert_eq!(result.profile.proxy_groups.iter().filter_map(SectionEntry::item).count(), 7);
+    assert!(result.base_groups.iter().all(|group| group.output_name.is_some()));
+}
+
+#[test]
+fn plan_without_grouping_outputs_kept_nodes_flat() {
+    let (mut plan, sources) = setup(ProxyClient::Clash);
+    plan.grouping_policies.clear();
+    plan.groups.clear();
+    plan.output.roots.clear();
+    plan.output.fallback = Target::Builtin(Builtin::Direct);
+
+    let result = evaluate(&plan, &sources, &Default::default()).unwrap();
+
+    assert_eq!(result.profile.proxies.iter().filter_map(SectionEntry::item).count(), 4);
+    assert_eq!(result.profile.proxy_groups.iter().filter_map(SectionEntry::item).count(), 0);
+    assert!(result.base_groups.is_empty());
+}
+
+#[test]
+fn custom_group_can_match_generated_groups_by_name_without_policy_coupling() {
+    let (mut plan, sources) = setup(ProxyClient::Surge);
+    plan.groups[0].name = "香港优选".into();
+    plan.groups[0].member_selectors = vec![MemberSelector::BaseGroups(BaseGroupSelection {
+        policy: None,
+        scope: GroupScope::Roots,
+        predicate: Predicate::Atom(BaseGroupPredicate::Name(StringMatch::Contains("香港".into()))),
+    })];
+    plan.output.fallback = Target::Builtin(Builtin::Direct);
+
+    let matched = evaluate(&plan, &sources, &Default::default()).unwrap();
+    assert!(
+        matched
+            .profile
+            .proxy_groups
+            .iter()
+            .filter_map(SectionEntry::item)
+            .any(|group| group.name == "香港优选")
+    );
+
+    plan.groups[0].member_selectors = vec![MemberSelector::BaseGroups(BaseGroupSelection {
+        policy: None,
+        scope: GroupScope::Roots,
+        predicate: Predicate::Atom(BaseGroupPredicate::Name(StringMatch::Equals("不存在".into()))),
+    })];
+    let missing = evaluate(&plan, &sources, &Default::default()).unwrap();
+    assert!(
+        missing
+            .profile
+            .proxy_groups
+            .iter()
+            .filter_map(SectionEntry::item)
+            .all(|group| group.name != "香港优选")
+    );
+}
+
+#[test]
+fn empty_group_chains_and_rules_targeting_them_are_omitted() {
+    let (mut plan, sources) = setup(ProxyClient::Clash);
+    plan.groups[0].member_selectors = vec![MemberSelector::Nodes(NodeSelection {
+        source: SourceId(1),
+        predicate: Predicate::Atom(NodePredicate::Name(StringMatch::Equals("不存在".into()))),
+    })];
+    plan.groups.push(CustomGroup {
+        id: GroupId(2),
+        name: "只引用空组".into(),
+        strategy: GroupStrategy::Select,
+        member_selectors: vec![MemberSelector::Group(GroupId(1))],
+    });
+    plan.output.roots = vec![GroupId(1), GroupId(2)];
+    plan.output.fallback = Target::Builtin(Builtin::Direct);
+    plan.rules = vec![RuleBlock::Emit {
+        rules: vec![ManualRule {
+            rule: Rule {
+                rule_type: RuleType::Domain,
+                value: Some("ignored.example".into()),
+                target: None,
+                options: vec![],
+                comment: None,
+            },
+            target: Target::Group(GroupId(2)),
+        }],
+    }];
+
+    let result = evaluate(&plan, &sources, &Default::default()).unwrap();
+    let groups = result
+        .profile
+        .proxy_groups
+        .iter()
+        .filter_map(SectionEntry::item)
+        .collect::<Vec<_>>();
+    assert!(groups.iter().all(|group| group.name != "all" && group.name != "只引用空组"));
+    let rules = result.profile.rules.iter().filter_map(SectionEntry::item).collect::<Vec<_>>();
+    assert_eq!(rules.len(), 1);
+    assert_eq!(rules[0].rule_type, RuleType::Match);
 }
 
 #[test]
@@ -192,8 +298,22 @@ fn annotations_do_not_chain_and_groups_see_merged_tags() {
         predicate: Predicate::Atom(NodePredicate::HasTag("home".into())),
     })];
     let a = evaluate(&p, &s, &Default::default()).unwrap();
-    assert_eq!(a.profile.proxies.iter().filter_map(SectionEntry::item).count(), 1);
-    assert_eq!(a.profile.proxies[0].item().unwrap().tags, vec!["home"]);
+    let tagged = a
+        .profile
+        .proxies
+        .iter()
+        .filter_map(SectionEntry::item)
+        .find(|node| node.tags == vec!["home"])
+        .unwrap();
+    assert_eq!(tagged.name, "美国 07");
+    let custom = a
+        .profile
+        .proxy_groups
+        .iter()
+        .filter_map(SectionEntry::item)
+        .find(|group| group.name == "all")
+        .unwrap();
+    assert_eq!(custom.members.iter().map(PolicyRef::name).collect::<Vec<_>>(), ["美国 07"]);
     p.sources[0].annotations.reverse();
     let b = evaluate(&p, &s, &Default::default()).unwrap();
     assert_eq!(serde_json::to_value(a.profile).unwrap(), serde_json::to_value(b.profile).unwrap());
@@ -235,6 +355,7 @@ fn plan_roundtrip_validation_and_cycles() {
 #[test]
 fn source_filter_applies_to_imported_groups_and_preserved_targets() {
     let (mut p, mut s) = setup(ProxyClient::Surge);
+    p.sources[1].node_filter = Some(Predicate::Any(vec![]));
     s[0].profile.proxy_groups.push(group(
         "raw".into(),
         ProxyGroupType::Select,
@@ -387,7 +508,12 @@ fn report_keeps_evaluated_nodes_when_output_is_blocked() {
     assert!(report.profile.is_none());
     assert_eq!(report.nodes.len(), 4);
     assert!(report.nodes.iter().all(|node| !node.origins.is_empty()));
-    assert!(report.diagnostics.iter().any(|diagnostic| diagnostic.code == "empty_group"));
+    assert!(
+        report
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.code == "empty_fallback_group")
+    );
 }
 
 #[test]
@@ -401,7 +527,7 @@ fn base_predicates_keep_subtrees_and_multiple_policies_reuse_nodes() {
     });
     p.groups[0].member_selectors = vec![
         MemberSelector::BaseGroups(BaseGroupSelection {
-            policy: GroupingPolicyId(1),
+            policy: Some(GroupingPolicyId(1)),
             scope: GroupScope::All,
             predicate: Predicate::Atom(BaseGroupPredicate::Dimension {
                 dimension: NodeDimension::Region,
@@ -409,7 +535,7 @@ fn base_predicates_keep_subtrees_and_multiple_policies_reuse_nodes() {
             }),
         }),
         MemberSelector::BaseGroups(BaseGroupSelection {
-            policy: GroupingPolicyId(2),
+            policy: Some(GroupingPolicyId(2)),
             scope: GroupScope::Roots,
             predicate: Predicate::All(vec![]),
         }),
@@ -437,6 +563,7 @@ fn base_predicates_keep_subtrees_and_multiple_policies_reuse_nodes() {
 #[test]
 fn node_dependencies_are_inline_and_cannot_bypass_filter() {
     let (mut p, mut s) = setup(ProxyClient::Clash);
+    p.sources[1].node_filter = Some(Predicate::Any(vec![]));
     let input = "proxy-providers:\n  remote:\n    type: http\n    url: https://example.com/sub\nproxy-groups:\n  - {name: raw, type: select, use: [remote], filter: '.*'}\n";
     s[0].profile = Profile::parse(input, ProxyClient::Clash).unwrap();
     p.sources[0].node_filter = Some(Predicate::Atom(NodePredicate::Name(StringMatch::OneOf(vec!["香港 01".into()]))));
@@ -470,30 +597,31 @@ fn node_dependencies_are_inline_and_cannot_bypass_filter() {
             .filter_map(SectionEntry::item)
             .all(|g| g.providers.is_empty())
     );
-    // Explicit empty dependency is valid; the empty imported group is a separate error.
+    // Explicit empty dependency is valid and produces no imported group.
     let mut deps = deps;
     deps.nodes[0].nodes.clear();
-    assert!(
-        evaluate(&p, &s, &deps)
-            .unwrap_err()
-            .diagnostics
-            .iter()
-            .any(|d| d.code == "empty_imported_group")
-    );
+    p.output.fallback = Target::Builtin(Builtin::Direct);
+    let empty = evaluate(&p, &s, &deps).unwrap();
+    assert!(empty.profile.proxies.iter().filter_map(SectionEntry::item).next().is_none());
+    assert!(empty.profile.proxy_groups.iter().filter_map(SectionEntry::item).next().is_none());
     s[0].profile.proxy_providers[0].source = ProviderSource::Inline;
     s[0].profile.proxy_providers[0].payload = Some(vec![]);
+    let inline_empty = evaluate(&p, &s, &Default::default()).unwrap();
     assert!(
-        evaluate(&p, &s, &Default::default())
-            .unwrap_err()
-            .diagnostics
+        inline_empty
+            .profile
+            .proxy_groups
             .iter()
-            .any(|d| d.code == "empty_imported_group")
+            .filter_map(SectionEntry::item)
+            .next()
+            .is_none()
     );
 }
 
 #[test]
 fn nested_raw_groups_and_empty_fallback_cycles() {
     let (mut p, mut s) = setup(ProxyClient::Surge);
+    p.sources[1].node_filter = Some(Predicate::Any(vec![]));
     s[0].profile.proxy_groups.extend([
         group("parent".into(), ProxyGroupType::Select, vec!["child".into()]),
         group("child".into(), ProxyGroupType::Select, vec!["香港 01".into()]),
@@ -506,26 +634,31 @@ fn nested_raw_groups_and_empty_fallback_cycles() {
         selection: select.clone(),
         depth: ExpandDepth::Direct,
     }];
-    p.groups[0].on_empty = EmptyGroupPolicy::Use(Target::Builtin(Builtin::Direct));
-    assert!(evaluate(&p, &s, &Default::default()).unwrap().profile.proxies.is_empty());
+    p.output.fallback = Target::Builtin(Builtin::Direct);
+    let direct = evaluate(&p, &s, &Default::default()).unwrap();
+    assert!(
+        direct
+            .profile
+            .proxy_groups
+            .iter()
+            .filter_map(SectionEntry::item)
+            .all(|group| group.name != "all")
+    );
     p.groups[0].member_selectors = vec![MemberSelector::NodesFromGroups {
         selection: select,
         depth: ExpandDepth::Recursive,
     }];
-    assert_eq!(
-        evaluate(&p, &s, &Default::default())
-            .unwrap()
-            .profile
-            .proxies
-            .iter()
-            .filter_map(SectionEntry::item)
-            .count(),
-        1
-    );
+    let recursive = evaluate(&p, &s, &Default::default()).unwrap();
+    let recursive_group = recursive
+        .profile
+        .proxy_groups
+        .iter()
+        .filter_map(SectionEntry::item)
+        .find(|group| group.name == "all")
+        .unwrap();
+    assert_eq!(recursive_group.members.iter().map(PolicyRef::name).collect::<Vec<_>>(), ["香港 01"]);
     s[0].profile.proxy_groups[1].item_mut().unwrap().members = vec![PolicyRef::parse("parent")];
     assert!(evaluate(&p, &s, &Default::default()).is_err());
-    p.groups[0].on_empty = EmptyGroupPolicy::Use(Target::Group(GroupId(1)));
-    assert!(p.validate().is_err());
 }
 
 #[test]
@@ -716,6 +849,7 @@ fn import_source_groups(plan: &mut Plan) {
 #[test]
 fn surge_policy_path_filters_overrides_and_shares_nodes() {
     let (mut plan, mut sources) = setup(ProxyClient::Surge);
+    plan.sources[1].node_filter = Some(Predicate::Any(vec![]));
     sources[0].profile = Profile::parse(
         r#"[Proxy]
 local = socks5, localhost, 1080
@@ -762,11 +896,13 @@ third = select, policy-path=https://example.invalid/nodes?token=secret, policy-r
         .iter()
         .filter_map(SectionEntry::item)
         .collect::<Vec<_>>();
+    let first = groups.iter().find(|group| group.name == "first").unwrap();
+    let second = groups.iter().find(|group| group.name == "second").unwrap();
     assert_eq!(
-        groups[0].members.iter().map(PolicyRef::name).collect::<Vec<_>>(),
+        first.members.iter().map(PolicyRef::name).collect::<Vec<_>>(),
         ["local", "DIRECT", "A-HK 01"]
     );
-    assert_eq!(groups[1].members[0].name(), "A-HK 01");
+    assert_eq!(second.members[0].name(), "A-HK 01");
     assert!(groups.iter().all(|g| g.policy_path.is_none()));
     let mut content = String::new();
     result.profile.render(&mut content, ProxyClient::Surge).unwrap();
@@ -793,8 +929,10 @@ third = select, policy-path=https://example.invalid/nodes?token=secret, policy-r
 #[test]
 fn surge_empty_dependency_and_source_filter_have_distinct_semantics() {
     let (mut plan, mut sources) = setup(ProxyClient::Surge);
+    plan.sources[1].node_filter = Some(Predicate::Any(vec![]));
     sources[0].profile = Profile::parse("[Proxy Group]\nremote = select, policy-path=nodes.conf\n", ProxyClient::Surge).unwrap();
     import_source_groups(&mut plan);
+    plan.output.fallback = Target::Builtin(Builtin::Direct);
     let mut deps = ResolvedDependencies {
         nodes: vec![NodeDependency {
             source: SourceId(1),
@@ -803,28 +941,32 @@ fn surge_empty_dependency_and_source_filter_have_distinct_semantics() {
         }],
         ..Default::default()
     };
-    assert_eq!(
-        evaluate(&plan, &sources, &deps).unwrap_err().diagnostics[0].code,
-        "empty_imported_group"
+    let empty_dependency = evaluate(&plan, &sources, &deps).unwrap();
+    assert!(
+        empty_dependency
+            .profile
+            .proxy_groups
+            .iter()
+            .filter_map(SectionEntry::item)
+            .next()
+            .is_none()
     );
     deps.nodes[0].nodes.push(node("HK 01"));
     plan.sources[0].node_filter = Some(Predicate::Any(vec![]));
-    assert_eq!(
-        evaluate(&plan, &sources, &deps).unwrap_err().diagnostics[0].code,
-        "empty_imported_group"
-    );
+    let filtered = evaluate(&plan, &sources, &deps).unwrap();
+    assert!(filtered.profile.proxy_groups.iter().filter_map(SectionEntry::item).next().is_none());
     // 同一外部节点不能通过额外节点或原组绕过 Source 过滤。
     plan.groups[0].member_selectors = vec![MemberSelector::Nodes(NodeSelection {
         source: SourceId(1),
         predicate: Predicate::All(vec![]),
     })];
-    plan.groups[0].on_empty = EmptyGroupPolicy::Use(Target::Builtin(Builtin::Direct));
     assert!(evaluate(&plan, &sources, &deps).unwrap().profile.proxies.is_empty());
 }
 
 #[test]
 fn mihomo_provider_filter_and_override_apply_before_global_grouping() {
     let (mut plan, mut sources) = setup(ProxyClient::Clash);
+    plan.sources[1].node_filter = Some(Predicate::Any(vec![]));
     sources[0].profile = Profile::parse(
         r#"
 proxy-providers:

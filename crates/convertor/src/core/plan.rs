@@ -48,9 +48,9 @@ pub struct Plan {
     pub client: ProxyClient,
     /// 节点和原始规则的来源。
     pub sources: Vec<Source>,
-    /// 对全部可用节点执行的逐层自动分组策略。
+    /// 对全部可用节点执行的逐层自动分组策略；每项策略的根组天然输出。
     pub grouping_policies: Vec<GroupingPolicy>,
-    /// 在基础组树之上编排的固定自定义组。
+    /// 独立于自动策略定义、可按名称选择已生成基础组的固定自定义组。
     pub groups: Vec<CustomGroup>,
     /// 保持声明顺序执行的规则程序。
     pub rules: RuleProgram,

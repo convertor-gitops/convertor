@@ -1,0 +1,47 @@
+<label [for]="id"
+  >{{ label() }}
+  @if (required()) {
+    <span aria-hidden="true">*</span>
+  }
+</label>
+<div class="field" [class.invalid]="error()" [class.disabled]="isDisabled()">
+  @if (icon()) {
+    <app-ui-icon [name]="icon()!" />
+  }
+  @if (multiline()) {
+    <textarea
+      matInput
+      [id]="id"
+      [rows]="rows()"
+      [value]="current() ?? ''"
+      [placeholder]="placeholder()"
+      [disabled]="isDisabled()"
+      [readOnly]="readonly()"
+      [required]="required()"
+      [attr.aria-invalid]="!!error()"
+      [attr.aria-describedby]="hint() || error() ? id + '-help' : null"
+      (input)="readInput($event)"
+      (blur)="touch()"
+    ></textarea>
+  } @else {
+    <input
+      matInput
+      [id]="id"
+      [type]="type()"
+      [attr.min]="min()"
+      [attr.max]="max()"
+      [value]="current() ?? ''"
+      [placeholder]="placeholder()"
+      [disabled]="isDisabled()"
+      [readOnly]="readonly()"
+      [required]="required()"
+      [attr.aria-invalid]="!!error()"
+      [attr.aria-describedby]="hint() || error() ? id + '-help' : null"
+      (input)="readInput($event)"
+      (blur)="touch()"
+    />
+  }
+</div>
+@if (error() || hint()) {
+  <span class="help" [class.error]="error()" [id]="id + '-help'">{{ error() || hint() }}</span>
+}

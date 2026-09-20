@@ -1,0 +1,57 @@
+<app-ui-card [padded]="false"
+  ><div class="node-layout">
+    <button
+      class="selection"
+      type="button"
+      [attr.aria-label]="'选择节点 ' + name()"
+      [attr.aria-pressed]="selected()"
+      [disabled]="status() === 'disabled'"
+      (click)="selectedChange.emit(!selected())"
+    >
+      <span class="region">{{ region() }}</span>
+      <span class="copy">
+        <span class="name" [title]="name()">{{ name() }}</span>
+        <span class="metadata"
+          ><span class="protocol">{{ protocol() }}</span
+          ><span class="source">{{ source() }}</span>
+          @for (tag of tags(); track tag) {
+            <span class="tag">{{ tag }}</span>
+          }
+        </span>
+      </span>
+      <span
+        class="state"
+        [class.loading]="status() === 'loading'"
+        [class.error]="status() === 'error'"
+      >
+        @if (statusText()) {
+          <span class="status-label">{{ statusText() }}</span>
+        }
+        @if (selected()) {
+          <app-ui-icon name="check" />
+        } @else if (status() === 'loading') {
+          <app-ui-icon name="refresh" />
+        } @else if (status() === 'error') {
+          <app-ui-icon name="info" />
+        } @else {
+          <span class="selection-dot" aria-hidden="true"></span>
+        }
+      </span>
+    </button>
+    @if (showActions()) {
+    <div class="actions">
+      <app-ui-icon-button
+        icon="info"
+        [label]="'查看节点 ' + name()"
+        [disabled]="status() === 'disabled'"
+        (pressed)="detailsRequested.emit()"
+      />
+      <app-ui-icon-button
+        icon="more"
+        [label]="'节点操作 ' + name()"
+        [disabled]="status() === 'disabled'"
+        (pressed)="actionRequested.emit()"
+      />
+    </div>
+    }</div
+></app-ui-card>

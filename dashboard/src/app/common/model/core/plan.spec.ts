@@ -48,7 +48,6 @@ const PLAN_FIXTURE = {
           value: { policy: 1, scope: 'Roots', predicate: { op: 'all', args: [] } },
         },
       ],
-      on_empty: { Use: { Builtin: 'Direct' } },
     },
   ],
   rules: [
@@ -86,10 +85,13 @@ describe('Plan hand-written serde', () => {
     expect(plan.grouping_policies[0].group_by[0]).toBeInstanceOf(RegionDimension);
     expect(plan.grouping_policies[0].strategy).toBeInstanceOf(SelectGroupStrategy);
     expect(plan.groups[0].member_selectors[0]).toBeInstanceOf(BaseGroupsMemberSelector);
-    expect((plan.groups[0].on_empty.serialize() as { Use: unknown }).Use).toEqual({
-      Builtin: 'Direct',
-    });
     expect(plan.serialize()).toEqual(PLAN_FIXTURE);
+  });
+
+  it('accepts and drops the legacy on_empty field', () => {
+    const legacy = structuredClone(PLAN_FIXTURE);
+    (legacy.groups[0] as Record<string, unknown>)['on_empty'] = { Use: { Builtin: 'Direct' } };
+    expect(Plan.deserialize(legacy).serialize()).toEqual(PLAN_FIXTURE);
   });
 
   it('reports a precise path for unknown variants', () => {
@@ -104,6 +106,21 @@ describe('Plan hand-written serde', () => {
     expect(cloned.output.fallback.serialize()).toEqual({ Group: 1 });
     const target = new BuiltinTarget('Reject');
     expect(target.serialize()).toEqual({ Builtin: 'Reject' });
+  });
+
+  it('supports policy-independent generated-group lookup and omission', () => {
+    const selection = new PlanModel.BaseGroupSelection(
+      null,
+      'Roots',
+      new PlanModel.AtomPredicate(
+        new PlanModel.BaseGroupNamePredicate(new PlanModel.EqualsStringMatch('香港')),
+      ),
+    );
+    expect(selection.serialize()).toEqual({
+      scope: 'Roots',
+      predicate: { op: 'atom', args: { kind: 'name', value: { op: 'equals', value: '香港' } } },
+    });
+    expect(PlanModel.BaseGroupSelection.deserialize(selection.serialize()).policy).toBeNull();
   });
 
   it('dispatches every Plan tagged-enum variant to a concrete class', () => {

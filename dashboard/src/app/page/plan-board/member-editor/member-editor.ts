@@ -1,29 +1,13 @@
+import { UiSelectComponent, UiOptionComponent } from '../../shared/ui';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
 import * as P from '../../../common/model/core/plan';
 import { PredicateEditor } from '../predicate-editor/predicate-editor';
 @Component({
   selector: 'app-member-editor',
-  imports: [FormsModule, MatFormFieldModule, MatSelectModule, PredicateEditor],
+  imports: [UiSelectComponent, UiOptionComponent, FormsModule, PredicateEditor],
   templateUrl: './member-editor.html',
-  styles: `
-    :host {
-      display: grid;
-      gap: 10px;
-    }
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    mat-form-field {
-      flex: 1 1 140px;
-      min-width: 0;
-      max-width: 100%;
-    }
-  `,
+  styleUrl: './member-editor.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MemberEditor {
@@ -37,7 +21,7 @@ export class MemberEditor {
     ['nodes', '按条件选节点'],
     ['nodes_from_groups', '从原始组展开节点'],
     ['import_groups', '保留原始组'],
-    ['base_groups', '引用自动组'],
+    ['base_groups', '按名称查找自动组'],
     ['group', '引用节点组'],
     ['builtin', '内置动作'],
   ];
@@ -81,7 +65,11 @@ export class MemberEditor {
         break;
       case 'base_groups':
         next = new P.BaseGroupsMemberSelector(
-          new P.BaseGroupSelection(this.policies()[0]?.id ?? 0, 'Roots', new P.AllPredicate([])),
+          new P.BaseGroupSelection(
+            null,
+            'Roots',
+            new P.AtomPredicate(new P.BaseGroupNamePredicate(new P.EqualsStringMatch(''))),
+          ),
         );
         break;
       case 'group':
@@ -136,11 +124,11 @@ export class MemberEditor {
       );
     this.selectorChange.emit(s);
   }
-  changeBase(field: 'policy' | 'scope', value: number | P.GroupScope): void {
+  changeBase(value: P.GroupScope): void {
     const s = P.MemberSelector.deserialize(this.selector().serialize());
     if (s instanceof P.BaseGroupsMemberSelector) {
-      if (field === 'policy') s.selection.policy = Number(value);
-      else s.selection.scope = value as P.GroupScope;
+      s.selection.policy = null;
+      s.selection.scope = value;
       this.selectorChange.emit(s);
     }
   }

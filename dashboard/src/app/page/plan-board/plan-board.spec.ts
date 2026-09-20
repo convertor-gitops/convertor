@@ -44,22 +44,35 @@ describe('PlanBoard workbench behavior', () => {
     expect(setGroups).not.toHaveBeenCalled();
   });
 
-  it('wraps an automatic policy as an output root group', () => {
+  it('keeps automatic policies independent from custom groups and output roots', () => {
     component.addPolicy();
-    const policy = component.board.plan().grouping_policies[0];
-    component.wrapPolicy(policy);
-
-    const group = component.board.plan().groups[0];
-    expect(group.name).toBe(`自动组 ${policy.id}`);
-    expect(group.member_selectors[0].kind).toBe('base_groups');
-    expect(component.board.plan().output.roots).toContain(group.id);
+    expect(component.board.plan().grouping_policies).toHaveLength(1);
+    expect(component.board.plan().groups).toEqual([]);
+    expect(component.board.plan().output.roots).toEqual([]);
   });
 
-  it('reorders policy dimensions through service-backed mutations', () => {
+  it('keeps automatic grouping dimensions unique and removes an emptied policy', () => {
+    component.addPolicy();
+    const policy = component.board.plan().grouping_policies[0];
+
+    component.addDimension(policy.id, 'region');
+    expect(component.board.plan().grouping_policies[0].group_by).toHaveLength(1);
+
+    component.addDimension(policy.id, 'source');
+    component.removeDimension(policy.id, 0);
+    expect(component.board.plan().grouping_policies[0].group_by.map((item) => item.kind)).toEqual([
+      'source',
+    ]);
+
+    component.removeDimension(policy.id, 0);
+    expect(component.board.plan().grouping_policies).toEqual([]);
+  });
+
+  it('reorders policy dimensions through a drag-and-drop mutation', () => {
     component.addPolicy();
     const policy = component.board.plan().grouping_policies[0];
     component.addDimension(policy.id, 'source');
-    component.moveDimension(policy.id, 1, -1);
+    component.dropDimension(policy.id, { previousIndex: 1, currentIndex: 0 } as never);
 
     expect(component.board.plan().grouping_policies[0].group_by[0].kind).toBe('source');
     expect(component.board.plan().grouping_policies[0].group_by[1]).toBeInstanceOf(RegionDimension);

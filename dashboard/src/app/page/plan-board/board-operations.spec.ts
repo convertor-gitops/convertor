@@ -11,7 +11,6 @@ import {
   BuiltinMemberSelector,
   CustomGroup,
   EqualsStringMatch,
-  ErrorEmptyGroupPolicy,
   InlineSourceInput,
   NodeNamePredicate,
   NodeSelection,
@@ -58,7 +57,7 @@ function plan(): Plan {
     (id) => new Source(id, `源${id}`, new InlineSourceInput('content'), [], null),
   );
   plan.groups = [
-    new CustomGroup(1, '手选组', new SelectGroupStrategy(), [], new ErrorEmptyGroupPolicy()),
+    new CustomGroup(1, '手选组', new SelectGroupStrategy(), []),
   ];
   return plan;
 }

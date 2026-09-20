@@ -59,7 +59,7 @@ document.render(&mut content, plan.client)?;
 3. Surge 对 policy-path 节点按原名执行 policy-regex-filter，再执行 external-policy-name-prefix 和 external-policy-modifier。相同资源、相同覆盖版本共享节点；不同覆盖版本分别保留。modifier 中的代理链引用不支持。
 4. 上述节点进入 Source 标注及 Source 过滤，再参与 Plan 的自动分组和自定义选择。Provider 的筛选结果对所有入口有效。
 5. 原组的显式成员保持顺序，filter/policy-regex-filter 不筛除它们。Mihomo 再追加 use 引用的节点，Surge 再追加该组 policy-path 的节点。Source 过滤仍适用于显式成员。
-6. 输出只保留被消费的节点和组；清除 use、policy-path、外部覆盖和筛选参数，不留下指向旧外部资源的引用。有效空资源如果使被导入的原组为空，返回 empty_imported_group。
+6. 输出只保留被消费的节点和组；清除 use、policy-path、外部覆盖和筛选参数，不留下指向旧外部资源的引用。有效空资源产生空匹配结果，空的导入组及其空父组会在最终输出前被递归省略。
 
 正则使用 Rust regex 支持的语法。不支持的回溯引用、环视等语法明确报错，不尝试猜测其它正则引擎的结果。
 

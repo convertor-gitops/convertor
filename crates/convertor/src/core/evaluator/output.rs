@@ -1,6 +1,33 @@
 use super::*;
 
 impl Engine<'_> {
+    /// 删除没有有效成员的组，并继续删除只引用这些空组的父组。
+    ///
+    /// 选择器未命中属于正常空结果；最终输出图中不保留空容器。
+    fn prune_empty_groups(&mut self) {
+        loop {
+            for group in self.groups.values_mut() {
+                group.members.retain(|member| match member {
+                    Ref::Group(key) => !self.omitted_groups.contains(key),
+                    _ => true,
+                });
+            }
+            let empty = self
+                .groups
+                .iter()
+                .filter(|(_, group)| group.members.is_empty())
+                .map(|(key, _)| key.clone())
+                .collect::<Vec<_>>();
+            if empty.is_empty() {
+                break;
+            }
+            for key in empty {
+                self.groups.remove(&key);
+                self.omitted_groups.insert(key);
+            }
+        }
+    }
+
     pub(super) fn collect(
         &self,
         r: &Ref,
@@ -43,19 +70,41 @@ impl Engine<'_> {
             .filter(|(_, n)| n.kept)
             .map(|(i, _)| i)
             .collect::<Vec<_>>();
+        let mut automatic_roots = vec![];
         for p in &self.plan.grouping_policies {
-            self.partition(p, indices.clone(), 0, vec![], vec![], None)?;
+            automatic_roots.extend(self.partition(p, indices.clone(), 0, vec![], vec![], None)?);
         }
         // Validate all declared custom groups, even if currently not selected as output roots.
         for g in &self.plan.groups {
             self.custom(g.id)?;
         }
-        let mut roots = vec![];
+        let mut roots = automatic_roots;
         for id in &self.plan.output.roots {
-            roots.push(Ref::Group(self.custom(*id)?));
+            let key = self.custom(*id)?;
+            if !self.omitted_groups.contains(&key) {
+                roots.push(Ref::Group(key));
+            }
+        }
+        // A plan without automatic grouping is a valid flat-node plan.
+        if self.plan.grouping_policies.is_empty() {
+            roots.extend(indices.iter().copied().map(Ref::Node));
         }
         let mut rules = self.rules()?;
         let fallback = self.target(&self.plan.output.fallback)?;
+        self.prune_empty_groups();
+        roots.retain(|root| match root {
+            Ref::Group(key) => !self.omitted_groups.contains(key),
+            _ => true,
+        });
+        // A matching rule whose target resolved to an empty group has no usable
+        // action. Treat it like a non-match instead of emitting a dangling target.
+        rules.retain(|(_, target)| match target {
+            Ref::Group(key) => !self.omitted_groups.contains(key),
+            _ => true,
+        });
+        if matches!(&fallback, Ref::Group(key) if self.omitted_groups.contains(key)) {
+            return Err(error("empty_fallback_group", "output/fallback"));
+        }
         roots.extend(rules.iter().map(|(_, r)| r.clone()));
         roots.push(fallback.clone());
         for s in &self.plan.output.extra_nodes {

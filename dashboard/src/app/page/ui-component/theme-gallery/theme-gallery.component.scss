@@ -1,0 +1,48 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.palette-collection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.palette-card {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 132px;
+  min-width: 0;
+  gap: 12px;
+  padding: 12px;
+  color: var(--preview-fg);
+  background: var(--preview-bg);
+  border: 1px solid var(--ui-outline);
+  border-radius: var(--ui-radius-card);
+  cursor: pointer;
+}
+.palette-card.selected {
+  outline: 2px solid var(--ui-accent-text);
+  outline-offset: 1px;
+}
+.palette-name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  text-align: left;
+}
+.palette-bars {
+  display: flex;
+  gap: 4px;
+}
+.palette-bars i {
+  display: flex;
+  flex: 1;
+  height: 5px;
+  border-radius: 4px;
+}
+.palette-card:focus-visible {
+  outline: 2px solid var(--ui-accent-text);
+  outline-offset: 2px;
+}

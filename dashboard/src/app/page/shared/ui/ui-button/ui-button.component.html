@@ -1,0 +1,19 @@
+<button
+  [matButton]="variant()"
+  [type]="type()"
+  [disabled]="disabled() || loading()"
+  [attr.aria-busy]="loading()"
+  (click)="pressed.emit()"
+>
+  <span class="content">
+    @if (loading()) {
+      <span class="spinner" aria-hidden="true"></span>
+    } @else if (icon()) {
+      <app-ui-icon [name]="icon()!" />
+    }
+    <ng-content />
+    @if (iconEnd()) {
+      <app-ui-icon [name]="iconEnd()!" />
+    }
+  </span>
+</button>

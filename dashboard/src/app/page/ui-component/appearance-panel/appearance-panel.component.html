@@ -1,0 +1,91 @@
+<div class="inspector-title">
+  <app-ui-icon name="sliders" />
+  <h2>外观调节</h2>
+  <app-ui-icon-button icon="refresh" label="恢复默认外观" (pressed)="theme.reset()" />
+</div>
+<div class="inspector-section">
+  <span class="eyebrow">主题</span>
+  <app-ui-segmented
+    label="主题模式"
+    [options]="modes"
+    [value]="theme.preferences().mode"
+    (valueChange)="theme.update({ mode: $event })"
+  />
+  <app-ui-select
+    label="配色方案"
+    [ngModel]="theme.palette().id"
+    (ngModelChange)="theme.selectPalette($event)"
+  >
+    @for (palette of theme.palettes(); track palette.id) {
+      <app-ui-option [value]="palette.id" [label]="palette.name" [swatch]="palette.colors.accent" />
+    }
+  </app-ui-select>
+  <span class="inspector-note"
+    >{{ theme.palettes().length }} 套{{ paletteModeLabel() }}主题 · 分别记住深浅选择</span
+  >
+  <div class="surface-preview">
+    <div class="surface-layer">
+      <div class="surface-inner"><span>Surface</span><span class="preview-accent">Aa</span></div>
+    </div>
+  </div>
+</div>
+<div class="inspector-section">
+  <span class="eyebrow">密度</span>
+  <app-ui-segmented
+    label="密度"
+    [options]="densities"
+    [value]="theme.preferences().density"
+    (valueChange)="theme.update({ density: $event })"
+  />
+  <div class="metric">
+    <span>按钮高度</span
+    ><strong
+      >{{
+        theme.preferences().density === 'ultra'
+          ? 24
+          : theme.preferences().density === 'compact'
+            ? 28
+            : 32
+      }}
+      px</strong
+    >
+  </div>
+  <div class="metric">
+    <span>输入框高度</span
+    ><strong
+      >{{
+        theme.preferences().density === 'ultra'
+          ? 28
+          : theme.preferences().density === 'compact'
+            ? 32
+            : 36
+      }}
+      px</strong
+    >
+  </div>
+</div>
+<div class="inspector-section">
+  <span class="eyebrow">圆角 · 4 PX 刻度</span>
+  <div class="metric"><span>按钮圆角</span><strong>8 px</strong></div>
+  @for (setting of radiusSettings; track setting.key) {
+    <div class="radius-control">
+      <div class="metric">
+        <span>{{ setting.label }}</span
+        ><strong>{{ theme.preferences()[setting.key] }} px</strong>
+      </div>
+      <app-ui-segmented
+        [label]="setting.label"
+        [options]="radiusOptions"
+        [value]="theme.preferences()[setting.key]"
+        (valueChange)="setRadius(setting.key, $event)"
+      />
+    </div>
+  }
+</div>
+<div class="inspector-section">
+  <span class="eyebrow">交互检查</span>
+  <p class="inspector-note">试试 Tab 切换焦点、方向键选择选项、Enter 确认和 Escape 关闭浮层。</p>
+  <app-ui-button variant="outlined" icon="refresh" (pressed)="theme.reset()"
+    >恢复默认</app-ui-button
+  >
+</div>

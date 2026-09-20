@@ -1,0 +1,18 @@
+<ng-template #content>
+  <span class="option-content">
+    @if (swatch()) {
+      <span class="swatch" [style.background]="swatch()" aria-hidden="true"></span>
+    } @else if (icon()) {
+      <app-ui-icon [name]="icon()!" />
+    }
+    <span class="option-copy"
+      ><span class="label">{{ label() }}</span>
+      @if (description()) {
+        <span class="description">{{ description() }}</span>
+      }
+    </span>
+    @if (suffix()) {
+      <span class="suffix">{{ suffix() }}</span>
+    }
+  </span>
+</ng-template>

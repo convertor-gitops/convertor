@@ -1,11 +1,13 @@
-import { UiButtonDirective } from '../../shared/ui';
+import {
+  UiButtonComponent,
+  UiTextFieldComponent,
+  UiSelectComponent,
+  UiOptionComponent,
+} from '../../shared/ui';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import {
   AllPredicate,
   AnyPredicate,
@@ -47,13 +49,13 @@ type StringMatchOp = StringMatch['op'];
 @Component({
   selector: 'app-predicate-editor',
   imports: [
-    UiButtonDirective,
+    UiButtonComponent,
+    UiTextFieldComponent,
+    UiSelectComponent,
+    UiOptionComponent,
     FormsModule,
     MatButtonModule,
     MatCheckboxModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
   ],
   templateUrl: './predicate-editor.html',
   styleUrl: './predicate-editor.scss',
@@ -73,7 +75,7 @@ export class PredicateEditor {
   readonly matchOperations: readonly { value: StringMatchOp; label: string }[] = [
     { value: 'equals', label: '等于' },
     { value: 'one_of', label: '属于' },
-    { value: 'contains', label: '包含' },
+    { value: 'contains', label: '包含任一' },
     { value: 'starts_with', label: '开头是' },
     { value: 'ends_with', label: '结尾是' },
     { value: 'regex', label: '正则' },

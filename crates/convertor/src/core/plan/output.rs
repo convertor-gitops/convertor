@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 /// Evaluator 构造最终公共 Profile 所需的输出入口。
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Output {
-    /// 显式输出的自定义组根。
+    /// 额外显式输出的自定义组根；自动策略根不需要登记在这里。
     pub roots: Vec<GroupId>,
     /// 即使未被组或规则引用，也要输出的节点。
     pub extra_nodes: Vec<NodeSelection>,

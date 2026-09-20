@@ -1,0 +1,463 @@
+<app-ui-panel class="topbar-shell" [elevation]="2"
+  ><header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"><app-ui-icon name="layers" /></span><strong>Convertor</strong
+      ><span class="slash">/</span><span>组件实验室</span><span class="preview-label">PREVIEW</span>
+    </div>
+    <span class="activity" aria-live="polite"
+      ><span class="status-dot"></span>{{ activity() }}</span
+    >
+  </header></app-ui-panel
+>
+
+<div class="workspace">
+  <app-ui-panel class="sidebar-shell" [elevation]="1"
+    ><aside class="sidebar">
+      <div class="nav-heading">COMPONENTS</div>
+      <nav aria-label="组件分类">
+        @for (section of sections; track section.id) {
+          <button
+            type="button"
+            [class.active]="activeSection() === section.id"
+            (click)="navigate(section.id)"
+            [attr.aria-current]="activeSection() === section.id ? 'location' : null"
+          >
+            <app-ui-icon [name]="section.icon" /><span>{{ section.label }}</span
+            ><small>{{ section.count }}</small>
+          </button>
+        }
+      </nav>
+      <div class="sidebar-bottom">
+        <span class="eyebrow">当前外观</span><strong>{{ theme.palette().name }}</strong
+        ><span
+          >{{ paletteModeLabel() }} ·
+          {{
+            theme.preferences().density === 'ultra'
+              ? '极紧凑'
+              : theme.preferences().density === 'compact'
+                ? '紧凑'
+                : '标准'
+          }}</span
+        >
+        <div class="mini-swatches">
+          <i [style.background]="theme.palette().colors.accent"></i
+          ><i [style.background]="theme.palette().colors.blue"></i
+          ><i [style.background]="theme.palette().colors.green"></i
+          ><i [style.background]="theme.palette().colors.purple"></i>
+        </div>
+      </div></aside
+  ></app-ui-panel>
+
+  <app-ui-panel class="showcase-shell" [elevation]="1"
+    ><main class="showcase scrollable">
+      <div class="intro">
+        <div>
+          <span class="eyebrow">DESIGN FOUNDATION / 01</span>
+          <h1>把每一个细节，调到刚好。</h1>
+          <p>先打磨组件，再组合工作台。所有样本使用同一套共享组件。</p>
+        </div>
+        <span class="count-pill">{{ paletteCount }} 套主题</span>
+      </div>
+
+      <section id="panels">
+        <div class="section-heading">
+          <div>
+            <span class="section-index">00</span>
+            <h2>容器层级</h2>
+            <span class="caption">Panels</span>
+          </div>
+          <span class="section-note">圆角 · 表面 · 抬升</span>
+        </div>
+        <app-panel-showcase />
+      </section>
+      <section id="buttons">
+        <div class="section-heading">
+          <div>
+            <span class="section-index">01</span>
+            <h2>按钮</h2>
+            <span class="caption">Buttons</span>
+          </div>
+          <span class="section-note">24 / 28 / 32 px</span>
+        </div>
+        <app-ui-panel [elevation]="2">
+          <div class="sample-table">
+            <div class="sample-row column-labels">
+              <span class="row-label">样式</span><span>默认 / 图标</span><span>禁用</span
+              ><span>加载</span>
+            </div>
+            @for (variant of variants; track variant.value) {
+              <div class="sample-row">
+                <span class="row-label">{{ variant.label }}</span>
+                <div class="button-pair">
+                  <app-ui-button
+                    [variant]="variant.value"
+                    (pressed)="announce(variant.label + '：已点击')"
+                    >添加节点</app-ui-button
+                  ><app-ui-button
+                    [variant]="variant.value"
+                    icon="plus"
+                    (pressed)="announce('已点击带图标按钮')"
+                    >添加节点</app-ui-button
+                  >
+                </div>
+                <app-ui-button [variant]="variant.value" [disabled]="true">添加节点</app-ui-button>
+                <app-ui-button [variant]="variant.value" [loading]="true">加载中</app-ui-button>
+              </div>
+            }
+            <div class="sample-row">
+              <span class="row-label">Icon · 图标</span>
+              <div class="button-pair">
+                @for (variant of variants; track variant.value) {
+                  <app-ui-icon-button
+                    icon="plus"
+                    [variant]="variant.value"
+                    [label]="variant.label + '图标按钮'"
+                    (pressed)="announce(variant.label + '图标按钮：已点击')"
+                  />
+                }
+              </div>
+              <app-ui-icon-button icon="plus" label="禁用图标按钮" [disabled]="true" />
+              <div class="button-pair">
+                <app-ui-icon-button
+                  icon="refresh"
+                  label="刷新示例"
+                  (pressed)="loadExample()"
+                /><app-ui-icon-button
+                  icon="copy"
+                  label="示例复制按钮"
+                  (pressed)="announce('已点击复制示例')"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="sample-divider"></div>
+          <div class="sample-footer">
+            <div class="button-pair">
+              <span class="row-label">尺寸</span
+              ><app-ui-button size="small" variant="outlined">24 px</app-ui-button
+              ><app-ui-button size="medium" variant="outlined">28 px</app-ui-button
+              ><app-ui-button size="large" variant="outlined">32 px</app-ui-button>
+            </div>
+            <div class="button-pair">
+              <app-ui-button
+                variant="text"
+                tone="danger"
+                icon="trash"
+                (pressed)="announce('危险操作样式预览')"
+                >删除节点</app-ui-button
+              ><app-ui-button iconEnd="arrow" [loading]="loading()" (pressed)="loadExample()"
+                >交互示例</app-ui-button
+              >
+            </div>
+          </div>
+        </app-ui-panel>
+      </section>
+
+      <section id="fields">
+        <div class="section-heading">
+          <div>
+            <span class="section-index">02</span>
+            <h2>输入与选择</h2>
+            <span class="caption">Fields & options</span>
+          </div>
+          <span class="section-note">点击 Select 查看选项</span>
+        </div>
+        <app-ui-panel [elevation]="2">
+          <div class="field-row">
+            <app-ui-text-field
+              label="来源名称"
+              [(ngModel)]="sourceName"
+              placeholder="输入来源名称"
+            />
+            <app-ui-text-field
+              label="搜索节点"
+              [(ngModel)]="search"
+              icon="search"
+              placeholder="名称、来源或标签"
+            />
+            <app-ui-text-field label="禁用输入框" [disabled]="true" [ngModel]="'不可编辑的内容'" />
+          </div>
+          <div class="field-row">
+            <app-ui-select label="目标客户端" [(ngModel)]="client"
+              ><app-ui-option value="surge" label="Surge" icon="bolt" /><app-ui-option
+                value="clash"
+                label="Clash"
+                icon="layers"
+            /></app-ui-select>
+            <app-ui-select label="地区 · 含分组与辅助信息" [(ngModel)]="region">
+              <app-ui-option
+                value="hk"
+                label="香港"
+                description="主力订阅 · 3 个节点"
+                suffix="HK"
+                icon="globe"
+                group="亚洲"
+              />
+              <app-ui-option
+                value="jp"
+                label="日本"
+                description="备用订阅 · 2 个节点"
+                suffix="JP"
+                icon="globe"
+                group="亚洲"
+              />
+              <app-ui-option
+                value="sg"
+                label="新加坡"
+                description="主力订阅 · 专线"
+                suffix="SG"
+                icon="globe"
+                group="亚洲"
+              />
+              <app-ui-option
+                value="us"
+                label="美国"
+                description="备用订阅 · 2 个节点"
+                suffix="US"
+                icon="globe"
+                group="其他地区"
+              />
+              <app-ui-option
+                value="de"
+                label="德国"
+                description="此选项暂不可用"
+                suffix="DE"
+                icon="globe"
+                group="其他地区"
+                [disabled]="true"
+              />
+            </app-ui-select>
+            <app-ui-select label="协议 · 多选" [(ngModel)]="protocols" [multiple]="true">
+              <app-ui-option value="trojan" label="Trojan" /><app-ui-option
+                value="ss"
+                label="Shadowsocks"
+              /><app-ui-option value="vless" label="VLESS" /><app-ui-option
+                value="vmess"
+                label="VMess"
+              /><app-ui-option value="hysteria2" label="Hysteria2" />
+            </app-ui-select>
+          </div>
+          <div class="field-row">
+            <app-ui-text-field
+              label="订阅地址"
+              [(ngModel)]="sourceUrl"
+              type="url"
+              icon="globe"
+              hint="辅助说明保持紧凑，不挤占输入区域。"
+            /><app-ui-text-field
+              label="校验错误"
+              [ngModel]="'不是一个有效的地址'"
+              error="请输入有效的 HTTP 或 HTTPS 地址。"
+            />
+          </div>
+        </app-ui-panel>
+      </section>
+
+      <section id="collapse">
+        <div class="section-heading">
+          <div>
+            <h2>折叠面板</h2>
+            <span class="caption">Collapse / Accordion</span>
+          </div>
+          <span class="section-note">点击标题或按 Enter / Space</span>
+        </div>
+        <app-ui-collapse
+          heading="独立折叠 · 默认展开"
+          description="展开状态由组件管理"
+          [expanded]="true"
+          ><app-ui-text-field label="策略组名称" [(ngModel)]="groupName" /><app-ui-button
+            variant="outlined"
+            (pressed)="announce('折叠区域中的按钮已点击')"
+            >检查交互</app-ui-button
+          ></app-ui-collapse
+        >
+        <mat-accordion class="collapse-group">
+          <app-ui-collapse
+            heading="订阅来源"
+            description="手风琴 · 同时只展开一项"
+            [expanded]="true"
+            ><app-ui-text-field label="订阅名称" [(ngModel)]="sourceName"
+          /></app-ui-collapse>
+          <app-ui-collapse heading="高级选项" description="展开后自动收起订阅来源"
+            ><app-ui-text-field label="备注" [(ngModel)]="notes"
+          /></app-ui-collapse>
+        </mat-accordion>
+        <app-ui-collapse heading="不可用的折叠项" description="禁用状态" [disabled]="true" />
+      </section>
+      <section id="nodes">
+        <div class="section-heading">
+          <div>
+            <span class="section-index">03</span>
+            <h2>节点卡片</h2>
+            <span class="caption">Node cards</span>
+          </div>
+          <span class="section-note">固定示例数据</span>
+        </div>
+        <div class="node-toolbar">
+          <div class="node-search">
+            <app-ui-text-field
+              label="筛选示例节点"
+              icon="search"
+              placeholder="搜索名称、协议、来源"
+              [ngModel]="nodeQuery()"
+              (ngModelChange)="nodeQuery.set($event)"
+            />
+          </div>
+          <span class="selection-count">已选 {{ selectedCount() }} / {{ samples.length }}</span
+          ><app-ui-button variant="text" (pressed)="selectVisible()">全选</app-ui-button
+          ><app-ui-button variant="text" (pressed)="selected.set(emptySelection)"
+            >清空</app-ui-button
+          >
+          <app-ui-segmented
+            label="节点布局"
+            [options]="[
+              { value: 'tiles', label: '平铺' },
+              { value: 'list', label: '列表' },
+            ]"
+            [(value)]="nodeLayout"
+          />
+        </div>
+        <div class="node-collection" [class.list]="nodeLayout() === 'list'">
+          @for (node of visibleNodes(); track node.id) {
+            <app-ui-node-card
+              [name]="node.name"
+              [region]="node.region"
+              [protocol]="node.protocol"
+              [source]="node.source"
+              [tags]="node.tags"
+              [status]="node.status"
+              [statusText]="node.statusText"
+              [selected]="selected().has(node.id)"
+              (selectedChange)="toggleNode(node.id, $event)"
+              (detailsRequested)="openNode(nodeDetails, node)"
+              (actionRequested)="openNode(nodeActions, node)"
+            />
+          } @empty {
+            <div class="empty-state">
+              <app-ui-icon name="search" /><span>没有匹配的示例节点</span
+              ><app-ui-button variant="text" (pressed)="nodeQuery.set('')">清除筛选</app-ui-button>
+            </div>
+          }
+        </div>
+        <div class="legend">
+          <span><i class="legend-selected"></i>已选中</span
+          ><span><i class="legend-loading"></i>加载中</span
+          ><span><i class="legend-error"></i>加载失败</span><span>操作按钮独立于卡片选择</span>
+        </div>
+      </section>
+
+      <section id="compositions">
+        <div class="section-heading">
+          <div>
+            <span class="section-index">04</span>
+            <h2>组合预览</h2>
+            <span class="caption">In context</span>
+          </div>
+        </div>
+        <div class="composition-row">
+          <app-ui-panel [elevation]="2" heading="订阅来源" description="完整表单与卡片的组合">
+            <app-ui-icon-button
+              card-actions
+              icon="more"
+              label="来源卡片操作示例"
+              (pressed)="announce('来源卡片操作示例')"
+            />
+            <app-ui-text-field label="名称" [(ngModel)]="sourceName" />
+            <app-ui-text-field label="订阅地址" [(ngModel)]="sourceUrl" icon="globe" />
+            <div class="sample-footer">
+              <span class="subtle-text"><span class="status-dot"></span>12 个示例节点</span
+              ><app-ui-button icon="refresh" [loading]="loading()" (pressed)="loadExample()"
+                >重新加载</app-ui-button
+              >
+            </div>
+          </app-ui-panel>
+          <app-ui-panel [elevation]="2" heading="节点组" description="同一套卡片在窄容器中展示">
+            <app-ui-icon-button
+              card-actions
+              icon="plus"
+              label="添加组成员示例"
+              (pressed)="announce('添加组成员示例')"
+            />
+            <app-ui-text-field label="组名" [(ngModel)]="groupName" />
+            @for (node of samples.slice(0, 2); track node.id) {
+              <app-ui-node-card
+                [name]="node.name"
+                [region]="node.region"
+                [protocol]="node.protocol"
+                [source]="node.source"
+                [selected]="selected().has(node.id)"
+                (selectedChange)="toggleNode(node.id, $event)"
+                (detailsRequested)="openNode(nodeDetails, node)"
+                (actionRequested)="openNode(nodeActions, node)"
+              />
+            }
+          </app-ui-panel>
+        </div>
+      </section>
+
+      <section id="colors">
+        <div class="section-heading">
+          <div>
+            <span class="section-index">05</span>
+            <h2>主题色板</h2>
+            <span class="caption">{{ paletteModeLabel() }} · {{ theme.palettes().length }} 套</span>
+          </div>
+          <a
+            href="https://material-theme.com/docs/reference/color-palette/"
+            target="_blank"
+            rel="noopener noreferrer"
+            >色板来源 ↗</a
+          >
+        </div>
+        <app-theme-gallery />
+      </section>
+      <footer class="page-footer">
+        <span>Convertor · Shared UI</span><span>主题 / 圆角 / 密度独立保存</span>
+      </footer>
+    </main></app-ui-panel
+  >
+
+  <app-ui-panel class="inspector-shell" [elevation]="2"
+    ><app-appearance-panel class="inspector scrollable"
+  /></app-ui-panel>
+</div>
+
+<ng-template #nodeDetails let-node>
+  <div class="dialog-content ui-kit">
+    <div class="dialog-heading">
+      <h2>节点详情</h2>
+      <app-ui-icon-button icon="close" label="关闭节点详情" mat-dialog-close />
+    </div>
+    <app-ui-node-card
+      [showActions]="false"
+      [name]="node.name"
+      [region]="node.region"
+      [source]="node.source"
+      [protocol]="node.protocol"
+      [selected]="selected().has(node.id)"
+      (selectedChange)="toggleNode(node.id, $event)"
+    />
+    <div class="metric">
+      <span>来源</span><strong>{{ node.source }}</strong>
+    </div>
+    <div class="metric">
+      <span>协议</span><strong>{{ node.protocol }}</strong>
+    </div>
+    <p class="inspector-note">组件预览使用固定数据。</p>
+    <app-ui-button variant="outlined" mat-dialog-close>关闭</app-ui-button>
+  </div>
+</ng-template>
+<ng-template #nodeActions let-node>
+  <div class="dialog-content ui-kit">
+    <div class="dialog-heading">
+      <h2>{{ node.name }}</h2>
+      <app-ui-icon-button icon="close" label="关闭节点操作" mat-dialog-close />
+    </div>
+    <app-ui-button
+      variant="tonal"
+      icon="check"
+      (pressed)="toggleNode(node.id, !selected().has(node.id)); dialogClose()"
+      >{{ selected().has(node.id) ? '取消选择' : '选择节点' }}</app-ui-button
+    ><app-ui-button variant="text" mat-dialog-close>取消</app-ui-button>
+  </div>
+</ng-template>

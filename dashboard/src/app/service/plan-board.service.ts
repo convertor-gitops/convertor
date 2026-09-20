@@ -8,7 +8,10 @@ import {
 } from '../common/model/api/plan-board';
 import { Diagnostic, EvaluationReport, SourceProfile } from '../common/model/core/evaluation';
 import {
+  BaseGroupsMemberSelector,
+  BuiltinTarget,
   CustomGroup,
+  GroupTarget,
   GroupingPolicy,
   InlineSourceInput,
   Plan,
@@ -106,7 +109,9 @@ export class PlanBoardService implements OnDestroy {
   constructor(private readonly api: PlanBoardApiService) {
     const restored = this.readDraft();
     if (restored) {
+      removeLegacyAutomaticWrappers(restored);
       this.planState.set(restored);
+      this.writeDraft(restored);
       this.selectedSourceIdState.set(restored.sources[0]?.id ?? null);
       if (
         restored.sources.length > 0 &&
@@ -584,4 +589,29 @@ function sourceInputReady(input: SourceInput): boolean {
   if (input instanceof RemoteSourceInput) return input.url.trim().length > 0;
   if (input instanceof InlineSourceInput) return input.content.trim().length > 0;
   return false;
+}
+
+function removeLegacyAutomaticWrappers(plan: Plan): void {
+  const removedGroupIds = new Set(
+    plan.groups
+      .filter((group) => legacyAutomaticPolicyId(group) !== null)
+      .map((group) => group.id),
+  );
+  if (!removedGroupIds.size) return;
+  plan.groups = plan.groups.filter((group) => !removedGroupIds.has(group.id));
+  plan.output.roots = plan.output.roots.filter((id) => !removedGroupIds.has(id));
+  if (
+    plan.output.fallback instanceof GroupTarget &&
+    removedGroupIds.has(plan.output.fallback.group)
+  )
+    plan.output.fallback = new BuiltinTarget('Direct');
+}
+
+function legacyAutomaticPolicyId(group: CustomGroup): number | null {
+  if (!/^自动(?:分)?组 \d+(?: \(\d+\))?$/.test(group.name)) return null;
+  if (group.member_selectors.length !== 1) return null;
+  const selector = group.member_selectors[0];
+  if (!(selector instanceof BaseGroupsMemberSelector) || selector.selection.scope !== 'Roots')
+    return null;
+  return selector.selection.policy;
 }

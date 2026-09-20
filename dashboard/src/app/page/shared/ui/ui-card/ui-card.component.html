@@ -1,0 +1,15 @@
+<mat-card appearance="outlined">
+  @if (heading()) {
+    <header>
+      <div class="heading">
+        <h3>{{ heading() }}</h3>
+        @if (description()) {
+          <p>{{ description() }}</p>
+        }
+      </div>
+      <div class="actions"><ng-content select="[card-actions]" /></div>
+    </header>
+  }
+  <div class="body" [class.unpadded]="!padded()"><ng-content /></div>
+  <ng-content select="[card-footer]" />
+</mat-card>

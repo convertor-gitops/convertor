@@ -4,14 +4,50 @@
 }
 
 .preview {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 10px;
-  color: var(--app-text, #20232b);
+  color: var(--ui-text);
 }
 
-.preview.stale mat-accordion,
+.preview.stale .result-tabs,
 .preview.stale .metrics {
   opacity: 0.68;
+}
+
+.result-tabs {
+  flex: 1;
+  min-height: 0;
+}
+
+:host ::ng-deep .result-tabs .mat-mdc-tab-body-wrapper {
+  flex: 1;
+  min-height: 0;
+}
+
+:host ::ng-deep .result-tabs .mat-mdc-tab {
+  min-width: 0;
+  flex: 1 1 0;
+  padding: 0 5px;
+}
+
+:host ::ng-deep .result-tabs .mdc-tab__text-label {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding-top: 8px;
+}
+
+.tab-summary {
+  padding: 0 4px;
+  color: var(--ui-muted);
+  font-size: 11px;
 }
 
 .summary,
@@ -41,18 +77,18 @@
 .status {
   padding: 3px 7px;
   border-radius: var(--ui-radius-md, 8px);
-  background: var(--app-surface-2, #eceef4);
-  color: var(--app-text-4, #646a76);
+  background: var(--ui-surface-high);
+  color: var(--ui-muted);
   font-size: 11px;
 }
 
 .status.fresh {
-  color: #1d7650;
+  color: var(--ui-success);
 }
 
 .stale-status {
-  color: #9a5d00;
-  background: #fff1d3;
+  color: var(--ui-warning);
+  background: var(--ui-active);
   font-weight: 650;
 }
 
@@ -63,17 +99,17 @@
 
 .metrics span {
   padding: 6px 9px;
-  border: 1px solid var(--app-border, #d7d9df);
+  border: 1px solid var(--ui-outline);
   border-radius: 8px;
   font-size: 12px;
 }
 
 .metrics .errors {
-  color: #b3261e;
+  color: var(--ui-error);
 }
 
 .metrics .warnings {
-  color: #976000;
+  color: var(--ui-warning);
 }
 
 .scroll-list {
@@ -83,13 +119,14 @@
 }
 
 .groups {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 9px;
 }
 
 .group-card {
   padding: 8px;
-  border: 1px solid var(--app-border, #d7d9df);
+  border: 1px solid var(--ui-outline);
   border-radius: var(--ui-radius-md, 8px);
 }
 
@@ -100,20 +137,19 @@
 }
 
 .resource-title small,
-.graph-row small,
-.node-main small {
-  color: var(--app-text-4, #646a76);
+.graph-row small {
+  color: var(--ui-muted);
 }
 
 .identity {
   padding: 0 12px 6px;
-  color: var(--app-text-4, #646a76);
+  color: var(--ui-muted);
   font: 10px var(--app-mono, monospace);
 }
 
 .invalid,
 .graph-row em {
-  color: #b3261e;
+  color: var(--ui-error);
   font-size: 11px;
   font-style: normal;
 }
@@ -121,7 +157,7 @@
 .graph {
   overflow: hidden;
   border-radius: var(--ui-radius-md, 8px);
-  background: var(--app-surface-2, #f4f5f8);
+  background: var(--ui-surface-high);
 }
 
 .graph-row {
@@ -129,7 +165,7 @@
   min-height: 30px;
   gap: 7px;
   border: 0;
-  border-bottom: 1px solid var(--app-border-soft, #e6e8ed);
+  border-bottom: 1px solid var(--ui-outline);
   background: transparent;
   color: inherit;
   text-align: left;
@@ -149,7 +185,7 @@
 }
 
 .graph-row.issue {
-  background: color-mix(in srgb, #b3261e, transparent 92%);
+  background: color-mix(in srgb, var(--ui-error), transparent 92%);
 }
 
 .tree-mark {
@@ -158,71 +194,16 @@
   text-align: center;
 }
 
-.nodes,
 .diagnostics,
 .traces {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 5px;
 }
 
-.node-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 10px;
-  padding: 9px;
-  border: 1px solid var(--app-border, #d7d9df);
-  border-radius: 8px;
-  background: transparent;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.node-main,
-.tags {
-  display: flex;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.node-main {
-  flex-direction: column;
-}
-
-.node-main code {
-  font-size: 10px;
-}
-
-.tag-label {
-  width: 34px;
-  padding-top: 3px;
-  color: var(--app-text-4, #646a76);
-  font-size: 10px;
-}
-
-.tags i {
-  padding: 2px 5px;
-  border-radius: var(--ui-radius-sm, 4px);
-  background: var(--app-surface-2, #eceef4);
-  font-size: 10px;
-  font-style: normal;
-}
-
-.tags i.added {
-  color: #1d7650;
-  background: #dff5e9;
-}
-
-.tags em {
-  color: var(--app-text-4, #646a76);
-  font-size: 10px;
-  font-style: normal;
-}
-
 .diagnostic {
-  display: grid;
-  grid-template-columns: 40px minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: auto;
   padding: 7px 9px;
@@ -230,21 +211,20 @@
 }
 
 .diagnostic > span {
-  color: #976000;
+  color: var(--ui-warning);
 }
 
 .diagnostic.error > span {
-  color: #b3261e;
+  color: var(--ui-error);
 }
 
 .diagnostic small {
-  grid-column: 2 / -1;
-  color: var(--app-text-4, #646a76);
+  color: var(--ui-muted);
 }
 
 .trace-row {
   padding: 7px;
-  border: 1px solid var(--app-border, #d7d9df);
+  border: 1px solid var(--ui-outline);
   border-radius: 8px;
 }
 
@@ -279,28 +259,13 @@
 
 .empty {
   padding: 18px;
-  color: var(--app-text-4, #646a76);
+  color: var(--ui-muted);
   text-align: center;
 }
 
 .waiting {
-  border: 1px dashed var(--app-border, #d7d9df);
+  border: 1px dashed var(--ui-outline);
   border-radius: var(--ui-radius-md, 8px);
-}
-
-@media (max-width: 760px) {
-  .node-row {
-    grid-template-columns: 1fr;
-  }
-
-  .diagnostic {
-    grid-template-columns: 40px 1fr;
-  }
-
-  .diagnostic strong,
-  .diagnostic small {
-    grid-column: 1 / -1;
-  }
 }
 
 .preview {
@@ -309,7 +274,6 @@
 }
 .preview > *,
 .group-card,
-.node-row > *,
 .graph-row > * {
   min-width: 0;
 }
@@ -327,7 +291,198 @@
   white-space: normal;
   max-width: 100%;
 }
-.diagnostic strong,
-.diagnostic small {
-  grid-column: 1 / -1;
+app-ui-card.group-card {
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+// Keep every result category inside the available pane height. Individual lists own scrolling.
+:host {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.preview {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.result-tabs {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+:host ::ng-deep .result-tabs .mat-mdc-tab-body-wrapper,
+:host ::ng-deep .result-tabs .mat-mdc-tab-body,
+:host ::ng-deep .result-tabs .mat-mdc-tab-body-content {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+:host ::ng-deep .result-tabs .mat-mdc-tab-body-content {
+  display: flex;
+  overflow: hidden;
+}
+.tab-content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.tab-summary {
+  flex: none;
+}
+.scroll-list {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  max-height: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.output-group {
+  flex: none;
+  min-width: 0;
+}
+.output-group.highlighted {
+  border-radius: var(--ui-radius-panel, 12px);
+}
+.group-trailing,
+.member-card-button {
+  display: flex;
+  align-items: center;
+}
+.group-trailing {
+  gap: 4px;
+}
+.member-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.member-card {
+  min-width: 0;
+}
+.member-card-button {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  gap: 8px;
+  padding: var(--ui-card-padding, 8px);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.member-card-button.static {
+  cursor: default;
+}
+.member-card-button:focus-visible {
+  outline: 2px solid var(--ui-accent-text);
+  outline-offset: -3px;
+}
+.member-mark {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  border: 1px solid var(--ui-outline);
+  border-radius: var(--ui-radius-control, 8px);
+  background: var(--ui-surface-high);
+  color: var(--ui-accent-text);
+  font-size: 10px;
+  font-weight: 700;
+}
+.member-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  gap: 3px;
+}
+.member-copy strong,
+.member-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.member-copy strong {
+  font-size: 12px;
+}
+.member-copy small,
+.member-type {
+  color: var(--ui-muted);
+  font-size: 10px;
+}
+.member-type {
+  flex: none;
+}
+.missing-member .member-type {
+  color: var(--ui-error);
+}
+.empty.compact {
+  padding: 10px;
+}
+
+// UiButton owns the actual button node, so size and wrapping must be applied through it.
+.diagnostic {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex: none;
+  padding: 0;
+}
+:host ::ng-deep .diagnostic > button {
+  width: 100%;
+  height: auto;
+  min-height: 52px;
+  padding: 8px 10px;
+  border: 1px solid var(--ui-outline);
+  border-radius: var(--ui-radius-control, 8px);
+  background: var(--ui-surface-high);
+  justify-content: flex-start;
+  text-align: left;
+}
+:host ::ng-deep .diagnostic .content {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.diagnostic :is(span, code, strong, small) {
+  display: block;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.rendered {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+}
+
+@media (max-width: 850px) {
+  :host,
+  .preview,
+  .result-tabs,
+  .tab-content {
+    flex: none;
+    min-height: auto;
+    overflow: visible;
+  }
+  .scroll-list {
+    flex: none;
+    max-height: 520px;
+  }
 }

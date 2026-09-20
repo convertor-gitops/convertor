@@ -53,7 +53,7 @@ profile.render(&mut content, plan.client)?;
 ```text
 Plan
 ├── sources：输入、节点标注、来源过滤
-├── grouping_policies：对全量可用节点逐层分桶
+├── grouping_policies：对全量可用节点逐层分桶并直接输出
 ├── groups：自定义组及其 member_selectors
 ├── rules：有序规则程序
 └── output：输出根、额外节点、兜底和基础配置来源
@@ -66,7 +66,7 @@ Plan
 | version | u16 | 当前只接受 1 |
 | client | ProxyClient | `surge` 或 `clash`，统一输入及输出格式 |
 | sources | Vec<Source> | 来源顺序，也是节点遍历顺序的第一依据 |
-| grouping_policies | Vec<GroupingPolicy> | 多个独立的自动分组策略 |
+| grouping_policies | Vec<GroupingPolicy> | 多个独立的自动分组策略；每项策略的顶层组天然是输出根 |
 | groups | Vec<CustomGroup> | 由用户直接维护的组 |
 | rules | RuleProgram | `Vec<RuleBlock>`，严格按顺序执行 |
 | output | Output | 输出资源的可达性和基础配置 |
@@ -179,6 +179,8 @@ pub enum NodeDimension {
 - 其他维度保持首次出现顺序；桶内保持输入节点顺序。
 - 空维度列表非法；空桶不生成组，节点删空时整条空路径消失。
 - 多策略互相独立，同一节点可参与多个组树，但输出节点定义只保留一份。
+- 每项策略生成的顶层基础组直接进入最终输出，不需要自定义包装组。
+- 没有任何分组策略也是合法 Plan：全部保留节点平铺输出，且不生成策略组。
 - 基础组 identity 由策略 ID 和完整维度值路径确定，来源改名不会改变身份。
 - 自动生成的重名用确定的数字后缀消歧；相同输入结果一致。输入变化可能改变冲突后缀，不把输出名当作身份。
 
@@ -191,7 +193,6 @@ pub enum NodeDimension {
 | id、name | 稳定身份与用户指定名称；名称必须唯一，不占用内置动作名 |
 | strategy | 客户端组策略 |
 | member_selectors | 有序成员选择块 |
-| on_empty | 默认 Error；可显式 Use(Target) 作为备用成员 |
 
 客户端策略与分桶维度分开：
 
@@ -217,19 +218,21 @@ UrlTest 要求完整 HTTP(S) 地址及正数间隔。自动组树每一层使用
 
 NodeSelection 为 `source + predicate`；SourceGroupSelection 同样指定来源，但使用 GroupPredicate。
 
-BaseGroupSelection 必须提供 `policy + scope + predicate`：
+BaseGroupSelection 提供 `scope + predicate`，历史 `policy` 字段可选：
 
 - `GroupScope::Roots` 只选择顶层基础组。
 - `GroupScope::All` 允许选择全部层级。
+- 不提供 `policy` 时跨所有自动策略查找，因此自定义组不依赖任何策略 ID；推荐按名称匹配。
+- 每个 selector 命中就贡献成员，未命中就贡献空集合。全部 selector 都没有选到成员时，该自定义组不生成，也不阻断其它自动组输出。
 - Dimension 匹配完整祖先路径中的属性；例如 Region=HK 可匹配香港桶及其内部 Source 子桶。
 - 需要只选某层时组合 `All([Depth(...), Dimension(...)])`。
 
 ```rust
-// all 是普通自定义组，引用指定策略的顶层组。
+// 香港优选跨全部自动策略按名称查找顶层组。
 MemberSelector::BaseGroups(BaseGroupSelection {
-    policy: GroupingPolicyId(1),
+    policy: None,
     scope: GroupScope::Roots,
-    predicate: Predicate::All(vec![]),
+    predicate: Predicate::Atom(BaseGroupPredicate::Name(StringMatch::Contains("香港".into()))),
 })
 
 // 家宽是自定义组，不由地区分桶自动生成。
@@ -248,7 +251,7 @@ MemberSelector::Nodes(NodeSelection {
 - `Emit { rules: Vec<ManualRule> }`：注入手工规则。ManualRule 包含结构化 `Rule` 和 `target`，使用 target 替换 Rule.target，保留 Rule.options。
 - `Take { source, predicate, targets }`：筛选某个来源的原始规则，再执行目标处理。
 
-Target 只能为 `Group(GroupId)` 或 `Builtin(Direct / Reject)`。需要路由到动态基础组时，用自定义组承接。
+Target 只能为 `Group(GroupId)` 或 `Builtin(Direct / Reject)`。需要把规则路由到动态基础组时，可用按名称匹配的自定义组承接；匹配本身不与自动策略绑定。未选到任何基础组时，自定义组及指向它的普通规则都会省略。
 
 | TargetBinding | 行为 |
 | --- | --- |
@@ -300,9 +303,9 @@ pub struct ResolvedDependencies {
 
 ## 8. 验证、诊断和追踪
 
-`plan.validate()` 验证版本、ID 唯一性、引用、正则、组名、URL/策略参数和固定循环（包含显式空组备用引用）。Evaluator 继续验证来源 client、运行期依赖、原组循环、空组和名称歧义。
+`plan.validate()` 验证版本、ID 唯一性、引用、正则、组名、URL/策略参数和固定循环。Evaluator 继续验证来源 client、运行期依赖、原组循环和名称歧义。
 
-- 所有声明的自定义组均求值，未作为输出根也不能隐藏空组错误。
+- 所有声明的自定义组均求值；匹配未命中直接忽略。输出前会递归裁掉空组，以及只引用已裁空组而最终没有成员的父组。
 - Diagnostic 提供 `code、path、message`；路径指向实体或字段，错误文本不包含原始订阅 URL、节点密码或正则正文。
 - Trace 提供 `path、resources`，使用资源身份记录标注命中、过滤、节点选择、分层分桶、基础组选择和规则映射。
 - 无匹配标注产生非阻断诊断；执行失败返回诊断和已有 trace，不附带可用 Profile。

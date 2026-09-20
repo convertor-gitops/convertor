@@ -167,7 +167,7 @@ async fn profile_from_plan(request: RequestBody, state: Arc<AppState>, encoded: 
         let missing_dependency = error.diagnostics.iter().any(|diagnostic| {
             matches!(
                 diagnostic.code.as_str(),
-                "missing_node_dependency" | "missing_rule_dependency" | "missing_provider" | "empty_imported_group"
+                "missing_node_dependency" | "missing_rule_dependency" | "missing_provider"
             )
         });
         let dependency_upstream_failed = missing_dependency

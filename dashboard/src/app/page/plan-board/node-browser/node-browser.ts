@@ -1,4 +1,5 @@
-import { UiButtonDirective } from '../../shared/ui';
+import { UiNodeCardComponent } from '../../shared/ui';
+import { UiButtonComponent, UiTextFieldComponent } from '../../shared/ui';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -16,8 +17,6 @@ import { CdkDrag, CdkDragPreview, CdkDropList } from '@angular/cdk/drag-drop';
 import { MatTree, MatTreeModule } from '@angular/material/tree';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { BrowseDimension, groupInputNodes, InputNodeRow, BrowseBranch } from '../board-operations';
 
@@ -31,7 +30,9 @@ interface TreeItem {
 @Component({
   selector: 'app-node-browser',
   imports: [
-    UiButtonDirective,
+    UiNodeCardComponent,
+    UiButtonComponent,
+    UiTextFieldComponent,
     FormsModule,
     CdkDrag,
     CdkDragPreview,
@@ -39,8 +40,6 @@ interface TreeItem {
     MatTreeModule,
     MatButtonModule,
     MatCheckboxModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatTooltipModule,
   ],
   templateUrl: './node-browser.html',
@@ -108,6 +107,9 @@ export class NodeBrowser {
       const keys = new Set(this.nodes().map((node) => node.key));
       this.selected.update((selected) => new Set([...selected].filter((key) => keys.has(key))));
     });
+  }
+  regionBadge(region: string): string {
+    return region.match(/\p{Regional_Indicator}{2}/u)?.[0] ?? (region.slice(0, 2) || '—');
   }
   toggle(node: InputNodeRow, checked: boolean): void {
     this.selected.update((current) => {

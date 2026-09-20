@@ -35,8 +35,13 @@ describe('NodeBrowser snapshot and tree state', () => {
     await fixture.whenStable();
 
     expect(fixture.nativeElement.querySelectorAll('.branch-toggle')).toHaveLength(0);
-    expect(fixture.nativeElement.querySelectorAll('mat-checkbox')).toHaveLength(1);
+    expect(fixture.nativeElement.querySelectorAll('app-ui-node-card')).toHaveLength(1);
     expect(fixture.nativeElement.textContent).not.toContain('全部节点');
+    const select = fixture.nativeElement.querySelector('app-ui-node-card button.selection');
+    select.click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.picked()).toHaveLength(1);
+    expect(select.getAttribute('aria-pressed')).toBe('true');
   });
 
   it('appends dimensions in click order and removes a selected dimension on the next click', () => {
@@ -70,7 +75,7 @@ describe('NodeBrowser snapshot and tree state', () => {
     component.expandAll();
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(fixture.nativeElement.querySelectorAll('mat-checkbox')).toHaveLength(1);
+    expect(fixture.nativeElement.querySelectorAll('app-ui-node-card')).toHaveLength(1);
     component.toggle(row, true);
     expect(component.picked()).toHaveLength(1);
     fixture.componentRef.setInput('nodes', [{ ...row, key: 'snapshot-b' }]);

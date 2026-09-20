@@ -1,0 +1,89 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+app-ui-panel {
+  --ui-panel-padding: 8px;
+  --ui-gap: 0px;
+}
+mat-expansion-panel {
+  background: transparent;
+  color: var(--ui-text);
+  box-shadow: none;
+  border-radius: var(--ui-radius-button);
+  margin: 0;
+}
+mat-expansion-panel-header,
+mat-expansion-panel-header.mat-expanded {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  box-sizing: border-box;
+  border-radius: var(--ui-radius-button);
+  user-select: none;
+}
+:host ::ng-deep .mat-expansion-panel-header .mat-content {
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+mat-panel-title {
+  width: 0;
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+  color: var(--ui-text);
+}
+.indicator {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  color: var(--ui-muted);
+  transition: transform 150ms ease;
+}
+.indicator.expanded {
+  transform: rotate(90deg);
+}
+.trailing {
+  display: flex;
+  align-items: center;
+  min-width: max-content;
+  flex: none;
+  margin-left: auto;
+}
+.heading {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  min-width: 0;
+}
+strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+}
+.heading span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--ui-muted);
+}
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}

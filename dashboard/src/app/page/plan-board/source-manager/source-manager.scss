@@ -4,7 +4,7 @@
   min-width: 0;
   padding: 20px;
   box-sizing: border-box;
-  color: var(--mat-sys-on-surface);
+  color: var(--ui-text);
 }
 .drawer-header,
 .client-section,
@@ -16,22 +16,28 @@
 }
 .drawer-header {
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 h2,
 p {
   margin: 0;
 }
+h2 {
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
 p,
 .client-section span,
 .snapshot span {
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--ui-muted);
   font-size: 12px;
 }
 .client-section {
   margin-bottom: 16px;
 }
-.client-section mat-form-field {
+.client-section :is(mat-form-field, app-ui-text-field, app-ui-select) {
   width: 220px;
 }
 .create-panel {
@@ -39,20 +45,20 @@ p,
 }
 .create-form,
 .source-form {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(150px, 0.45fr);
+  display: flex;
+  flex-direction: column;
   gap: 12px;
   padding-top: 8px;
 }
 .wide {
-  grid-column: 1 / -1;
 }
 .source-list {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 10px;
 }
-.source-list mat-expansion-panel {
-  border: 1px solid var(--mat-sys-outline-variant);
+.source-list app-ui-collapse {
+  border: 1px solid var(--ui-outline);
   box-shadow: none;
 }
 mat-progress-bar {
@@ -62,7 +68,7 @@ mat-progress-bar {
   flex-wrap: wrap;
 }
 .danger {
-  color: var(--mat-sys-error);
+  color: var(--ui-error);
 }
 .message,
 .snapshot,
@@ -70,14 +76,15 @@ mat-progress-bar {
 .stats {
   border-radius: var(--ui-radius-md, 8px);
   padding: 10px 12px;
-  background: var(--mat-sys-surface-container);
+  background: var(--ui-surface);
 }
 .message.error,
 .diagnostics .error {
-  color: var(--mat-sys-error);
+  color: var(--ui-error);
 }
 .snapshot {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 6px;
 }
 .snapshot code {
@@ -87,29 +94,31 @@ mat-progress-bar {
 .stats {
   flex-wrap: wrap;
   font-size: 12px;
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--ui-muted);
 }
 .stats strong {
-  color: var(--mat-sys-on-surface);
+  color: var(--ui-text);
 }
 .diagnostics {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 6px;
   font-size: 12px;
 }
 .diagnostics code {
   margin-left: 6px;
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--ui-muted);
 }
 .filter {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
   padding-top: 4px;
 }
 .empty {
   padding: 32px 12px;
   text-align: center;
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--ui-muted);
 }
 @media (max-width: 560px) {
   :host {
@@ -117,10 +126,8 @@ mat-progress-bar {
   }
   .create-form,
   .source-form {
-    grid-template-columns: 1fr;
   }
   .wide {
-    grid-column: auto;
   }
   .client-section {
     align-items: flex-start;
@@ -130,13 +137,42 @@ mat-progress-bar {
 
 .drawer-header {
   position: sticky;
-  top: -20px;
+  top: -12px;
   z-index: 5;
-  padding: 16px 0;
-  background: var(--mat-sys-surface);
+  margin-inline: -12px;
+  padding: 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ui-text) 7%, transparent);
+  background: color-mix(in srgb, var(--ui-bg) 92%, transparent);
+  backdrop-filter: blur(18px) saturate(120%);
 }
-.drawer-header > div {
+.drawer-title,
+.drawer-copy {
   min-width: 0;
+}
+.drawer-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.drawer-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.drawer-mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border-radius: 10px;
+  color: var(--ui-accent-text);
+  background: var(--ui-active);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ui-accent-text) 22%, transparent);
+}
+.drawer-mark app-ui-icon {
+  width: 16px;
+  height: 16px;
 }
 .drawer-header button {
   flex-shrink: 0;
@@ -144,7 +180,7 @@ mat-progress-bar {
 .client-section {
   flex-wrap: wrap;
 }
-mat-form-field,
+:is(mat-form-field, app-ui-text-field, app-ui-select),
 .create-form > *,
 .source-form > *,
 .source-list > * {
@@ -161,6 +197,27 @@ textarea {
 }
 @media (max-width: 560px) {
   .drawer-header {
-    top: -14px;
+    top: -12px;
+  }
+}
+:host {
+  padding: 12px;
+}
+.source-list app-ui-collapse {
+  border: 0;
+}
+@media (max-width: 680px) {
+  .client-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .client-section app-ui-select {
+    width: 100%;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .drawer-header {
+    background: var(--ui-bg);
+    backdrop-filter: none;
   }
 }

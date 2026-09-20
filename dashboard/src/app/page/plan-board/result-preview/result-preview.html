@@ -31,183 +31,174 @@
       >
     </div>
 
-    <mat-accordion multi>
-      <mat-expansion-panel expanded>
-        <mat-expansion-panel-header>
-          <mat-panel-title>实际策略组与成员图</mat-panel-title>
-          <mat-panel-description>{{ current.groups.length }} 个已生成组</mat-panel-description>
-        </mat-expansion-panel-header>
-        <div class="scroll-list groups">
-          @for (group of current.groups; track group.identity) {
-            <article
-              class="group-card"
-              [class.reachable]="group.reachable"
-              [class.highlighted]="isHighlighted(group.identity)"
-            >
-              <button
-                mat-button
-                type="button"
-                class="resource-title"
-                (click)="focusResource(group.identity)"
+    <mat-tab-group class="result-tabs" animationDuration="150ms" preserveContent>
+      <mat-tab label="输出结果">
+        <div class="tab-content">
+          <div class="tab-summary">{{ current.groups.length }} 个已生成组</div>
+          <div class="scroll-list groups">
+            @for (group of current.groups; track group.identity) {
+              <app-ui-collapse
+                class="output-group"
+                [class.reachable]="group.reachable"
+                [class.highlighted]="isHighlighted(group.identity)"
+                [heading]="groupName(group)"
               >
-                <span>{{ groupName(group) }}</span>
-                <small>{{ groupKind(group) }} · {{ resourceState(group) }}</small>
-              </button>
-              @if (!group.valid) {
-                <span class="invalid">无效组</span>
-              }
-              <div class="graph" role="tree" [attr.aria-label]="groupName(group) + ' 成员'">
-                @for (row of groupGraph(group); track $index) {
-                  <button
+                <span collapse-description>
+                  {{ groupKind(group) }} · {{ resourceState(group) }} ·
+                  {{ group.members.length }} 个直接成员
+                </span>
+                <span collapse-trailing class="group-trailing">
+                  @if (!group.valid) {
+                    <span class="invalid">无效组</span>
+                  }
+                  <app-ui-button
+                    variant="text"
                     type="button"
-                    class="graph-row"
-                    [class.highlighted]="isHighlighted(row.identity)"
-                    [class.unreachable]="!row.reachable"
-                    [class.issue]="row.cycle || row.missing"
-                    [disabled]="row.kind === 'builtin' || row.kind === 'truncated'"
-                    [style.padding-left.px]="graphPadding(row) + 8"
-                    (click)="focusResource(row.identity)"
+                    (pressed)="focusResource(group.identity)"
                   >
-                    <span class="tree-mark">{{ graphPrefix(row) }}</span>
-                    <span>{{ row.label }}</span>
-                    <small>{{
-                      row.kind === 'node'
-                        ? '节点'
-                        : row.kind === 'group'
-                          ? '组'
-                          : row.kind === 'builtin'
-                            ? '内置'
-                            : ''
-                    }}</small>
-                    @if (row.cycle) {
-                      <em>循环引用，已停止展开</em>
+                    定位
+                  </app-ui-button>
+                </span>
+                <div class="member-list" [attr.aria-label]="groupName(group) + ' 直接成员'">
+                  @for (member of group.members; track member.kind + ':' + member.value) {
+                    @if (memberNode(member); as node) {
+                      <app-ui-node-card
+                        [name]="nodeName(node)"
+                        [region]="nodeBadge(node)"
+                        [protocol]="node.proxy.protocol"
+                        [source]="'来源 ' + node.source"
+                        [tags]="node.effective_tags"
+                        [selected]="isHighlighted(node.identity)"
+                        [showActions]="false"
+                        [statusText]="resourceState(node)"
+                        (selectedChange)="focusResource(node.identity)"
+                      />
+                    } @else if (memberGroup(member); as referencedGroup) {
+                      <app-ui-card
+                        class="member-card referenced-group"
+                        [class.highlighted]="isHighlighted(referencedGroup.identity)"
+                      >
+                        <button
+                          type="button"
+                          class="member-card-button"
+                          (click)="focusResource(referencedGroup.identity)"
+                        >
+                          <span class="member-mark">组</span>
+                          <span class="member-copy">
+                            <strong>{{ groupName(referencedGroup) }}</strong>
+                            <small>
+                              {{ groupKind(referencedGroup) }} ·
+                              {{ resourceState(referencedGroup) }}
+                            </small>
+                          </span>
+                          <span class="member-type">引用组</span>
+                        </button>
+                      </app-ui-card>
+                    } @else if (member.kind === 'builtin') {
+                      <app-ui-card class="member-card builtin-member">
+                        <div class="member-card-button static">
+                          <span class="member-mark">内</span>
+                          <span class="member-copy">
+                            <strong>{{ member.value }}</strong>
+                            <small>内置策略成员</small>
+                          </span>
+                          <span class="member-type">内置</span>
+                        </div>
+                      </app-ui-card>
+                    } @else {
+                      <app-ui-card class="member-card missing-member">
+                        <div class="member-card-button static">
+                          <span class="member-mark">!</span>
+                          <span class="member-copy">
+                            <strong>{{ member.value }}</strong>
+                            <small>引用的{{ member.kind === 'group' ? '组' : '节点' }}不存在</small>
+                          </span>
+                          <span class="member-type">引用缺失</span>
+                        </div>
+                      </app-ui-card>
                     }
-                    @if (row.missing) {
-                      <em>引用缺失</em>
-                    }
-                  </button>
-                } @empty {
-                  <div class="empty">该组没有成员。</div>
-                }
-              </div>
-            </article>
-          } @empty {
-            <div class="empty">本次评估没有生成策略组。</div>
-          }
+                  } @empty {
+                    <div class="empty compact">该组没有直接成员。</div>
+                  }
+                </div>
+              </app-ui-collapse>
+            } @empty {
+              <div class="empty">本次评估没有生成策略组。</div>
+            }
+          </div>
         </div>
-      </mat-expansion-panel>
+      </mat-tab>
 
-      <mat-expansion-panel>
-        <mat-expansion-panel-header>
-          <mat-panel-title>节点与标签</mat-panel-title>
-          <mat-panel-description>{{ current.nodes.length }} 个已生成节点</mat-panel-description>
-        </mat-expansion-panel-header>
-        <div class="scroll-list nodes">
-          @for (node of current.nodes; track node.identity) {
-            <button
-              type="button"
-              class="node-row"
-              [class.highlighted]="isHighlighted(node.identity)"
-              [class.reachable]="node.reachable"
-              (click)="focusResource(node.identity)"
-            >
-              <span class="node-main">
-                <strong>{{ nodeName(node) }}</strong>
-                <code
-                  >{{ node.proxy.protocol }} · {{ node.proxy.server }}:{{ node.proxy.port }}</code
+      <mat-tab label="诊断">
+        <div class="tab-content">
+          <div class="tab-summary">{{ current.diagnostics.length }} 项</div>
+          <div class="scroll-list diagnostics">
+            @for (diagnostic of current.diagnostics; track $index) {
+              <app-ui-button
+                variant="text"
+                type="button"
+                class="diagnostic"
+                [class.error]="diagnostic.severity === 'error'"
+                (pressed)="focusDiagnostic(diagnostic)"
+              >
+                <span>{{ diagnostic.severity === 'error' ? '错误' : '警告' }}</span>
+                <code>{{ diagnostic.code }}</code>
+                <strong>{{ diagnostic.message }}</strong>
+                <small>{{ diagnostic.path }}</small>
+              </app-ui-button>
+            } @empty {
+              <div class="empty">没有诊断信息。</div>
+            }
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="评估定位轨迹">
+        <div class="tab-content">
+          <div class="tab-summary">{{ current.trace.length }} 条</div>
+          <div class="scroll-list traces">
+            @for (trace of current.trace; track $index) {
+              <app-ui-card class="trace-row">
+                <app-ui-button
+                  variant="text"
+                  type="button"
+                  class="trace-path"
+                  (pressed)="focusPath(trace.path)"
                 >
-                <small>{{ resourceState(node) }}{{ node.kept ? '' : ' · 已过滤' }}</small>
-              </span>
-              <span class="tags">
-                <span class="tag-label">原始</span>
-                @for (tag of node.original_tags; track tag) {
-                  <i>{{ tag }}</i>
-                } @empty {
-                  <em>无</em>
-                }
-              </span>
-              <span class="tags effective">
-                <span class="tag-label">生效</span>
-                @for (tag of node.effective_tags; track tag) {
-                  <i [class.added]="tagAdded(node, tag)">{{ tag }}</i>
-                } @empty {
-                  <em>无</em>
-                }
-              </span>
-            </button>
-          } @empty {
-            <div class="empty">本次评估没有生成节点。</div>
+                  {{ trace.path }}
+                </app-ui-button>
+                <div class="trace-resources">
+                  @for (identity of trace.resources; track identity) {
+                    <app-ui-button
+                      variant="outlined"
+                      type="button"
+                      [class.highlighted]="isHighlighted(identity)"
+                      (pressed)="focusTraceResource(trace, identity)"
+                    >
+                      {{ identity }}
+                    </app-ui-button>
+                  } @empty {
+                    <span>未关联资源</span>
+                  }
+                </div>
+              </app-ui-card>
+            } @empty {
+              <div class="empty">没有评估轨迹。</div>
+            }
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="渲染结果">
+        <div class="tab-content">
+          @if (rendered(); as content) {
+            <pre class="rendered">{{ content }}</pre>
+          } @else {
+            <div class="empty">暂无可渲染结果。</div>
           }
         </div>
-      </mat-expansion-panel>
-
-      <mat-expansion-panel [expanded]="current.diagnostics.length > 0">
-        <mat-expansion-panel-header>
-          <mat-panel-title>诊断</mat-panel-title>
-          <mat-panel-description>{{ current.diagnostics.length }} 项</mat-panel-description>
-        </mat-expansion-panel-header>
-        <div class="scroll-list diagnostics">
-          @for (diagnostic of current.diagnostics; track $index) {
-            <button
-              mat-button
-              type="button"
-              class="diagnostic"
-              [class.error]="diagnostic.severity === 'error'"
-              (click)="focusDiagnostic(diagnostic)"
-            >
-              <span>{{ diagnostic.severity === 'error' ? '错误' : '警告' }}</span>
-              <code>{{ diagnostic.code }}</code>
-              <strong>{{ diagnostic.message }}</strong>
-              <small>{{ diagnostic.path }}</small>
-            </button>
-          } @empty {
-            <div class="empty">没有诊断信息。</div>
-          }
-        </div>
-      </mat-expansion-panel>
-
-      <mat-expansion-panel>
-        <mat-expansion-panel-header>
-          <mat-panel-title>评估定位轨迹</mat-panel-title>
-          <mat-panel-description>{{ current.trace.length }} 条</mat-panel-description>
-        </mat-expansion-panel-header>
-        <div class="scroll-list traces">
-          @for (trace of current.trace; track $index) {
-            <article class="trace-row">
-              <button mat-button type="button" class="trace-path" (click)="focusPath(trace.path)">
-                {{ trace.path }}
-              </button>
-              <div class="trace-resources">
-                @for (identity of trace.resources; track identity) {
-                  <button
-                    mat-stroked-button
-                    type="button"
-                    [class.highlighted]="isHighlighted(identity)"
-                    (click)="focusTraceResource(trace, identity)"
-                  >
-                    {{ identity }}
-                  </button>
-                } @empty {
-                  <span>未关联资源</span>
-                }
-              </div>
-            </article>
-          } @empty {
-            <div class="empty">没有评估轨迹。</div>
-          }
-        </div>
-      </mat-expansion-panel>
-
-      @if (rendered(); as content) {
-        <mat-expansion-panel>
-          <mat-expansion-panel-header>
-            <mat-panel-title>渲染结果</mat-panel-title>
-            <mat-panel-description>只读预览</mat-panel-description>
-          </mat-expansion-panel-header>
-          <pre class="rendered">{{ content }}</pre>
-        </mat-expansion-panel>
-      }
-    </mat-accordion>
+      </mat-tab>
+    </mat-tab-group>
   } @else if (evaluating()) {
     <div class="empty waiting">正在生成评估结果…</div>
   } @else {

@@ -1,0 +1,12 @@
+<button
+  matIconButton
+  type="button"
+  [class]="variant()"
+  [disabled]="disabled()"
+  [attr.aria-label]="label()"
+  [matTooltip]="label()"
+  matTooltipClass="ui-kit-overlay"
+  (click)="pressed.emit()"
+>
+  <app-ui-icon [name]="icon()" />
+</button>

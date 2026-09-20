@@ -1,0 +1,257 @@
+@use '@angular/material' as mat;
+
+:root {
+  --ui-radius-button: 8px;
+  --ui-control-height: 24px;
+  --ui-field-height: 28px;
+  --ui-option-height: 24px;
+  --ui-card-padding: 8px;
+  --ui-gap: 8px;
+  --ui-color-scheme: dark;
+  --ui-outline: color-mix(in srgb, var(--ui-text) 15%, var(--ui-border));
+  --ui-field: color-mix(in srgb, var(--ui-bg) 70%, var(--ui-surface));
+}
+html[data-ui-mode='light'] {
+  --ui-color-scheme: light;
+}
+html[data-ui-density='compact'] {
+  --ui-control-height: 28px;
+  --ui-field-height: 32px;
+  --ui-option-height: 28px;
+  --ui-card-padding: 12px;
+}
+html[data-ui-density='comfortable'] {
+  --ui-control-height: 32px;
+  --ui-field-height: 36px;
+  --ui-option-height: 32px;
+  --ui-card-padding: 16px;
+  --ui-gap: 12px;
+}
+.ui-kit[data-size='small'] {
+  --ui-control-height: 24px;
+}
+.ui-kit[data-size='medium'] {
+  --ui-control-height: 28px;
+}
+.ui-kit[data-size='large'] {
+  --ui-control-height: 32px;
+}
+
+// Shared Material tokens for the laboratory and Plan Board.
+.ui-kit,
+.ui-kit-overlay {
+  color-scheme: var(--ui-color-scheme);
+  color: var(--ui-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  @include mat.theme-overrides(
+    (
+      primary: var(--ui-accent),
+      on-primary: var(--ui-on-accent),
+      secondary-container: var(--ui-active),
+      on-secondary-container: var(--ui-text),
+      surface: var(--ui-surface),
+      surface-container: var(--ui-surface),
+      surface-container-high: var(--ui-surface-high),
+      on-surface: var(--ui-text),
+      on-surface-variant: var(--ui-muted),
+      outline: var(--ui-outline),
+      outline-variant: var(--ui-outline),
+      error: var(--ui-error),
+    )
+  );
+  @include mat.button-overrides(
+    (
+      filled-container-height: var(--ui-control-height),
+      filled-container-shape: var(--ui-radius-button),
+      filled-horizontal-padding: 8px,
+      filled-label-text-size: 12px,
+      filled-touch-target-size: var(--ui-control-height),
+      outlined-container-height: var(--ui-control-height),
+      outlined-container-shape: var(--ui-radius-button),
+      outlined-horizontal-padding: 8px,
+      outlined-label-text-size: 12px,
+      outlined-touch-target-size: var(--ui-control-height),
+      outlined-label-text-color: var(--ui-text),
+      text-container-height: var(--ui-control-height),
+      text-container-shape: var(--ui-radius-button),
+      text-horizontal-padding: 8px,
+      text-label-text-size: 12px,
+      text-touch-target-size: var(--ui-control-height),
+      text-label-text-color: var(--ui-accent-text),
+      tonal-container-height: var(--ui-control-height),
+      tonal-container-shape: var(--ui-radius-button),
+      tonal-horizontal-padding: 8px,
+      tonal-label-text-size: 12px,
+      tonal-touch-target-size: var(--ui-control-height),
+    )
+  );
+  @include mat.icon-button-overrides(
+    (
+      icon-size: 16px,
+      state-layer-size: var(--ui-control-height),
+      touch-target-size: var(--ui-control-height),
+      container-shape: var(--ui-radius-button),
+    )
+  );
+  @include mat.select-overrides(
+    (
+      trigger-text-size: 12px,
+      trigger-text-line-height: 20px,
+      panel-background-color: var(--ui-surface),
+    )
+  );
+  @include mat.option-overrides(
+    (
+      label-text-size: 12px,
+      label-text-line-height: 16px,
+      hover-state-layer-color: var(--ui-hover),
+      focus-state-layer-color: var(--ui-hover),
+      selected-state-layer-color: var(--ui-active),
+      selected-state-label-text-color: var(--ui-text),
+    )
+  );
+  @include mat.optgroup-overrides(
+    (
+      label-text-size: 11px,
+      label-text-color: var(--ui-muted),
+    )
+  );
+  @include mat.tooltip-overrides(
+    (
+      container-color: var(--ui-surface-high),
+      supporting-text-color: var(--ui-text),
+      supporting-text-size: 11px,
+      container-shape: var(--ui-radius-control),
+    )
+  );
+  @include mat.dialog-overrides(
+    (
+      container-color: var(--ui-surface),
+      container-shape: var(--ui-radius-overlay),
+      subhead-color: var(--ui-text),
+      supporting-text-color: var(--ui-muted),
+    )
+  );
+}
+.ui-kit.is-danger {
+  @include mat.button-overrides(
+    (
+      filled-container-color: var(--ui-error),
+      filled-label-text-color: var(--ui-on-error),
+      text-label-text-color: var(--ui-error),
+      outlined-label-text-color: var(--ui-error),
+      outlined-outline-color: var(--ui-error),
+      tonal-container-color: color-mix(in srgb, var(--ui-error) 15%, var(--ui-surface)),
+      tonal-label-text-color: var(--ui-error),
+    )
+  );
+}
+
+// Overlay-owned geometry: all option variants share these explicit hooks.
+.ui-select-panel.mat-mdc-select-panel {
+  padding: 4px;
+  max-height: min(360px, 60vh);
+  border: 1px solid var(--ui-outline);
+  border-radius: max(var(--ui-radius-overlay), calc(var(--ui-radius-control) + 4px));
+  box-shadow: 0 8px 24px #0003;
+  .mat-mdc-option {
+    min-height: var(--ui-option-height);
+    padding: 4px 8px;
+    border-radius: var(--ui-radius-control);
+    margin: 4px 0;
+  }
+  .mat-mdc-option.ui-option-rich {
+    min-height: calc(var(--ui-option-height) + 16px);
+  }
+  .mdc-list-item__primary-text {
+    flex: 1;
+    min-width: 0;
+    margin-right: 8px;
+  }
+  .mat-mdc-optgroup-label {
+    min-height: 24px;
+    padding: 4px 8px;
+  }
+}
+.ui-kit-overlay .mat-mdc-menu-panel {
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-outline);
+  border-radius: var(--ui-radius-overlay);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-kit *,
+  .ui-kit-overlay * {
+    scroll-behavior: auto;
+  }
+}
+
+// Keep the overlay origin identical to the visible field, including its border.
+.ui-kit app-ui-select .mat-mdc-select-trigger {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--ui-field-height);
+  padding: 0 8px;
+  border: 1px solid var(--ui-outline);
+  border-radius: var(--ui-radius-control);
+}
+.ui-kit app-ui-select mat-select:focus .mat-mdc-select-trigger {
+  border-color: var(--ui-accent-text);
+}
+.ui-kit app-ui-select mat-select.invalid .mat-mdc-select-trigger {
+  border-color: var(--ui-error);
+}
+.ui-select-panel.mat-mdc-select-panel {
+  margin-top: 4px;
+}
+.mat-mdc-select-panel-above .ui-select-panel.mat-mdc-select-panel {
+  margin-top: 0;
+  margin-bottom: 4px;
+}
+.ui-select-panel .mat-mdc-option:not(.mat-mdc-option-multiple) {
+  padding-left: 28px;
+  padding-right: 8px;
+  .mat-pseudo-checkbox {
+    position: absolute;
+    left: 8px;
+    right: auto;
+    margin: 0;
+    transform: scale(0.65);
+    transform-origin: left center;
+  }
+}
+// Scoped adjustments around Material-owned interactions.
+.ui-kit app-ui-collapse .mat-expansion-panel-body {
+  padding: 8px;
+}
+.ui-kit app-ui-collapse .mat-expansion-indicator {
+  color: var(--ui-muted);
+}
+.ui-kit app-ui-collapse .mat-expansion-panel-header:hover:not([aria-disabled='true']) {
+  background: var(--ui-hover);
+}
+app-ui-segmented .mat-button-toggle-button {
+  border-radius: 8px;
+}
+app-ui-segmented .mat-button-toggle-label-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  min-height: 24px;
+  line-height: 24px;
+  font-size: 11px;
+}
+app-ui-segmented {
+  @include mat.button-toggle-overrides(
+    (
+      height: 24px,
+      shape: 8px,
+      label-text-size: 11px,
+    )
+  );
+}
+.ui-kit app-ui-collapse .mat-expansion-panel:not([class*='mat-elevation-z']) {
+  box-shadow: none;
+}

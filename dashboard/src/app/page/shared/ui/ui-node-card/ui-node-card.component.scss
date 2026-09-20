@@ -1,0 +1,135 @@
+:host {
+  display: flex;
+  min-width: 0;
+}
+app-ui-card {
+  flex: 1;
+  min-width: 0;
+}
+.node-layout {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+:host(:hover) {
+  --ui-card-border: var(--ui-muted);
+  --ui-card-background: var(--ui-surface-high);
+}
+:host(.selected) {
+  --ui-card-border: var(--ui-accent-text);
+  --ui-card-background: color-mix(in srgb, var(--ui-accent) 10%, var(--ui-surface));
+}
+:host(.unavailable) {
+  opacity: 0.45;
+}
+:host(.has-error) {
+  --ui-card-border: color-mix(in srgb, var(--ui-error) 45%, var(--ui-outline));
+}
+.selection {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+  gap: 8px;
+  padding: var(--ui-card-padding);
+  color: var(--ui-text);
+  border: 0;
+  background: transparent;
+  border-radius: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.selection:focus-visible {
+  outline: 2px solid var(--ui-accent-text);
+  outline-offset: -3px;
+}
+.selection:disabled {
+  cursor: default;
+}
+.region {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--ui-radius-control);
+  background: var(--ui-surface-high);
+  border: 1px solid var(--ui-outline);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+.copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+}
+.metadata {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  font-size: 10px;
+  line-height: 12px;
+  color: var(--ui-muted);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.protocol {
+  color: var(--ui-blue);
+}
+.source {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tag {
+  padding: 0 4px;
+  background: var(--ui-active);
+  border-radius: 4px;
+}
+.state {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ui-accent-text);
+  flex: none;
+}
+.status-label {
+  font-size: 10px;
+  color: var(--ui-muted);
+}
+.state.error,
+.state.error .status-label {
+  color: var(--ui-error);
+}
+.state.loading {
+  color: var(--ui-warning);
+}
+.selection-dot {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--ui-muted);
+  border-radius: 50%;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding-right: 4px;
+}
+@media (max-width: 480px) {
+  .status-label {
+    display: none;
+  }
+}

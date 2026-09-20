@@ -1,0 +1,42 @@
+:host {
+  display: none;
+}
+.option-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  gap: 8px;
+  line-height: 16px;
+}
+.option-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+.label {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.description {
+  font-size: 11px;
+  color: var(--ui-muted);
+  line-height: 16px;
+  white-space: normal;
+}
+.suffix {
+  flex: none;
+  color: var(--ui-muted);
+  font-size: 10px;
+  font-family: var(--app-mono);
+}
+.swatch {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--ui-outline);
+  border-radius: 4px;
+  flex: none;
+}

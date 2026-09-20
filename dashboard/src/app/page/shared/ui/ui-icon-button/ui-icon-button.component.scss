@@ -1,0 +1,33 @@
+:host {
+  display: inline-flex;
+  flex: none;
+}
+button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  width: var(--ui-control-height);
+  height: var(--ui-control-height);
+  border: 1px solid transparent;
+  border-radius: var(--ui-radius-button);
+  color: var(--ui-text);
+}
+.filled:not(:disabled) {
+  background: var(--ui-accent);
+  color: var(--ui-on-accent);
+}
+.tonal:not(:disabled) {
+  background: var(--ui-active);
+  color: var(--ui-text);
+}
+.outlined {
+  border-color: var(--ui-outline);
+}
+button:disabled {
+  opacity: 0.45;
+}
+button:focus-visible {
+  outline: 2px solid var(--ui-accent-text);
+  outline-offset: 2px;
+}

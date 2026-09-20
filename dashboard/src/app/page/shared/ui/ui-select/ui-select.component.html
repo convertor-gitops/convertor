@@ -1,0 +1,49 @@
+<span class="label" [id]="id + '-label'">{{ label() }}</span>
+<mat-select
+  [id]="id"
+  [attr.aria-labelledby]="id + '-label'"
+  [aria-label]="label()"
+  [attr.aria-invalid]="!!error()"
+  [attr.aria-describedby]="hint() || error() ? id + '-help' : null"
+  [class.invalid]="error()"
+  [value]="current()"
+  [placeholder]="placeholder()"
+  [multiple]="multiple()"
+  [disabled]="isDisabled()"
+  panelClass="ui-kit-overlay ui-select-panel"
+  (selectionChange)="select($event.value)"
+  (closed)="touch()"
+  (blur)="touch()"
+>
+  <mat-select-trigger>{{ selectedLabel() }}</mat-select-trigger>
+  @for (group of groups(); track group.name) {
+    @if (group.name) {
+      <mat-optgroup [label]="group.name">
+        @for (option of group.options; track option.value()) {
+          <mat-option
+            [value]="option.value()"
+            [disabled]="option.disabled()"
+            [attr.aria-label]="option.label()"
+            [class.ui-option-rich]="option.description()"
+            ><ng-container *ngTemplateOutlet="option.content()"
+          /></mat-option>
+        }
+      </mat-optgroup>
+    } @else {
+      @for (option of group.options; track option.value()) {
+        <mat-option
+          [value]="option.value()"
+          [disabled]="option.disabled()"
+          [attr.aria-label]="option.label()"
+          [class.ui-option-rich]="option.description()"
+          ><ng-container *ngTemplateOutlet="option.content()"
+        /></mat-option>
+      }
+    }
+  }
+</mat-select>
+
+<ng-content />
+@if (error() || hint()) {
+  <span class="help" [class.error]="error()" [id]="id + '-help'">{{ error() || hint() }}</span>
+}

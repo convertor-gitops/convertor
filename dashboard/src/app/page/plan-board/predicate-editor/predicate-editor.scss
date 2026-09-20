@@ -5,9 +5,9 @@
 
 .predicate {
   padding: 8px;
-  border: 1px solid var(--app-border, #d7d9df);
+  border: 1px solid var(--ui-outline);
   border-radius: var(--ui-radius-md, 8px);
-  background: color-mix(in srgb, var(--app-surface, #fff), transparent 8%);
+  background: color-mix(in srgb, var(--ui-surface), transparent 8%);
 }
 
 .predicate-head,
@@ -18,8 +18,8 @@
   gap: 8px;
 }
 
-.predicate-head mat-form-field,
-.atom-row mat-form-field {
+.predicate-head :is(mat-form-field, app-ui-text-field, app-ui-select),
+.atom-row :is(mat-form-field, app-ui-text-field, app-ui-select) {
   width: 132px;
 }
 
@@ -33,12 +33,13 @@
 }
 
 .hint {
-  color: var(--app-text-4, #717784);
+  color: var(--ui-muted);
   font-size: 12px;
 }
 
 .children {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
   margin: 8px 0 0 12px;
   padding-left: 10px;
@@ -73,7 +74,7 @@
 .child {
   flex-wrap: wrap;
 }
-mat-form-field {
+:is(mat-form-field, app-ui-text-field, app-ui-select) {
   min-width: 0;
   max-width: 100%;
 }

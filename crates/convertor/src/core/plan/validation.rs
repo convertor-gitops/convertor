@@ -74,11 +74,6 @@ impl Plan {
             let start = errors.len();
             validate_strategy(&g.strategy, &mut errors);
             scope(&mut errors, start, &format!("groups/{}/strategy", g.id.0));
-            if let EmptyGroupPolicy::Use(t) = &g.on_empty {
-                let start = errors.len();
-                target_check(t, &mut errors);
-                scope(&mut errors, start, &format!("groups/{}/on_empty", g.id.0));
-            }
             for (index, m) in g.member_selectors.iter().enumerate() {
                 let start = errors.len();
                 match m {
@@ -97,7 +92,7 @@ impl Plan {
                     }
                     MemberSelector::Group(id) => target_check(&Target::Group(*id), &mut errors),
                     MemberSelector::BaseGroups(s) => {
-                        if !policies.contains(&s.policy) {
+                        if s.policy.is_some_and(|policy| !policies.contains(&policy)) {
                             errors.push("missing grouping policy".into());
                         }
                         let mut a = vec![];
@@ -168,14 +163,11 @@ impl Plan {
             }
             path.push(id);
             if let Some(g) = p.groups.iter().find(|g| g.id == id) {
-                let mut refs = g
+                let refs = g
                     .member_selectors
                     .iter()
                     .filter_map(|m| if let MemberSelector::Group(id) = m { Some(*id) } else { None })
                     .collect::<Vec<_>>();
-                if let EmptyGroupPolicy::Use(Target::Group(id)) = g.on_empty {
-                    refs.push(id);
-                }
                 for r in refs {
                     if !visit(r, p, path, done) {
                         return false;

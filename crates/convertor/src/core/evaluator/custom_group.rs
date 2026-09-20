@@ -38,17 +38,27 @@ impl Engine<'_> {
                 MemberSelector::ImportGroups(s) => {
                     let mut v = vec![];
                     for i in self.source_groups(s) {
-                        v.push(Ref::Group(self.import_raw(s.source, i)?));
+                        let key = self.import_raw(s.source, i)?;
+                        if !self.omitted_groups.contains(&key) {
+                            v.push(Ref::Group(key));
+                        }
                     }
                     v
                 }
-                MemberSelector::Group(id) => vec![Ref::Group(self.custom(*id)?)],
+                MemberSelector::Group(id) => {
+                    let key = self.custom(*id)?;
+                    if self.omitted_groups.contains(&key) {
+                        vec![]
+                    } else {
+                        vec![Ref::Group(key)]
+                    }
+                }
                 MemberSelector::Builtin(b) => vec![Ref::Builtin(b.name().into())],
                 MemberSelector::BaseGroups(s) => self
                     .base
                     .iter()
                     .filter(|b| {
-                        b.policy == s.policy
+                        s.policy.is_none_or(|policy| b.policy == policy)
                             && (matches!(s.scope, GroupScope::All) || b.parent.is_none())
                             && s.predicate.matches(&|p| match p {
                                 BaseGroupPredicate::Name(v) => v.matches(&b.name),
@@ -69,10 +79,9 @@ impl Engine<'_> {
         }
         members = unique(members);
         if members.is_empty() {
-            match &g.on_empty {
-                EmptyGroupPolicy::Error => return Err(error("empty_group", key)),
-                EmptyGroupPolicy::Use(t) => members.push(self.target(t)?),
-            }
+            self.active.pop();
+            self.omitted_groups.insert(key.clone());
+            return Ok(key);
         }
         self.groups.insert(
             key.clone(),

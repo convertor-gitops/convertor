@@ -1,21 +1,15 @@
 <div class="row">
-  <mat-form-field appearance="outline" subscriptSizing="dynamic"
-    ><mat-label>挑选方式</mat-label>
-    <mat-select [ngModel]="selector().kind" (ngModelChange)="changeKind($event)">
-      @for (kind of kinds; track kind[0]) {
-        <mat-option [value]="kind[0]">{{ kind[1] }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
+  <app-ui-select label="挑选方式" [ngModel]="selector().kind" (ngModelChange)="changeKind($event)">
+    @for (kind of kinds; track kind[0]) {
+      <app-ui-option [value]="kind[0]" label="{{ kind[1] }}" />
+    }
+  </app-ui-select>
   @if (nodeSelection() || sourceSelection(); as selection) {
-    <mat-form-field appearance="outline" subscriptSizing="dynamic"
-      ><mat-label>来源</mat-label>
-      <mat-select [ngModel]="selection.source" (ngModelChange)="changeSource($event)">
-        @for (source of sources(); track source.id) {
-          <mat-option [value]="source.id">{{ source.name }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+    <app-ui-select label="来源" [ngModel]="selection.source" (ngModelChange)="changeSource($event)">
+      @for (source of sources(); track source.id) {
+        <app-ui-option [value]="source.id" label="{{ source.name }}" />
+      }
+    </app-ui-select>
   }
 </div>
 @if (nodeSelection(); as selection) {
@@ -27,13 +21,11 @@
 }
 @if (sourceSelection(); as selection) {
   @if (selector().kind === 'nodes_from_groups') {
-    <mat-form-field appearance="outline" subscriptSizing="dynamic"
-      ><mat-label>展开深度</mat-label
-      ><mat-select [ngModel]="depth()" (ngModelChange)="changeDepth($event)"
-        ><mat-option value="Direct">仅直接节点</mat-option
-        ><mat-option value="Recursive">递归展开子组</mat-option></mat-select
-      ></mat-form-field
-    >
+    <app-ui-select label="展开深度" [ngModel]="depth()" (ngModelChange)="changeDepth($event)"
+      ><app-ui-option value="Direct" label="仅直接节点" /><app-ui-option
+        value="Recursive"
+        label="递归展开子组"
+    /></app-ui-select>
   }
   <app-predicate-editor
     domain="source-group"
@@ -43,46 +35,31 @@
 }
 @if (baseSelection(); as selection) {
   <div class="row">
-    <mat-form-field appearance="outline" subscriptSizing="dynamic"
-      ><mat-label>自动组策略</mat-label
-      ><mat-select [ngModel]="selection.policy" (ngModelChange)="changeBase('policy', $event)">
-        @for (policy of policies(); track policy.id) {
-          <mat-option [value]="policy.id">策略 {{ policy.id }}</mat-option>
-        }
-      </mat-select></mat-form-field
-    >
-    <mat-form-field appearance="outline" subscriptSizing="dynamic"
-      ><mat-label>选择层级</mat-label
-      ><mat-select [ngModel]="selection.scope" (ngModelChange)="changeBase('scope', $event)"
-        ><mat-option value="Roots">顶层组</mat-option
-        ><mat-option value="All">所有层级</mat-option></mat-select
-      ></mat-form-field
-    >
+    <app-ui-select
+      label="查找范围"
+      [ngModel]="selection.scope"
+      (ngModelChange)="changeBase($event)"
+      ><app-ui-option value="Roots" label="顶层组" /><app-ui-option value="All" label="所有层级"
+    /></app-ui-select>
   </div>
   <app-predicate-editor
     domain="base-group"
     [predicate]="selection.predicate"
     (predicateChange)="changePredicate($event)"
   />
+  <small>跨全部自动策略按组名查找；没有匹配项时不会绑定或修改任何自动策略。</small>
 }
 @if (selector().kind === 'group') {
-  <mat-form-field appearance="outline" subscriptSizing="dynamic"
-    ><mat-label>引用节点组</mat-label
-    ><mat-select [ngModel]="groupValue()" (ngModelChange)="changeGroup($event)">
-      @for (group of groups(); track group.id) {
-        @if (group.id !== owner()) {
-          <mat-option [value]="group.id">{{ group.name }}</mat-option>
-        }
+  <app-ui-select label="引用节点组" [ngModel]="groupValue()" (ngModelChange)="changeGroup($event)">
+    @for (group of groups(); track group.id) {
+      @if (group.id !== owner()) {
+        <app-ui-option [value]="group.id" label="{{ group.name }}" />
       }
-    </mat-select></mat-form-field
-  >
+    }
+  </app-ui-select>
 }
 @if (selector().kind === 'builtin') {
-  <mat-form-field appearance="outline" subscriptSizing="dynamic"
-    ><mat-label>动作</mat-label
-    ><mat-select [ngModel]="builtinValue()" (ngModelChange)="changeBuiltin($event)"
-      ><mat-option value="Direct">DIRECT</mat-option
-      ><mat-option value="Reject">REJECT</mat-option></mat-select
-    ></mat-form-field
-  >
+  <app-ui-select label="动作" [ngModel]="builtinValue()" (ngModelChange)="changeBuiltin($event)"
+    ><app-ui-option value="Direct" label="DIRECT" /><app-ui-option value="Reject" label="REJECT"
+  /></app-ui-select>
 }
