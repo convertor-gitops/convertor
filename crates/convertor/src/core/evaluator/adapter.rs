@@ -27,7 +27,7 @@ pub fn inspect_source_nodes(source: &EvaluationSource, dependencies: &ResolvedDe
             external
                 .nodes
                 .into_iter()
-                .map(|node| input_node(node.key, source.source_id, bridge::proxy_from_legacy(&node.proxy), node.origins)),
+                .map(|node| input_node(node.key, source.source_id, node.proxy, node.origins)),
         ),
         Err(failure) => diagnostics.extend(failure.diagnostics),
     }
@@ -101,7 +101,7 @@ fn prepare(
             .map(|d| EngineRuleDependency {
                 source: d.source,
                 key: d.key.clone(),
-                rules: d.rules.iter().map(bridge::rule_to_legacy).collect(),
+                rules: d.rules.clone(),
             })
             .collect(),
     };
@@ -137,7 +137,7 @@ fn prepare(
                 deps.rules.push(EngineRuleDependency {
                     source: s.source_id,
                     key: p.name.clone(),
-                    rules: rules.iter().map(bridge::rule_to_legacy).collect(),
+                    rules,
                 });
             }
         }
@@ -156,45 +156,11 @@ fn prepare(
         declarations
             .rules
             .retain(|entry| !matches!(entry, document::SectionEntry::Include { .. }));
-        let profile = match bridge::to_legacy(&declarations, s.client) {
-            Ok(profile) => profile,
-            Err(_) => {
-                diagnostics.extend(error("unsupported_source_document", format!("source/{}/profile", s.source_id.0)).diagnostics);
-                continue;
-            }
-        };
         input.push(EngineSource {
             source_id: s.source_id,
-            profile,
+            document: declarations,
             external,
         });
     }
     (input, deps, diagnostics)
-}
-
-pub(super) fn output(p: &Profile) -> Result<document::Profile> {
-    Ok(document::Profile {
-        proxies: p
-            .proxies()
-            .iter()
-            .map(bridge::proxy_from_legacy)
-            .map(document::SectionEntry::Item)
-            .collect(),
-        proxy_groups: p
-            .proxy_groups()
-            .iter()
-            .map(bridge::group_from_legacy)
-            .collect::<std::result::Result<Vec<_>, _>>()
-            .map_err(|_| error("invalid_output_group", "output"))?
-            .into_iter()
-            .map(document::SectionEntry::Item)
-            .collect(),
-        rules: p
-            .rules()
-            .iter()
-            .map(bridge::rule_from_legacy)
-            .map(document::SectionEntry::Item)
-            .collect(),
-        ..Default::default()
-    })
 }

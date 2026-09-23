@@ -42,7 +42,11 @@ pub(crate) fn rule_from_legacy(r: &old::rule::Rule) -> Rule {
     Rule {
         rule_type: r.rule_type.clone(),
         value: r.value.clone(),
-        target: r.policy.as_ref().filter(|p| !p.name.is_empty()).map(|p| PolicyRef::parse(&p.name)),
+        target: r
+            .policy
+            .as_ref()
+            .filter(|p| !p.name.is_empty())
+            .map(|p| RuleTargetName::parse(&p.name)),
         options: r
             .policy
             .as_ref()
@@ -58,7 +62,7 @@ pub(crate) fn rule_to_legacy(r: &Rule) -> old::rule::Rule {
         value: r.value.clone(),
         policy: if r.target.is_some() || !r.options.is_empty() {
             Some(old::policy::Policy::new(
-                r.target.as_ref().map(PolicyRef::name).unwrap_or(""),
+                r.target.as_ref().map(RuleTargetName::name).unwrap_or(""),
                 (!r.options.is_empty()).then(|| r.options.join(",")).as_deref(),
                 false,
             ))
@@ -90,7 +94,13 @@ pub(crate) fn group_from_legacy(g: &old::proxy_group::ProxyGroup) -> Result<Prox
             old::proxy_group::ProxyGroupType::UrlTest => ProxyGroupType::UrlTest,
             old::proxy_group::ProxyGroupType::Smart => ProxyGroupType::Smart,
         },
-        members: g.proxies.as_deref().unwrap_or(&[]).iter().map(|s| PolicyRef::parse(s)).collect(),
+        members: g
+            .proxies
+            .as_deref()
+            .unwrap_or(&[])
+            .iter()
+            .map(|s| ProxyGroupMemberName::parse(s))
+            .collect(),
         providers: g.uses.clone().unwrap_or_default(),
         policy_path: resource.map(|s| PolicyPath {
             resource: ExternalResource::parse(&s),

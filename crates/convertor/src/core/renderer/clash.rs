@@ -158,7 +158,7 @@ fn common(
     m: &mut serde_json::Map<String, Value>,
     interval: Option<u64>,
     headers: &[HttpHeader],
-    via: &Option<PolicyRef>,
+    via: &Option<DownloadViaName>,
     limit: Option<u64>,
     extra: &ExtraFields,
 ) {

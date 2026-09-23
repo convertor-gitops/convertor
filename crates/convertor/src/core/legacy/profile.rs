@@ -1,4 +1,3 @@
-use crate::config::proxy_client::ProxyClient;
 use crate::core::legacy::profile::proxy::Proxy;
 use crate::core::legacy::profile::proxy_group::ProxyGroup;
 use crate::core::legacy::profile::rule::Rule;
@@ -24,31 +23,10 @@ pub enum Profile {
 impl ProfileTrait for Profile {
     type PROFILE = Profile;
 
-    fn client(&self) -> ProxyClient {
-        match self {
-            Profile::Surge(p) => p.client(),
-            Profile::Clash(p) => p.client(),
-        }
-    }
-
     fn proxies(&self) -> &[Proxy] {
         match self {
             Profile::Surge(p) => p.proxies(),
             Profile::Clash(p) => p.proxies(),
-        }
-    }
-
-    fn proxies_mut(&mut self) -> &mut Vec<Proxy> {
-        match self {
-            Profile::Surge(p) => p.proxies_mut(),
-            Profile::Clash(p) => p.proxies_mut(),
-        }
-    }
-
-    fn proxy_groups(&self) -> &[ProxyGroup] {
-        match self {
-            Profile::Surge(p) => p.proxy_groups(),
-            Profile::Clash(p) => p.proxy_groups(),
         }
     }
 
@@ -105,13 +83,7 @@ impl ProfileTrait for Profile {
 pub trait ProfileTrait {
     type PROFILE;
 
-    fn client(&self) -> ProxyClient;
-
     fn proxies(&self) -> &[Proxy];
-
-    fn proxies_mut(&mut self) -> &mut Vec<Proxy>;
-
-    fn proxy_groups(&self) -> &[ProxyGroup];
 
     fn proxy_groups_mut(&mut self) -> &mut Vec<ProxyGroup>;
 

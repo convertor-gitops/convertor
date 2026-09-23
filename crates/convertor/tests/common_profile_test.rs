@@ -36,7 +36,7 @@ fn surge_main_keeps_declarations_and_include_positions() {
         .find(|g| g.name == "External")
         .unwrap();
     assert_eq!(external.policy_path.as_ref().unwrap().update_interval, Some(3600));
-    assert_eq!(external.members, vec![PolicyRef::BuiltIn("DIRECT".into())]);
+    assert_eq!(external.members, vec![ProxyGroupMemberName::parse("DIRECT")]);
     assert_eq!(p.rule_providers.len(), 1);
     let provider = &p.rule_providers[0];
     assert_eq!(provider.name, "Streaming");
@@ -73,7 +73,7 @@ fn mihomo_main_keeps_native_provider_declarations() {
     assert_eq!(node.password, None);
     let group = p.proxy_groups[0].item().unwrap();
     assert_eq!(group.providers, vec!["remote", "local", "inline-nodes"]);
-    assert_eq!(group.members, vec![PolicyRef::BuiltIn("DIRECT".into())]);
+    assert_eq!(group.members, vec![ProxyGroupMemberName::parse("DIRECT")]);
     assert!(group.policy_path.is_none());
     assert!(matches!(p.rule_providers[3].payload, Some(RuleProviderPayload::Domain(_))));
     assert!(matches!(p.rule_providers[4].payload, Some(RuleProviderPayload::IpCidr(_))));
@@ -92,14 +92,14 @@ fn mutations_are_rendered_from_fields_after_json_restore() {
         node.server = "edited.example".into();
         node.port = 1234;
         let group = p.proxy_groups.iter_mut().find_map(SectionEntry::item_mut).unwrap();
-        group.members.push(PolicyRef::BuiltIn("REJECT".into()));
+        group.members.push(ProxyGroupMemberName::parse("REJECT"));
         let rule = p
             .rules
             .iter_mut()
             .filter_map(SectionEntry::item_mut)
             .find(|r| r.rule_type != RuleType::RuleSet)
             .unwrap();
-        rule.target = Some(PolicyRef::BuiltIn("REJECT".into()));
+        rule.target = Some(RuleTargetName::parse("REJECT"));
         let mut rendered = String::from("prefix\n");
         document.render(&mut rendered, client).unwrap();
         assert!(rendered.starts_with("prefix\n"));
@@ -155,7 +155,7 @@ fn individual_rule_and_numeric_health_status_roundtrip() {
     let r = Rule {
         rule_type: RuleType::Domain,
         value: Some("example.com".into()),
-        target: Some(PolicyRef::Named("with: colon".into())),
+        target: Some(RuleTargetName::parse("with: colon")),
         options: vec![],
         comment: None,
     };

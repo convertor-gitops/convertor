@@ -8,7 +8,7 @@ use convertor::config::proxy_client::ProxyClient;
 use convertor::core::format::{ProxyPayload, RulePayload};
 use convertor::core::profile::proxy_group::{ProxyGroup, ProxyGroupType};
 use convertor::core::profile::rule::Rule;
-use convertor::core::profile::{ClientProfile, GroupOptions, PolicyRef, SectionEntry};
+use convertor::core::profile::{ClientProfile, GroupOptions, RuleTargetName, SectionEntry};
 use convertor::core::{Parse, Render, conversion::convert};
 use regex::Regex;
 
@@ -36,7 +36,7 @@ fn add_existing_policy_target_rules(rules: &mut Vec<SectionEntry<Rule>>) {
         .clone();
     for name in ["🏠 家宽组", "🇺🇸 美国组 家宽", "🇺🇸 美国组", "Subscription Info", "🇺🇸 美国 06 家宽"] {
         let mut rule = template.clone();
-        rule.target = Some(PolicyRef::parse(name));
+        rule.target = Some(RuleTargetName::parse(name));
         rules.push(rule.into());
     }
 }

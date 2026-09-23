@@ -1,6 +1,6 @@
 //! 将外部节点声明解析成执行输入。过滤和覆盖先于 Source 标注与过滤执行。
 use super::*;
-use crate::core::{conversion::bridge, profile as document};
+use crate::core::profile as document;
 use document::{ProviderSource, SectionEntry};
 use regex::Regex;
 
@@ -52,7 +52,7 @@ pub(super) fn prepare(source: &EvaluationSource, deps: &ResolvedDependencies) ->
             let key = format!("s{}/p{index}/n{i}", source.source_id.0);
             out.nodes.push(ExternalNode {
                 key: key.clone(),
-                proxy: bridge::proxy_to_legacy(&proxy),
+                proxy,
                 origins: vec![NodeOrigin::ProxyProvider {
                     name: provider.name.clone(),
                     index: i,
@@ -111,7 +111,7 @@ pub(super) fn prepare(source: &EvaluationSource, deps: &ResolvedDependencies) ->
             if inserted.insert(key.clone()) {
                 out.nodes.push(ExternalNode {
                     key: key.clone(),
-                    proxy: bridge::proxy_to_legacy(&node),
+                    proxy: node,
                     origins: vec![NodeOrigin::PolicyPath {
                         group_index: index,
                         index: i,

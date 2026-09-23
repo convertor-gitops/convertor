@@ -1,4 +1,4 @@
-use super::{ExternalResource, ExtraFields, PolicyRef, Proxy, RuleEntry};
+use super::{DownloadViaName, ExternalResource, ExtraFields, Proxy, RuleEntry};
 use serde::{Deserialize, Serialize};
 
 /// Provider 内容来自主配置内联声明，或来自尚未解析的外部资源。
@@ -58,7 +58,7 @@ pub struct ProxyProvider {
     /// HTTP Provider 的本地缓存路径。
     pub cache_path: Option<String>,
     /// 下载 Provider 时使用的代理策略。
-    pub download_via: Option<PolicyRef>,
+    pub download_via: Option<DownloadViaName>,
     /// 最大下载大小。
     pub size_limit: Option<u64>,
     /// 节点健康检查配置。
@@ -97,7 +97,7 @@ pub struct RuleProvider {
     /// HTTP Provider 的本地缓存路径。
     pub cache_path: Option<String>,
     /// 下载 Provider 时使用的代理策略。
-    pub download_via: Option<PolicyRef>,
+    pub download_via: Option<DownloadViaName>,
     /// 最大下载大小。
     pub size_limit: Option<u64>,
     /// Mihomo 规则集合行为。

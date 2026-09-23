@@ -3,7 +3,6 @@ mod provider_type;
 mod proxy_provider;
 mod rule_provider;
 
-use crate::config::proxy_client::ProxyClient;
 use crate::core::legacy::profile::ProfileTrait;
 use crate::core::legacy::profile::policy::Policy;
 use crate::core::legacy::profile::proxy::Proxy;
@@ -69,20 +68,8 @@ pub struct ClashProfile {
 impl ProfileTrait for ClashProfile {
     type PROFILE = ClashProfile;
 
-    fn client(&self) -> ProxyClient {
-        ProxyClient::Clash
-    }
-
     fn proxies(&self) -> &[Proxy] {
         &self.proxies
-    }
-
-    fn proxies_mut(&mut self) -> &mut Vec<Proxy> {
-        &mut self.proxies
-    }
-
-    fn proxy_groups(&self) -> &[ProxyGroup] {
-        &self.proxy_groups
     }
 
     fn proxy_groups_mut(&mut self) -> &mut Vec<ProxyGroup> {

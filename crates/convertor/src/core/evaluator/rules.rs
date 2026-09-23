@@ -1,20 +1,20 @@
 use super::*;
+use crate::core::profile as document;
 
 impl Engine<'_> {
-    pub(super) fn preserve(&mut self, source: SourceId, rule: &Rule) -> Result<Ref> {
-        let policy = rule.policy.as_ref().ok_or_else(|| error("missing_rule_target", "rules"))?;
-        let r = self.resolve_name(source, &policy.name)?;
+    pub(super) fn preserve(&mut self, source: SourceId, rule: &document::Rule) -> Result<Ref> {
+        let target = rule.target.as_ref().ok_or_else(|| error("missing_rule_target", "rules"))?;
+        let r = self.resolve_name(source, target.name())?;
         match &r {
             Ref::Group(k) => {
-                let (s, i) = Self::raw_index(k);
-                self.import_raw(s, i)?;
+                self.import_raw_key(k)?;
             }
             Ref::Node(i) if !self.nodes[*i].kept => return Err(error("filtered_rule_target", "rules")),
             _ => {}
         }
         Ok(r)
     }
-    pub(super) fn expand_rule(&self, source: SourceId, r: &Rule, path: &mut Vec<String>) -> Result<Vec<Rule>> {
+    pub(super) fn expand_rule(&self, source: SourceId, r: &document::Rule, path: &mut Vec<String>) -> Result<Vec<document::Rule>> {
         if terminal(r) {
             return Ok(vec![]);
         }
@@ -34,13 +34,6 @@ impl Engine<'_> {
         path.push(key.clone());
         let values = if let Some(d) = self.deps.rules.iter().find(|d| d.source == source && d.key == *key) {
             d.rules.clone()
-        } else if let Profile::Clash(p) = self.source(source) {
-            p.rule_providers
-                .iter()
-                .find(|(k, _)| k.name == *key)
-                .filter(|(_, p)| !p.rules.is_empty() || p.r#type == crate::core::legacy::profile::clash_profile::ProviderType::inline)
-                .map(|(_, p)| p.rules.clone())
-                .ok_or_else(|| error("missing_rule_dependency", format!("source/{}/rules", source.0)))?
         } else {
             return Err(error("missing_rule_dependency", format!("source/{}/rules", source.0)));
         };
@@ -49,37 +42,27 @@ impl Engine<'_> {
             if terminal(&child) {
                 return Err(error("terminal_in_ruleset", "rules"));
             }
-            let mut options = child
-                .policy
-                .as_ref()
-                .and_then(|p| p.option.as_ref())
-                .map(|s| s.split(',').map(str::to_owned).collect::<Vec<_>>())
-                .unwrap_or_default();
-            if let Some(parent) = r.policy.as_ref().and_then(|p| p.option.as_ref()) {
-                for option in parent.split(',') {
-                    if !options.iter().any(|o| o == option) {
-                        options.push(option.into());
-                    }
+            let mut options = child.options.clone();
+            for option in &r.options {
+                if !options.contains(option) {
+                    options.push(option.clone());
                 }
             }
-            child.policy = r.policy.clone();
-            if let Some(policy) = &mut child.policy {
-                policy.option = (!options.is_empty()).then(|| options.join(","));
-            }
+            child.target = r.target.clone();
+            child.options = options;
             out.extend(self.expand_rule(source, &child, path)?);
         }
         path.pop();
         Ok(out)
     }
-    pub(super) fn rules(&mut self) -> Result<Vec<(Rule, Ref)>> {
+    pub(super) fn rules(&mut self) -> Result<Vec<(document::Rule, Ref)>> {
         let mut out = vec![];
         for (bi, b) in self.plan.rules.iter().enumerate() {
             match b {
                 RuleBlock::Emit { rules } => {
                     for (i, m) in rules.iter().enumerate() {
                         let target = self.target(&m.target)?;
-                        let mut r = crate::core::conversion::bridge::rule_to_legacy(&m.rule);
-                        r.policy = Some(Policy::new("manual", r.policy.as_ref().and_then(|p| p.option.as_deref()), false));
+                        let r = m.rule.clone();
                         for r in self.expand_rule(self.plan.output.settings_source, &r, &mut vec![])? {
                             out.push((r, target.clone()));
                         }
@@ -94,7 +77,13 @@ impl Engine<'_> {
                     predicate,
                     targets,
                 } => {
-                    let original = self.source(*source).rules().to_vec();
+                    let original = self
+                        .source_document(*source)
+                        .rules
+                        .iter()
+                        .filter_map(document::SectionEntry::item)
+                        .cloned()
+                        .collect::<Vec<_>>();
                     for (i, r) in original.iter().enumerate() {
                         if terminal(r) || !rule_matches(predicate, r) {
                             continue;

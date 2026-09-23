@@ -82,7 +82,7 @@ impl ClientConfig {
                 Ok(Rule {
                     rule_type: convertor::core::profile::RuleType::RuleSet,
                     value: Some(url.to_string()),
-                    target: Some(convertor::core::profile::PolicyRef::parse(&policy.name)),
+                    target: Some(convertor::core::profile::RuleTargetName::parse(&policy.name)),
                     options: policy
                         .option
                         .as_ref()

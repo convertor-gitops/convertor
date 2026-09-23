@@ -1,6 +1,26 @@
 use super::*;
 
 impl Engine<'_> {
+    fn source_dimension_label(&self, source_id: SourceId) -> String {
+        let position = self
+            .plan
+            .sources
+            .iter()
+            .position(|source| source.id == source_id)
+            .expect("evaluated nodes must reference a source in the plan");
+        let source = &self.plan.sources[position];
+        let ordinal = self.plan.sources[..=position]
+            .iter()
+            .filter(|candidate| candidate.name == source.name)
+            .count();
+
+        if ordinal == 1 {
+            source.name.clone()
+        } else {
+            format!("{}-{ordinal}", source.name)
+        }
+    }
+
     pub(super) fn partition(
         &mut self,
         p: &GroupingPolicy,
@@ -13,13 +33,18 @@ impl Engine<'_> {
         let dim = &p.group_by[depth];
         let mut buckets: Vec<(String, String, Vec<usize>)> = vec![];
         if *dim == NodeDimension::Region {
-            let refs = indices.iter().map(|i| &self.nodes[*i].proxy).collect();
-            let grouped = group_by_region(refs);
+            let legacy = indices
+                .iter()
+                .map(|i| crate::core::conversion::bridge::proxy_to_legacy(&self.nodes[*i].proxy))
+                .collect::<Vec<_>>();
+            let grouped = group_by_region(legacy.iter().collect());
             for g in grouped.regions {
                 let ids = indices
                     .iter()
                     .copied()
-                    .filter(|i| g.proxies.iter().any(|n| std::ptr::eq(*n, &self.nodes[*i].proxy)))
+                    .zip(legacy.iter())
+                    .filter(|(_, candidate)| g.proxies.iter().any(|node| std::ptr::eq(*node, *candidate)))
+                    .map(|(index, _)| index)
                     .collect();
                 buckets.push((g.region.code.clone(), g.region.policy_name(), ids));
             }
@@ -27,7 +52,9 @@ impl Engine<'_> {
                 let ids = indices
                     .iter()
                     .copied()
-                    .filter(|i| grouped.infos.iter().any(|n| std::ptr::eq(*n, &self.nodes[*i].proxy)))
+                    .zip(legacy.iter())
+                    .filter(|(_, candidate)| grouped.infos.iter().any(|node| std::ptr::eq(*node, *candidate)))
+                    .map(|(index, _)| index)
                     .collect();
                 buckets.push(("unknown".into(), "未识别地区".into(), ids));
             }
@@ -35,11 +62,8 @@ impl Engine<'_> {
             for i in indices {
                 let n = &self.nodes[i];
                 let (key, label) = match dim {
-                    NodeDimension::Source => (
-                        n.source.0.to_string(),
-                        self.plan.sources.iter().find(|s| s.id == n.source).unwrap().name.clone(),
-                    ),
-                    NodeDimension::Protocol => (n.proxy.r#type.clone(), n.proxy.r#type.clone()),
+                    NodeDimension::Source => (n.source.0.to_string(), self.source_dimension_label(n.source)),
+                    NodeDimension::Protocol => (n.proxy.protocol.clone(), n.proxy.protocol.clone()),
                     NodeDimension::HasTag(tag) => {
                         let hit = n.proxy.tags.contains(tag);
                         (hit.to_string(), if hit { tag.clone() } else { format!("非{tag}") })

@@ -24,7 +24,7 @@ fn group(name: String, strategy: ProxyGroupType, members: Vec<String>) -> ProxyG
     SectionEntry::Item(ProxyGroup {
         name,
         strategy,
-        members: members.iter().map(|s| PolicyRef::parse(s)).collect(),
+        members: members.iter().map(|s| ProxyGroupMemberName::parse(s)).collect(),
         ..Default::default()
     })
 }
@@ -120,6 +120,31 @@ fn hierarchical_grouping_for_both_clients() {
         assert_eq!(parsed.proxies.iter().filter_map(SectionEntry::item).count(), 4);
         assert_eq!(parsed.proxy_groups.iter().filter_map(SectionEntry::item).count(), 8);
     }
+}
+
+#[test]
+fn duplicate_source_names_are_disambiguated_consistently_in_nested_groups() {
+    let (mut plan, sources) = setup(ProxyClient::Surge);
+    plan.sources[0].name = "BosLife".into();
+    plan.sources[1].name = "BosLife".into();
+
+    let result = evaluate(&plan, &sources, &Default::default()).unwrap();
+    let region = result
+        .base_groups
+        .iter()
+        .find(|group| group.depth == 1 && group.name.contains("香港"))
+        .unwrap();
+    let child_names = result
+        .base_groups
+        .iter()
+        .filter(|group| group.parent.as_deref() == Some(region.identity.as_str()))
+        .map(|group| group.name.clone())
+        .collect::<Vec<_>>();
+
+    assert_eq!(
+        child_names,
+        [format!("{}-BosLife", region.name), format!("{}-BosLife-2", region.name),]
+    );
 }
 
 #[test]
@@ -313,7 +338,10 @@ fn annotations_do_not_chain_and_groups_see_merged_tags() {
         .filter_map(SectionEntry::item)
         .find(|group| group.name == "all")
         .unwrap();
-    assert_eq!(custom.members.iter().map(PolicyRef::name).collect::<Vec<_>>(), ["美国 07"]);
+    assert_eq!(
+        custom.members.iter().map(ProxyGroupMemberName::name).collect::<Vec<_>>(),
+        ["美国 07"]
+    );
     p.sources[0].annotations.reverse();
     let b = evaluate(&p, &s, &Default::default()).unwrap();
     assert_eq!(serde_json::to_value(a.profile).unwrap(), serde_json::to_value(b.profile).unwrap());
@@ -372,7 +400,7 @@ fn source_filter_applies_to_imported_groups_and_preserved_targets() {
         Rule {
             rule_type: RuleType::Domain,
             value: Some("x.example".into()),
-            target: Some(PolicyRef::parse("美国 07")),
+            target: Some(RuleTargetName::parse("美国 07")),
             options: vec![],
             comment: None,
         }
@@ -391,7 +419,7 @@ fn rules_keep_order_options_and_only_one_terminal() {
     let r = Rule {
         rule_type: RuleType::DomainSuffix,
         value: Some("first.example".into()),
-        target: Some(PolicyRef::parse("DIRECT")),
+        target: Some(RuleTargetName::parse("DIRECT")),
         options: vec!["no-resolve".into()],
         comment: Some("note".into()),
     };
@@ -413,7 +441,7 @@ fn rules_keep_order_options_and_only_one_terminal() {
         Rule {
             rule_type: RuleType::Match,
             value: None,
-            target: Some(PolicyRef::parse("DIRECT")),
+            target: Some(RuleTargetName::parse("DIRECT")),
             options: vec![],
             comment: None,
         }
@@ -436,7 +464,7 @@ fn missing_and_empty_rule_dependencies_differ() {
         Rule {
             rule_type: RuleType::RuleSet,
             value: Some("https://rules.example/list".into()),
-            target: Some(PolicyRef::parse("DIRECT")),
+            target: Some(RuleTargetName::parse("DIRECT")),
             options: vec![],
             comment: None,
         }
@@ -551,7 +579,7 @@ fn base_predicates_keep_subtrees_and_multiple_policies_reuse_nodes() {
         .find(|g| g.name == unknown.name)
         .unwrap();
     assert_eq!(
-        group.members.iter().map(PolicyRef::name).collect::<Vec<_>>(),
+        group.members.iter().map(ProxyGroupMemberName::name).collect::<Vec<_>>(),
         vec!["未识别地区-source-a"]
     );
     let ids = e.base_groups.iter().map(|g| g.identity.clone()).collect::<Vec<_>>();
@@ -656,8 +684,11 @@ fn nested_raw_groups_and_empty_fallback_cycles() {
         .filter_map(SectionEntry::item)
         .find(|group| group.name == "all")
         .unwrap();
-    assert_eq!(recursive_group.members.iter().map(PolicyRef::name).collect::<Vec<_>>(), ["香港 01"]);
-    s[0].profile.proxy_groups[1].item_mut().unwrap().members = vec![PolicyRef::parse("parent")];
+    assert_eq!(
+        recursive_group.members.iter().map(ProxyGroupMemberName::name).collect::<Vec<_>>(),
+        ["香港 01"]
+    );
+    s[0].profile.proxy_groups[1].item_mut().unwrap().members = vec![ProxyGroupMemberName::parse("parent")];
     assert!(evaluate(&p, &s, &Default::default()).is_err());
 }
 
@@ -668,7 +699,7 @@ fn mapping_and_ruleset_expansion_preserve_order_and_options() {
         Rule {
             rule_type: RuleType::RuleSet,
             value: Some("remote".into()),
-            target: Some(PolicyRef::parse("old")),
+            target: Some(RuleTargetName::parse("old")),
             options: vec!["no-resolve".into()],
             comment: None,
         }
@@ -688,7 +719,7 @@ fn mapping_and_ruleset_expansion_preserve_order_and_options() {
     let rule = Rule {
         rule_type: RuleType::Domain,
         value: Some("a.example".into()),
-        target: Some(PolicyRef::parse("")),
+        target: Some(RuleTargetName::parse("")),
         options: vec!["force-remote-dns".into()],
         comment: None,
     };
@@ -899,7 +930,7 @@ third = select, policy-path=https://example.invalid/nodes?token=secret, policy-r
     let first = groups.iter().find(|group| group.name == "first").unwrap();
     let second = groups.iter().find(|group| group.name == "second").unwrap();
     assert_eq!(
-        first.members.iter().map(PolicyRef::name).collect::<Vec<_>>(),
+        first.members.iter().map(ProxyGroupMemberName::name).collect::<Vec<_>>(),
         ["local", "DIRECT", "A-HK 01"]
     );
     assert_eq!(second.members[0].name(), "A-HK 01");
@@ -983,7 +1014,7 @@ proxy-providers:
       udp: true
       tfo: true
 proxy-groups:
-  - {name: raw, type: select, proxies: [DIRECT], use: [remote], filter: '^A-香港'}
+  - {name: raw, type: select, proxies: [DIRECT, 'A-香港 01-Z'], use: [remote], filter: '^A-香港'}
 "#,
         ProxyClient::Clash,
     )
@@ -1030,7 +1061,7 @@ proxy-groups:
         .find(|g| g.name == "raw")
         .unwrap();
     assert_eq!(
-        raw.members.iter().map(PolicyRef::name).collect::<Vec<_>>(),
+        raw.members.iter().map(ProxyGroupMemberName::name).collect::<Vec<_>>(),
         ["DIRECT", "A-香港 01-Z"]
     );
     assert!(raw.providers.is_empty());

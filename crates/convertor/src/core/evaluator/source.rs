@@ -1,8 +1,8 @@
 use super::*;
 
 impl Engine<'_> {
-    pub(super) fn source(&self, id: SourceId) -> &Profile {
-        &self.sources.iter().find(|s| s.source_id == id).expect("validated source").profile
+    pub(super) fn source_document(&self, id: SourceId) -> &crate::core::profile::Profile {
+        &self.sources.iter().find(|s| s.source_id == id).expect("validated source").document
     }
     pub(super) fn add_node(&mut self, source: &Source, key: String, raw: &Proxy, origins: Vec<NodeOrigin>) {
         let mut proxy = raw.clone();
@@ -34,8 +34,14 @@ impl Engine<'_> {
     }
     pub(super) fn prepare(&mut self) -> Result<()> {
         for s in &self.plan.sources {
-            let profile = self.source(s.id).clone();
-            for (i, p) in profile.proxies().iter().enumerate() {
+            let proxies = self
+                .source_document(s.id)
+                .proxies
+                .iter()
+                .filter_map(crate::core::profile::SectionEntry::item)
+                .cloned()
+                .collect::<Vec<_>>();
+            for (i, p) in proxies.iter().enumerate() {
                 self.add_node(s, format!("s{}/n{i}", s.id.0), p, vec![NodeOrigin::Direct { index: i }]);
             }
             let external = &self
@@ -59,6 +65,10 @@ impl Engine<'_> {
                     });
                 }
             }
+        }
+        for source in self.sources {
+            let graph = execution_graph::ExecutionGraph::build(source.source_id, &source.document, &self.nodes);
+            self.execution_graphs.insert(source.source_id, graph);
         }
         Ok(())
     }

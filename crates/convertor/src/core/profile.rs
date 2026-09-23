@@ -3,6 +3,7 @@
 //! 该模块只描述主配置中已经出现的声明。外部资源在这里保持为引用，
 //! 解析 Profile 时不会联网、访问文件或递归展开 include。
 pub mod client;
+pub mod policy_graph;
 pub mod provider;
 pub mod proxy;
 pub mod proxy_group;
@@ -23,6 +24,7 @@ pub mod clash_profile {
 }
 
 pub use client::{ClashProfile, ClientProfile, SurgeProfile};
+pub use policy_graph::*;
 pub use provider::*;
 pub use proxy::Proxy;
 pub use proxy_group::*;
@@ -41,6 +43,23 @@ pub type ProxyGroupEntry = SectionEntry<ProxyGroup>;
 
 /// `[Rule]` / `rules` 或 classical payload 中的一个有序条目。
 pub type RuleEntry = SectionEntry<Rule>;
+
+/// 具有稳定配置名称的策略声明或内置策略。
+pub trait Policy {
+    fn name(&self) -> &str;
+}
+
+impl Policy for Proxy {
+    fn name(&self) -> &str {
+        &self.name
+    }
+}
+
+impl Policy for ProxyGroup {
+    fn name(&self) -> &str {
+        &self.name
+    }
+}
 
 /// 编排所需的客户端公共配置。
 ///
@@ -140,32 +159,155 @@ impl ExternalResource {
     }
 }
 
-/// 节点、策略组或客户端内置动作的名称引用。
+/// 客户端内置策略。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum BuiltInPolicy {
+    #[serde(rename = "DIRECT")]
+    Direct,
+    #[serde(rename = "REJECT")]
+    Reject,
+    #[serde(rename = "REJECT-DROP")]
+    RejectDrop,
+    #[serde(rename = "REJECT-NO-DROP")]
+    RejectNoDrop,
+    #[serde(rename = "REJECT-TINYGIF")]
+    RejectTinyGif,
+    #[serde(rename = "PASS")]
+    Pass,
+    #[serde(rename = "COMPATIBLE")]
+    Compatible,
+}
+
+impl BuiltInPolicy {
+    /// 已知名称才构造为内置策略。
+    pub fn parse(s: &str) -> Option<Self> {
+        Some(match s {
+            "DIRECT" => Self::Direct,
+            "REJECT" => Self::Reject,
+            "REJECT-DROP" => Self::RejectDrop,
+            "REJECT-NO-DROP" => Self::RejectNoDrop,
+            "REJECT-TINYGIF" => Self::RejectTinyGif,
+            "PASS" => Self::Pass,
+            "COMPATIBLE" => Self::Compatible,
+            _ => return None,
+        })
+    }
+
+    /// 返回配置文件中的原始名称。
+    pub fn name(&self) -> &str {
+        match self {
+            Self::Direct => "DIRECT",
+            Self::Reject => "REJECT",
+            Self::RejectDrop => "REJECT-DROP",
+            Self::RejectNoDrop => "REJECT-NO-DROP",
+            Self::RejectTinyGif => "REJECT-TINYGIF",
+            Self::Pass => "PASS",
+            Self::Compatible => "COMPATIBLE",
+        }
+    }
+}
+
+impl Policy for BuiltInPolicy {
+    fn name(&self) -> &str {
+        BuiltInPolicy::name(self)
+    }
+}
+
+/// 尚未由图层解析的策略名称。
 ///
 /// 这里刻意保留名称引用，不在解析阶段解析成对象 ID；名称歧义由需要消费
 /// 该引用的 Evaluator 报错。
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "kind", content = "value", rename_all = "snake_case")]
-pub enum PolicyRef {
+pub enum PolicyNameRef {
     /// 节点或策略组名称。
     Named(String),
     /// DIRECT、REJECT 等客户端内置动作。
-    BuiltIn(String),
+    BuiltIn(BuiltInPolicy),
 }
 
-impl PolicyRef {
+impl PolicyNameRef {
     /// 将已知内置动作分类，其余值保持为普通名称。
     pub fn parse(s: &str) -> Self {
-        match s {
-            "DIRECT" | "REJECT" | "REJECT-DROP" | "REJECT-NO-DROP" | "REJECT-TINYGIF" | "PASS" | "COMPATIBLE" => Self::BuiltIn(s.into()),
-            _ => Self::Named(s.into()),
-        }
+        BuiltInPolicy::parse(s).map_or_else(|| Self::Named(s.into()), Self::BuiltIn)
     }
 
     /// 返回渲染到客户端配置中的名称。
     pub fn name(&self) -> &str {
         match self {
-            Self::Named(s) | Self::BuiltIn(s) => s,
+            Self::Named(s) => s,
+            Self::BuiltIn(s) => s.name(),
         }
+    }
+}
+
+macro_rules! policy_name_wrapper {
+    ($name:ident, $description:literal) => {
+        #[doc = $description]
+        #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+        #[serde(transparent)]
+        pub struct $name(pub PolicyNameRef);
+
+        impl $name {
+            pub fn parse(s: &str) -> Self {
+                Self(PolicyNameRef::parse(s))
+            }
+
+            pub fn name(&self) -> &str {
+                self.0.name()
+            }
+        }
+
+        impl From<PolicyNameRef> for $name {
+            fn from(value: PolicyNameRef) -> Self {
+                Self(value)
+            }
+        }
+    };
+}
+
+policy_name_wrapper!(ProxyGroupMemberName, "策略组声明中的未解析成员名称。");
+policy_name_wrapper!(RuleTargetName, "规则声明中的未解析目标名称。");
+policy_name_wrapper!(DownloadViaName, "Provider 声明中的未解析下载策略名称。");
+
+#[cfg(test)]
+mod policy_name_tests {
+    use super::*;
+
+    #[test]
+    fn wrappers_parse_names_and_preserve_existing_json_shape() {
+        let member = ProxyGroupMemberName::parse("node-a");
+        let named = RuleTargetName::parse("group-a");
+        let builtin = DownloadViaName::parse("DIRECT");
+        assert_eq!(member.name(), "node-a");
+        assert_eq!(named.name(), "group-a");
+        assert_eq!(builtin.name(), "DIRECT");
+        assert_eq!(serde_json::to_string(&member).unwrap(), r#"{"kind":"named","value":"node-a"}"#);
+        assert_eq!(serde_json::to_string(&named).unwrap(), r#"{"kind":"named","value":"group-a"}"#);
+        assert_eq!(serde_json::to_string(&builtin).unwrap(), r#"{"kind":"built_in","value":"DIRECT"}"#);
+        assert!(serde_json::from_str::<PolicyNameRef>(r#"{"kind":"built_in","value":"UNKNOWN"}"#).is_err());
+        assert_eq!(
+            serde_json::from_str::<RuleTargetName>(&serde_json::to_string(&named).unwrap()).unwrap(),
+            named
+        );
+    }
+
+    #[test]
+    fn proxy_group_and_builtin_implement_policy() {
+        fn policy_name(value: &impl Policy) -> &str {
+            value.name()
+        }
+
+        let proxy = Proxy {
+            name: "node".into(),
+            ..Default::default()
+        };
+        let group = ProxyGroup {
+            name: "group".into(),
+            ..Default::default()
+        };
+        assert_eq!(policy_name(&proxy), "node");
+        assert_eq!(policy_name(&group), "group");
+        assert_eq!(policy_name(&BuiltInPolicy::Direct), "DIRECT");
     }
 }

@@ -165,7 +165,7 @@ impl Engine<'_> {
             _ => names[r].clone(),
         };
         for i in &node_order {
-            if !Proxy::supports_protocol(&self.nodes[*i].proxy.r#type) {
+            if !Proxy::supports_protocol(&self.nodes[*i].proxy.protocol) {
                 return Err(error("unsupported_proxy_protocol", self.nodes[*i].key.clone()));
             }
             if self.nodes[*i]
@@ -177,54 +177,58 @@ impl Engine<'_> {
                 return Err(error("unsupported_node_dependency", self.nodes[*i].key.clone()));
             }
         }
-        let mut profile = self.source(self.plan.output.settings_source).clone();
-        *profile.proxies_mut() = node_order
+        let proxies = node_order
             .iter()
             .map(|i| {
                 let mut p = self.nodes[*i].proxy.clone();
                 p.name = name(&Ref::Node(*i));
-                p
+                crate::core::profile::SectionEntry::Item(p)
             })
             .collect();
-        *profile.proxy_groups_mut() = group_order
+        let proxy_groups = group_order
             .iter()
             .map(|k| {
                 let g = &self.groups[k];
                 let mut p = g.profile.clone();
                 p.name = name(&Ref::Group(k.clone()));
-                p.proxies = Some(g.members.iter().map(&name).collect());
-                p.uses = None;
-                p
+                p.members = g
+                    .members
+                    .iter()
+                    .map(|member| crate::core::profile::ProxyGroupMemberName::parse(&name(member)))
+                    .collect();
+                p.providers.clear();
+                crate::core::profile::SectionEntry::Item(p)
             })
             .collect();
         for (r, target) in &mut rules {
-            let option = r.policy.as_ref().and_then(|p| p.option.clone());
-            r.policy = Some(Policy {
-                name: name(target),
-                option,
-                is_subscription: false,
-            });
+            r.target = Some(crate::core::profile::RuleTargetName::parse(&name(target)));
         }
-        *profile.rules_mut() = rules.into_iter().map(|(r, _)| r).collect();
-        profile.rules_mut().push(Rule {
-            rule_type: if matches!(self.plan.client, crate::config::proxy_client::ProxyClient::Surge) {
-                RuleType::Final
-            } else {
-                RuleType::Match
+        rules.push((
+            crate::core::profile::Rule {
+                rule_type: if matches!(self.plan.client, crate::config::proxy_client::ProxyClient::Surge) {
+                    RuleType::Final
+                } else {
+                    RuleType::Match
+                },
+                value: None,
+                target: Some(crate::core::profile::RuleTargetName::parse(&name(&fallback))),
+                options: vec![],
+                comment: None,
             },
-            value: None,
-            policy: Some(Policy::new(name(&fallback), None, false)),
-            comment: None,
-        });
-        match &mut profile {
-            Profile::Surge(p) => p.rule_providers.clear(),
-            Profile::Clash(p) => {
-                p.proxy_providers.clear();
-                p.rule_providers.clear();
-            }
-        }
+            fallback,
+        ));
+        let rules = rules
+            .into_iter()
+            .map(|(rule, _)| crate::core::profile::SectionEntry::Item(rule))
+            .collect();
+        let profile = Profile {
+            proxies,
+            proxy_groups,
+            rules,
+            ..Default::default()
+        };
         Ok(Evaluation {
-            profile: adapter::output(&profile)?,
+            profile,
             diagnostics: self.diagnostics.clone(),
             trace: self.trace.clone(),
             base_groups: self.base.clone(),
@@ -245,7 +249,7 @@ impl Engine<'_> {
                 identity: node.key.clone(),
                 source: node.source,
                 origins: node.origins.clone(),
-                proxy: crate::core::conversion::bridge::proxy_from_legacy(&node.proxy),
+                proxy: node.proxy.clone(),
                 original_tags: node.original_tags.clone(),
                 effective_tags: node.proxy.tags.clone(),
                 kept: node.kept,

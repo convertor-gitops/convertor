@@ -2,7 +2,7 @@ use convertor::config::proxy_client::ProxyClient;
 use convertor::core::profile::{
     ClientProfile, clash_profile::ClashProfile, proxy::Proxy, proxy_group::ProxyGroup, rule::Rule, surge_profile::SurgeProfile,
 };
-use convertor::core::profile::{PolicyRef, RuleProviderPayload};
+use convertor::core::profile::{ProxyGroupMemberName, RuleProviderPayload};
 use convertor::core::{Parse, Render};
 #[test]
 fn structured_policy_keys_and_rules_roundtrip() {
@@ -28,7 +28,7 @@ fn surge_unknown_fields_and_group_options_survive() {
         ProxyClient::Surge,
     )
     .unwrap();
-    assert_eq!(g.members, vec![PolicyRef::parse("node")]);
+    assert_eq!(g.members, vec![ProxyGroupMemberName::parse("node")]);
     let mut text = String::new();
     <ProxyGroup as Render>::render(&g, &mut text, ProxyClient::Surge).unwrap();
     let q = <ProxyGroup as Parse>::parse(&text, ProxyClient::Surge).unwrap();
@@ -130,7 +130,7 @@ fn nested_clash_objects_and_provider_payloads_roundtrip() {
     use convertor::core::format::ParsedRulePayload;
     let group = ProxyGroup {
         name: "g".into(),
-        members: vec![PolicyRef::parse("null"), PolicyRef::parse("with: colon")],
+        members: vec![ProxyGroupMemberName::parse("null"), ProxyGroupMemberName::parse("with: colon")],
         ..Default::default()
     };
     let mut text = String::new();

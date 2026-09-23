@@ -1,21 +1,16 @@
 //! 对已解析公共 Profile 执行确定性、同步编排。
 //!
-//! Evaluator 不联网、不读文件、不修改输入。`legacy` 类型仅存在于私有执行
-//! 适配层，用于复用已经验证过的地区识别和原始组遍历行为。
-use super::legacy::profile::{
-    Profile, ProfileTrait,
-    policy::Policy,
-    proxy::Proxy,
-    proxy_group::{ProxyGroup, ProxyGroupType},
-    rule::{Rule, RuleType},
-};
+//! Evaluator 不联网、不读文件、不修改输入。`legacy` 仅在局部用于复用已经
+//! 验证过的地区识别，不进入执行状态。
 use super::legacy::util::group_by_region;
 use super::plan::*;
+use super::profile::{Profile, Proxy, ProxyGroup, ProxyGroupType, RuleType};
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
 mod adapter;
 pub use adapter::{evaluate, evaluate_report, inspect_source_nodes};
 mod custom_group;
+mod execution_graph;
 mod external_nodes;
 mod grouping;
 mod matching;
@@ -75,6 +70,7 @@ struct Engine<'a> {
     sources: &'a [EngineSource],
     deps: &'a EngineDependencies,
     nodes: Vec<Node>,
+    execution_graphs: HashMap<SourceId, execution_graph::ExecutionGraph>,
     groups: BTreeMap<String, BuiltGroup>,
     base: Vec<BaseGroup>,
     diagnostics: Vec<Diagnostic>,
@@ -130,7 +126,7 @@ fn engine<'a>(plan: &'a Plan, sources: &'a [EngineSource], dependencies: &'a Eng
     }
     let mut ids = HashSet::new();
     for source in sources {
-        if !ids.insert(source.source_id) || source.profile.client() != plan.client {
+        if !ids.insert(source.source_id) {
             return Err(error("invalid_source_profile", format!("source/{}", source.source_id.0)));
         }
     }
@@ -161,6 +157,7 @@ fn engine<'a>(plan: &'a Plan, sources: &'a [EngineSource], dependencies: &'a Eng
         sources,
         deps: dependencies,
         nodes: vec![],
+        execution_graphs: HashMap::new(),
         groups: BTreeMap::new(),
         base: vec![],
         diagnostics: vec![],
@@ -175,7 +172,7 @@ fn engine<'a>(plan: &'a Plan, sources: &'a [EngineSource], dependencies: &'a Eng
 
 struct EngineSource {
     source_id: SourceId,
-    profile: Profile,
+    document: super::profile::Profile,
     external: external_nodes::ExternalNodes,
 }
 #[derive(Default)]
@@ -191,5 +188,5 @@ struct EngineNodeDependency {
 struct EngineRuleDependency {
     source: SourceId,
     key: String,
-    rules: Vec<Rule>,
+    rules: Vec<super::profile::Rule>,
 }

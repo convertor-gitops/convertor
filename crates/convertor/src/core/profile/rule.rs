@@ -1,4 +1,4 @@
-use super::PolicyRef;
+use super::RuleTargetName;
 pub use crate::core::legacy::profile::rule::RuleType;
 use serde::{Deserialize, Serialize};
 
@@ -13,7 +13,7 @@ pub struct Rule {
     /// 匹配值。FINAL 和 MATCH 为 `None`。
     pub value: Option<String>,
     /// 目标节点、策略组或内置动作。
-    pub target: Option<PolicyRef>,
+    pub target: Option<RuleTargetName>,
     /// `no-resolve` 等保持声明顺序的规则选项。
     pub options: Vec<String>,
     /// 规则附属注释。

@@ -1,4 +1,3 @@
-use crate::config::proxy_client::ProxyClient;
 use crate::core::legacy::profile::ProfileTrait;
 use crate::core::legacy::profile::policy::Policy;
 use crate::core::legacy::profile::proxy::Proxy;
@@ -28,20 +27,8 @@ pub struct SurgeProfile {
 impl ProfileTrait for SurgeProfile {
     type PROFILE = SurgeProfile;
 
-    fn client(&self) -> ProxyClient {
-        ProxyClient::Surge
-    }
-
     fn proxies(&self) -> &[Proxy] {
         &self.proxies
-    }
-
-    fn proxies_mut(&mut self) -> &mut Vec<Proxy> {
-        &mut self.proxies
-    }
-
-    fn proxy_groups(&self) -> &[ProxyGroup] {
-        &self.proxy_groups
     }
 
     fn proxy_groups_mut(&mut self) -> &mut Vec<ProxyGroup> {

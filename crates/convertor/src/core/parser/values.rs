@@ -65,7 +65,7 @@ pub(crate) fn group(v: Value) -> Result<ProxyGroup, ParseError> {
         .take::<Vec<String>>("proxies")?
         .unwrap_or_default()
         .iter()
-        .map(|s| PolicyRef::parse(s))
+        .map(|s| ProxyGroupMemberName::parse(s))
         .collect();
     let providers = f.take("use")?.unwrap_or_default();
     let options = GroupOptions {
@@ -159,7 +159,7 @@ pub(crate) fn proxy_provider(name: String, v: Value) -> Result<ProxyProvider, Pa
         health_check,
         update_interval: f.take("interval")?,
         request_headers: headers(&mut f)?,
-        download_via: f.take::<String>("proxy")?.map(|s| PolicyRef::parse(&s)),
+        download_via: f.take::<String>("proxy")?.map(|s| DownloadViaName::parse(&s)),
         size_limit: f.take("size-limit")?,
         filter: f.take("filter")?,
         exclude_filter: f.take("exclude-filter")?,
@@ -201,7 +201,7 @@ pub(crate) fn rule_provider(name: String, v: Value) -> Result<RuleProvider, Pars
         format: f.take("format")?,
         update_interval: f.take("interval")?,
         request_headers: headers(&mut f)?,
-        download_via: f.take::<String>("proxy")?.map(|s| PolicyRef::parse(&s)),
+        download_via: f.take::<String>("proxy")?.map(|s| DownloadViaName::parse(&s)),
         size_limit: f.take("size-limit")?,
         extra: f.0,
         comment: None,

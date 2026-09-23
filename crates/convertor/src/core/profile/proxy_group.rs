@@ -1,4 +1,4 @@
-use super::{ExternalResource, ExtraFields, PolicyRef};
+use super::{ExternalResource, ExtraFields, ProxyGroupMemberName};
 use serde::{Deserialize, Serialize};
 
 /// 一个客户端策略组声明。
@@ -9,7 +9,7 @@ pub struct ProxyGroup {
     /// 组的选择或探测策略。
     pub strategy: ProxyGroupType,
     /// 直接节点、其它组和内置动作，保持原有顺序。
-    pub members: Vec<PolicyRef>,
+    pub members: Vec<ProxyGroupMemberName>,
     /// Mihomo `use` 引用的命名 ProxyProvider。
     ///
     /// 该列表与 `members` 分开保存，不虚构客户端并不存在的交错顺序。
