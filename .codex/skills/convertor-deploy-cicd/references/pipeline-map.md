@@ -3,7 +3,7 @@
 ## GitHub Actions
 
 - `.github/workflows/build.yml`: release workflow triggered by `v*` tags and manual dispatch; delegates to `_build-shared.yml` with `profile: release`.
-- `.github/workflows/build-debug.yml`: debug workflow entrypoint; check this when debug image behavior changes.
+- `.github/workflows/build-debug.yml`: runs on pushes to `debug` or manual dispatch; delegates to `_build-shared.yml` with `profile: debug`.
 - `.github/workflows/_build-shared.yml`: shared self-hosted macOS ARM64 pipeline for checkout, installing builder, Node/fnm setup, dashboard dependency install, Harbor login, Buildx setup, base image check/build, and convd multi-arch image build/push.
 - `.github/archived`: historical workflows; do not treat as active without user direction.
 
