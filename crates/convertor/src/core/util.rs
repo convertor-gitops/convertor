@@ -6,6 +6,9 @@ use crate::core::renderer::INDENT;
 use regex::{Regex, escape};
 use std::collections::{HashMap, HashSet};
 
+pub const GOOGLE_GROUP_NAME: &str = "🌐 Google组";
+pub const GOOGLE_PROXY_NAMES: [&str; 2] = ["🇺🇸 美国 08", "🇺🇸 美国 10"];
+
 pub struct GroupedProxies<'a> {
     pub regions: Vec<RegionalProxies<'a>>,
     pub infos: Vec<&'a Proxy>,
@@ -13,8 +16,15 @@ pub struct GroupedProxies<'a> {
 
 pub struct RegionalProxies<'a> {
     pub region: &'static Region,
+    /// 按地区归类的全部节点。
     pub proxies: Vec<&'a Proxy>,
     pub home_broadband_proxies: Vec<&'a Proxy>,
+}
+
+impl<'a> RegionalProxies<'a> {
+    pub fn regular_proxies(&self) -> impl Iterator<Item = &'a Proxy> + '_ {
+        self.proxies.iter().copied().filter(|proxy| !proxy.is_home_broadband())
+    }
 }
 
 #[inline]
@@ -54,6 +64,24 @@ pub fn group_by_region<'a>(proxies: Vec<&'a Proxy>) -> GroupedProxies<'a> {
     let mut regions = regions.drain().map(|(_, proxies)| proxies).collect::<Vec<_>>();
     regions.sort_by_key(|group| indexes.get(group.region).cloned().unwrap_or(usize::MAX));
     GroupedProxies { regions, infos }
+}
+
+/// A region containing only home-broadband nodes has no ordinary group.
+/// Keep rules targeting that region valid by routing them to its home-broadband group.
+pub fn redirect_home_only_region_rules(proxies: &[Proxy], rules: &mut [Rule]) {
+    let replacements = group_by_region(proxies.iter().collect())
+        .regions
+        .into_iter()
+        .filter(|group| group.regular_proxies().next().is_none() && !group.home_broadband_proxies.is_empty())
+        .map(|group| (group.region.policy_name(), group.region.policy_name_for_home_broadband()))
+        .collect::<HashMap<_, _>>();
+    for rule in rules {
+        if let Some(policy) = &mut rule.policy
+            && let Some(replacement) = replacements.get(&policy.name)
+        {
+            policy.name = replacement.clone();
+        }
+    }
 }
 
 /// 用于提取非内置策略, 以确定需要创建的代理组

@@ -17,7 +17,9 @@ use std::collections::BTreeMap;
 use std::collections::btree_map::Entry;
 use tracing::instrument;
 
-use crate::core::util::{best_filter_from_proxy_names, extract_policies, group_by_region};
+use crate::core::util::{
+    GOOGLE_GROUP_NAME, GOOGLE_PROXY_NAMES, best_filter_from_proxy_names, extract_policies, group_by_region, redirect_home_only_region_rules,
+};
 pub use geox_url::*;
 pub use provider_type::*;
 pub use proxy_provider::*;
@@ -93,6 +95,7 @@ impl ProfileTrait for ClashProfile {
 
     fn convert(&mut self, url_builder: &UrlBuilder) -> Result<(), ConvertError> {
         self.geox_url.convert(url_builder)?;
+        redirect_home_only_region_rules(&self.proxies, &mut self.rules);
         self.organize_proxies(url_builder)?;
         self.organize_rules(url_builder)?;
         Ok(())
@@ -116,11 +119,19 @@ impl ProfileTrait for ClashProfile {
         let proxies = self.proxy_providers.values().flat_map(|p| &p.proxies).collect::<Vec<_>>();
         // 先按地区分组
         let grouped_proxies = group_by_region(proxies);
+        let google_proxies = grouped_proxies
+            .regions
+            .iter()
+            .flat_map(|group| group.proxies.iter())
+            .filter(|proxy| GOOGLE_PROXY_NAMES.contains(&proxy.name.as_str()))
+            .map(|proxy| proxy.name.clone())
+            .collect::<Vec<_>>();
 
         // 一个包含了所有地区组的大型代理组
         let mut region_list = grouped_proxies
             .regions
             .iter()
+            .filter(|group| group.regular_proxies().next().is_some())
             .map(|group| group.region.policy_name())
             .collect::<Vec<_>>();
         let home_broadband_region_names = grouped_proxies
@@ -132,6 +143,9 @@ impl ProfileTrait for ClashProfile {
         // 家宽组追加到候选末尾, 避免改变已有策略的默认选项
         if !home_broadband_region_names.is_empty() {
             region_list.push("🏠 家宽组".to_string());
+        }
+        if !google_proxies.is_empty() {
+            region_list.push(GOOGLE_GROUP_NAME.to_string());
         }
 
         // 1. 策略组
@@ -194,7 +208,7 @@ impl ProfileTrait for ClashProfile {
                         grouped_proxies
                             .regions
                             .iter()
-                            .filter(|group| !group.home_broadband_proxies.is_empty())
+                            .filter(|group| !group.home_broadband_proxies.is_empty() && group.regular_proxies().next().is_some())
                             .map(|group| group.region.policy_name()),
                     )
                     .collect(),
@@ -202,7 +216,6 @@ impl ProfileTrait for ClashProfile {
         };
 
         // 4. 地区组
-        let mut best_filters = vec![];
         let mut region_groups = vec![];
         for group in grouped_proxies.regions {
             let region_name = group.region.policy_name();
@@ -221,17 +234,18 @@ impl ProfileTrait for ClashProfile {
                         .join("|")
                 ))
             };
-            let proxies = group.proxies.into_iter().map(|proxy| proxy.name.to_string()).collect::<Vec<_>>();
+            let proxies = group.regular_proxies().map(|proxy| proxy.name.to_string()).collect::<Vec<_>>();
             if let Some(filter) = best_filter_from_proxy_names(proxies.iter().map(|proxy| proxy.as_str())) {
-                best_filters.push(filter.clone());
-                region_groups.push(ProxyGroup::use_provider(
+                let mut region_group = ProxyGroup::use_provider(
                     region_name.clone(),
                     ProxyGroupType::UrlTest,
                     vec![proxy_provider_name.to_string()],
                     filter,
-                ));
+                );
+                // 模糊地区过滤可能命中家宽节点，显式排除同地区家宽节点。
+                region_group.exclude_filter = home_broadband_filter.clone();
+                region_groups.push(region_group);
             }
-            // 家宽代理保留在原地区组, 这里只额外创建家宽子组
             if let Some(filter) = home_broadband_filter {
                 region_groups.push(ProxyGroup::use_provider(
                     home_broadband_region_name,
@@ -245,6 +259,18 @@ impl ProfileTrait for ClashProfile {
         self.proxy_groups_mut().clear();
         self.proxy_groups_mut().extend(policy_groups);
         self.proxy_groups_mut().push(sub_info_group);
+        if !google_proxies.is_empty() {
+            let filter = format!(
+                "^({})$",
+                google_proxies.iter().map(|name| regex::escape(name)).collect::<Vec<_>>().join("|")
+            );
+            self.proxy_groups_mut().push(ProxyGroup::use_provider(
+                GOOGLE_GROUP_NAME.to_string(),
+                ProxyGroupType::UrlTest,
+                vec![proxy_provider_name.to_string()],
+                filter,
+            ));
+        }
         if let Some(group) = home_broadband_group {
             self.proxy_groups_mut().push(group);
         }
