@@ -27,13 +27,78 @@ fn proxy_group<'a>(groups: &'a [ProxyGroup], name: &str) -> &'a ProxyGroup {
     groups.iter().find(|group| group.name == name).unwrap()
 }
 
+fn add_google_proxies(proxies: &mut Vec<convertor::core::profile::proxy::Proxy>) {
+    let template = proxies.iter().find(|proxy| proxy.name == "🇺🇸 美国 06").unwrap().clone();
+    for name in ["🇺🇸 美国 08", "🇺🇸 美国 10"] {
+        let mut proxy = template.clone();
+        proxy.name = name.to_string();
+        proxies.push(proxy);
+    }
+}
+
+#[test]
+fn test_surge_google_group_contains_only_selected_nodes() -> Result<()> {
+    let url_builder = url_builder(ProxyClient::Surge, "test_surge_google_group_contains_only_selected_nodes")?;
+    let mut profile = SurgeProfile::parse(SURGE_PROFILE.to_string())?;
+    add_google_proxies(&mut profile.proxies);
+    profile.convert(&url_builder)?;
+
+    let group = proxy_group(&profile.proxy_groups, "🌐 Google组");
+    assert!(matches!(group.r#type, ProxyGroupType::Smart));
+    assert_eq!(
+        group.proxies.as_ref().unwrap(),
+        &vec!["🇺🇸 美国 08".to_string(), "🇺🇸 美国 10".to_string()]
+    );
+    assert!(
+        proxy_group(&profile.proxy_groups, "BosLife")
+            .proxies
+            .as_ref()
+            .unwrap()
+            .contains(&group.name)
+    );
+    Ok(())
+}
+
+#[test]
+fn test_clash_google_group_contains_only_selected_nodes() -> Result<()> {
+    let url_builder = url_builder(ProxyClient::Clash, "test_clash_google_group_contains_only_selected_nodes")?;
+    let mut profile = ClashProfile::parse(CLASH_PROFILE.to_string())?;
+    add_google_proxies(&mut profile.proxies);
+    profile.convert(&url_builder)?;
+
+    let group = proxy_group(&profile.proxy_groups, "🌐 Google组");
+    assert!(matches!(group.r#type, ProxyGroupType::UrlTest));
+    let filter = Regex::new(group.filter.as_deref().unwrap())?;
+    for name in ["🇺🇸 美国 08", "🇺🇸 美国 10"] {
+        assert!(filter.is_match(name));
+    }
+    for name in ["🇺🇸 美国 06", "🇺🇸 美国 07 - OnlyAI", "🇺🇸 美国 08 备用"] {
+        assert!(!filter.is_match(name));
+    }
+    assert!(
+        proxy_group(&profile.proxy_groups, "BosLife")
+            .proxies
+            .as_ref()
+            .unwrap()
+            .contains(&group.name)
+    );
+    Ok(())
+}
+
 fn add_existing_policy_target_rules(rules: &mut Vec<Rule>) {
     let template = rules
         .iter()
         .find(|rule| rule.policy.as_ref().is_some_and(|policy| policy.name == "BosLife"))
         .unwrap()
         .clone();
-    for name in ["🏠 家宽组", "🇺🇸 美国组 家宽", "🇺🇸 美国组", "Subscription Info", "🇺🇸 美国 06 家宽"] {
+    for name in [
+        "🏠 家宽组",
+        "🇺🇸 美国组 家宽",
+        "🇺🇸 美国组",
+        "🇨🇦 加拿大组",
+        "Subscription Info",
+        "🇺🇸 美国 06 家宽",
+    ] {
         let mut rule = template.clone();
         rule.policy = Some(Policy::new(name, None, false));
         rules.push(rule);
@@ -135,13 +200,20 @@ fn test_organize_surge_home_broadband_groups() -> Result<()> {
             "🇺🇸 美国组 家宽".to_string(),
             "🇨🇦 加拿大组 家宽".to_string(),
             "🇺🇸 美国组".to_string(),
-            "🇨🇦 加拿大组".to_string(),
         ]
     );
 
     let us_group = proxy_group(&profile.proxy_groups, "🇺🇸 美国组");
-    assert!(us_group.proxies.as_ref().unwrap().contains(&"🇺🇸 美国 06 家宽".to_string()));
-    assert!(us_group.proxies.as_ref().unwrap().contains(&"🇺🇸 美国 07".to_string()));
+    assert_eq!(
+        us_group.proxies.as_ref().unwrap(),
+        &vec![
+            "🇺🇸 美国 01".to_string(),
+            "🇺🇸 美国 02".to_string(),
+            "🇺🇸 美国 03".to_string(),
+            "🇺🇸 美国 04".to_string(),
+            "🇺🇸 美国 05".to_string(),
+        ]
+    );
 
     let us_home_broadband_group = proxy_group(&profile.proxy_groups, "🇺🇸 美国组 家宽");
     assert!(matches!(&us_home_broadband_group.r#type, ProxyGroupType::Smart));
@@ -150,8 +222,9 @@ fn test_organize_surge_home_broadband_groups() -> Result<()> {
         &vec!["🇺🇸 美国 06 家宽".to_string(), "🇺🇸 美国 07".to_string()]
     );
 
-    let canada_group = proxy_group(&profile.proxy_groups, "🇨🇦 加拿大组");
-    assert_eq!(canada_group.proxies.as_ref().unwrap(), &vec!["🇨🇦 加拿大 01 Bell".to_string()]);
+    assert!(profile.proxy_groups.iter().all(|group| group.name != "🇨🇦 加拿大组"));
+    assert!(profile.rule_providers.keys().all(|policy| policy.name != "🇨🇦 加拿大组"));
+    assert!(profile.rule_providers.keys().any(|policy| policy.name == "🇨🇦 加拿大组 家宽"));
     let canada_home_broadband_group = proxy_group(&profile.proxy_groups, "🇨🇦 加拿大组 家宽");
     assert_eq!(
         canada_home_broadband_group.proxies.as_ref().unwrap(),
@@ -160,9 +233,11 @@ fn test_organize_surge_home_broadband_groups() -> Result<()> {
     assert!(profile.proxy_groups.iter().all(|group| group.name != "🇯🇵 日本组 家宽"));
     assert!(matches!(canada_home_broadband_group.r#type, ProxyGroupType::Smart));
     let rendered = SurgeRenderer::render_profile(&profile)?;
-    assert!(rendered.lines().any(|line| {
-        line == "🏠 家宽组=select,🇺🇸 美国组 家宽,🇨🇦 加拿大组 家宽,🇺🇸 美国组,🇨🇦 加拿大组"
-    }));
+    assert!(
+        rendered
+            .lines()
+            .any(|line| { line == "🏠 家宽组=select,🇺🇸 美国组 家宽,🇨🇦 加拿大组 家宽,🇺🇸 美国组" })
+    );
     for name in ["🇺🇸 美国组 家宽", "🇨🇦 加拿大组 家宽"] {
         assert!(rendered.lines().any(|line| line.starts_with(&format!("{name}=smart,"))));
     }
@@ -199,13 +274,18 @@ fn test_organize_clash_home_broadband_groups() -> Result<()> {
             "🇺🇸 美国组 家宽".to_string(),
             "🇨🇦 加拿大组 家宽".to_string(),
             "🇺🇸 美国组".to_string(),
-            "🇨🇦 加拿大组".to_string(),
         ]
     );
 
-    let us_group_filter = Regex::new(proxy_group(&profile.proxy_groups, "🇺🇸 美国组").filter.as_deref().unwrap())?;
-    assert!(us_group_filter.is_match("🇺🇸 美国 06 家宽"));
-    assert!(us_group_filter.is_match("🇺🇸 美国 07"));
+    let us_group = proxy_group(&profile.proxy_groups, "🇺🇸 美国组");
+    let us_group_filter = Regex::new(us_group.filter.as_deref().unwrap())?;
+    let us_group_exclude_filter = Regex::new(us_group.exclude_filter.as_deref().unwrap())?;
+    assert!(us_group_filter.is_match("🇺🇸 美国 05") && !us_group_exclude_filter.is_match("🇺🇸 美国 05"));
+    for name in ["🇺🇸 美国 06 家宽", "🇺🇸 美国 07"] {
+        assert!(us_group_filter.is_match(name));
+        assert!(us_group_exclude_filter.is_match(name));
+    }
+    assert!(!us_group_exclude_filter.is_match("🇺🇸 美国 05"));
 
     let us_home_broadband_group = proxy_group(&profile.proxy_groups, "🇺🇸 美国组 家宽");
     assert!(matches!(&us_home_broadband_group.r#type, ProxyGroupType::UrlTest));
@@ -219,6 +299,9 @@ fn test_organize_clash_home_broadband_groups() -> Result<()> {
     let canada_home_broadband_filter = Regex::new(canada_home_broadband_group.filter.as_deref().unwrap())?;
     assert!(canada_home_broadband_filter.is_match("🇨🇦 加拿大 01 Bell"));
     assert!(!canada_home_broadband_filter.is_match("🇺🇸 美国 06 家宽"));
+    assert!(profile.proxy_groups.iter().all(|group| group.name != "🇨🇦 加拿大组"));
+    assert!(profile.rule_providers.keys().all(|policy| policy.name != "🇨🇦 加拿大组"));
+    assert!(profile.rule_providers.keys().any(|policy| policy.name == "🇨🇦 加拿大组 家宽"));
     assert!(profile.proxy_groups.iter().all(|group| group.name != "🇯🇵 日本组 家宽"));
     assert!(matches!(canada_home_broadband_group.r#type, ProxyGroupType::UrlTest));
     let rendered = ClashRenderer::render_profile(&profile)?;

@@ -9,13 +9,13 @@
 
 ## Mutating Work
 
-These actions require explicit user request for the specific operation:
+A request to deploy a feature to `debug` or `main` authorizes the branch commit, feature push, non-fast-forward merge, target push, and (for `main`) version commit and tag push described in `feature-deployment.md`. A read-only explanation or review does not authorize them.
+
+Other mutations require an explicit request for the operation:
 
 - pushing images
 - creating or replacing remote manifests
 - logging into registries with secrets
-- production deployment
-- git commit or push
 
 ## Coordination
 

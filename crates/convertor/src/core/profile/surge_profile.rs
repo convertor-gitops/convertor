@@ -5,7 +5,7 @@ use crate::core::profile::policy::Policy;
 use crate::core::profile::proxy::Proxy;
 use crate::core::profile::proxy_group::{ProxyGroup, ProxyGroupType};
 use crate::core::profile::rule::Rule;
-use crate::core::util::{extract_policies, group_by_region};
+use crate::core::util::{GOOGLE_GROUP_NAME, GOOGLE_PROXY_NAMES, extract_policies, group_by_region, redirect_home_only_region_rules};
 use crate::error::{ConvertError, ParseError};
 use crate::url::conv_url::UrlType;
 use crate::url::url_builder::UrlBuilder;
@@ -59,6 +59,7 @@ impl ProfileTrait for SurgeProfile {
     #[instrument(skip_all)]
     fn convert(&mut self, url_builder: &UrlBuilder) -> Result<(), ConvertError> {
         self.replace_header(url_builder)?;
+        redirect_home_only_region_rules(&self.proxies, &mut self.rules);
         self.organize_proxies(url_builder)?;
         self.organize_rules(url_builder)?;
         Ok(())
@@ -72,11 +73,19 @@ impl ProfileTrait for SurgeProfile {
 
         // 先按地区分组
         let grouped_proxies = group_by_region(self.proxies().iter().collect());
+        let google_proxies = grouped_proxies
+            .regions
+            .iter()
+            .flat_map(|group| group.proxies.iter())
+            .filter(|proxy| GOOGLE_PROXY_NAMES.contains(&proxy.name.as_str()))
+            .map(|proxy| proxy.name.clone())
+            .collect::<Vec<_>>();
 
         // 地区列表
         let mut region_list = grouped_proxies
             .regions
             .iter()
+            .filter(|group| group.regular_proxies().next().is_some())
             .map(|group| group.region.policy_name())
             .collect::<Vec<_>>();
         // 家宽 地区列表
@@ -89,6 +98,9 @@ impl ProfileTrait for SurgeProfile {
         // 家宽组追加到候选末尾, 避免改变已有策略的默认选项
         if !home_broadband_region_names.is_empty() {
             region_list.push("🏠 家宽组".to_string());
+        }
+        if !google_proxies.is_empty() {
+            region_list.push(GOOGLE_GROUP_NAME.to_string());
         }
 
         // 规则策略也可以直接指向固定代理组或单个代理, 只为尚不存在的策略创建代理组
@@ -148,7 +160,7 @@ impl ProfileTrait for SurgeProfile {
                         grouped_proxies
                             .regions
                             .iter()
-                            .filter(|group| !group.home_broadband_proxies.is_empty())
+                            .filter(|group| !group.home_broadband_proxies.is_empty() && group.regular_proxies().next().is_some())
                             .map(|group| group.region.policy_name()),
                     )
                     .collect(),
@@ -160,9 +172,11 @@ impl ProfileTrait for SurgeProfile {
         for group in grouped_proxies.regions {
             let region_name = group.region.policy_name();
             let home_broadband_region_name = group.region.policy_name_for_home_broadband();
-            let proxies = group.proxies.into_iter().map(|proxy| proxy.name.to_string()).collect::<Vec<_>>();
-            region_groups.push(ProxyGroup::use_proxies(region_name.clone(), ProxyGroupType::Smart, proxies));
-            // 家宽代理保留在原地区组, 这里只额外创建家宽子组
+            let proxies = group.regular_proxies().map(|proxy| proxy.name.to_string()).collect::<Vec<_>>();
+            // 普通地区组只保留非家宽节点；某地区只有家宽节点时不创建空地区组。
+            if !proxies.is_empty() {
+                region_groups.push(ProxyGroup::use_proxies(region_name, ProxyGroupType::Smart, proxies));
+            }
             if !group.home_broadband_proxies.is_empty() {
                 let home_broadband_proxies = group
                     .home_broadband_proxies
@@ -180,6 +194,13 @@ impl ProfileTrait for SurgeProfile {
         self.proxy_groups_mut().clear();
         self.proxy_groups_mut().extend(policy_groups);
         self.proxy_groups_mut().push(sub_info_group);
+        if !google_proxies.is_empty() {
+            self.proxy_groups_mut().push(ProxyGroup::use_proxies(
+                GOOGLE_GROUP_NAME.to_string(),
+                ProxyGroupType::Smart,
+                google_proxies,
+            ));
+        }
         if let Some(group) = home_broadband_group {
             self.proxy_groups_mut().push(group);
         }
