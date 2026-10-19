@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
-import { UiNodeCardComponent } from './ui-node-card.component';
+import { UINodeCardComponent } from './ui-node-card.component';
 
-describe('UiNodeCardComponent action boundaries', () => {
+describe('UINodeCardComponent action boundaries', () => {
   it('keeps selection, details and menu actions independent', () => {
-    const fixture = TestBed.createComponent(UiNodeCardComponent);
+    const fixture = TestBed.createComponent(UINodeCardComponent);
     fixture.componentRef.setInput('name', '香港 01');
     const select = vi.fn(),
       details = vi.fn(),
@@ -24,12 +24,27 @@ describe('UiNodeCardComponent action boundaries', () => {
   });
 
   it('disables the selection and both secondary actions for unavailable nodes', () => {
-    const fixture = TestBed.createComponent(UiNodeCardComponent);
+    const fixture = TestBed.createComponent(UINodeCardComponent);
     fixture.componentRef.setInput('name', '停用节点');
     fixture.componentRef.setInput('status', 'disabled');
     fixture.detectChanges();
     const buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
     expect(buttons.length).toBe(3);
     expect(buttons.every((button) => button.disabled)).toBe(true);
+  });
+
+  it('renders readonly nodes without fake selection semantics', () => {
+    const fixture = TestBed.createComponent(UINodeCardComponent);
+    fixture.componentRef.setInput('name', '只读节点');
+    fixture.componentRef.setInput('mode', 'readonly');
+    fixture.componentRef.setInput('selected', true);
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelector('.selection')?.tagName).toBe('DIV');
+    expect(element.querySelector('[aria-pressed]')).toBeNull();
+    expect(element.querySelector('[aria-label="选择节点 只读节点"]')).toBeNull();
+    expect(element.querySelectorAll('button')).toHaveLength(2);
+    expect(element.querySelector('app-ui-icon[name="check"]')).toBeNull();
+    expect(element.classList.contains('selected')).toBe(false);
   });
 });

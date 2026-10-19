@@ -2,8 +2,11 @@
   matIconButton
   type="button"
   [class]="variant()"
+  [class.is-danger]="tone() === 'danger'"
   [disabled]="disabled()"
   [attr.aria-label]="label()"
+  [attr.aria-controls]="controls()"
+  [attr.aria-expanded]="expanded()"
   [matTooltip]="label()"
   matTooltipClass="ui-kit-overlay"
   (click)="pressed.emit()"

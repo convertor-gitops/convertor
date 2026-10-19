@@ -2,17 +2,17 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { UiTextFieldComponent } from './ui-text-field.component';
+import { UITextFieldComponent } from './ui-text-field.component';
 
 @Component({
-  imports: [ReactiveFormsModule, UiTextFieldComponent],
+  imports: [ReactiveFormsModule, UITextFieldComponent],
   template: '<app-ui-text-field label="来源" [formControl]="control" error="请检查名称" />',
 })
 class InputHost {
   control = new FormControl('主力订阅');
 }
 
-describe('UiTextFieldComponent form contract', () => {
+describe('UITextFieldComponent form contract', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [InputHost] }));
   it('propagates typing and blur, and links its accessible label and validation message', async () => {
     const fixture = TestBed.createComponent(InputHost);
@@ -38,7 +38,7 @@ describe('UiTextFieldComponent form contract', () => {
 });
 
 @Component({
-  imports: [ReactiveFormsModule, UiTextFieldComponent],
+  imports: [ReactiveFormsModule, UITextFieldComponent],
   template: '<app-ui-text-field label="间隔" type="number" [min]="1" [formControl]="control" />',
 })
 class NumberHost {

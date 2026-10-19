@@ -24,6 +24,9 @@ button {
 .outlined {
   border-color: var(--ui-outline);
 }
+button.is-danger:not(:disabled) {
+  color: var(--ui-error);
+}
 button:disabled {
   opacity: 0.45;
 }

@@ -1,7 +1,6 @@
-import { MatAccordion } from '@angular/material/expansion';
-import { UiSegmentedComponent } from '../shared/ui/ui-segmented/ui-segmented.component';
-import { UiCollapseComponent } from '../shared/ui/ui-collapse/ui-collapse.component';
-import { UiPanelComponent } from '../shared/ui/ui-panel/ui-panel.component';
+import { UISegmentedComponent } from '../shared/ui/ui-segmented/ui-segmented.component';
+import { UICollapseComponent } from '../shared/ui/ui-collapse/ui-collapse.component';
+import { UIPanelComponent } from '../shared/ui/ui-panel/ui-panel.component';
 import { PanelShowcaseComponent } from './panel-showcase/panel-showcase.component';
 import {
   ChangeDetectionStrategy,
@@ -10,25 +9,39 @@ import {
   DestroyRef,
   inject,
   signal,
-  TemplateRef,
 } from '@angular/core';
 import { ThemeGalleryComponent } from './theme-gallery/theme-gallery.component';
-import { AppearancePanelComponent } from './appearance-panel/appearance-panel.component';
+import { AppearancePanelComponent } from '../shared/appearance-panel/appearance-panel.component';
 import { DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatDialog, MatDialogClose } from '@angular/material/dialog';
-import { UiThemeService } from '../../service/ui-theme';
+import { UIThemeService } from '../../service/ui-theme';
 import { UI_PALETTES } from '../../common/model/ui-theme';
-import { UiButtonComponent, UiButtonVariant } from '../shared/ui/ui-button/ui-button.component';
-import { UiIconComponent, UiIconName } from '../shared/ui/ui-icon/ui-icon.component';
-import { UiIconButtonComponent } from '../shared/ui/ui-icon-button/ui-icon-button.component';
-import { UiTextFieldComponent } from '../shared/ui/ui-text-field/ui-text-field.component';
-import { UiSelectComponent } from '../shared/ui/ui-select/ui-select.component';
-import { UiOptionComponent } from '../shared/ui/ui-option/ui-option.component';
+import { UIButtonComponent, UIButtonVariant } from '../shared/ui/ui-button/ui-button.component';
+import { UIIconComponent, UIIconName } from '../shared/ui/ui-icon/ui-icon.component';
+import { UIIconButtonComponent } from '../shared/ui/ui-icon-button/ui-icon-button.component';
+import { UITextFieldComponent } from '../shared/ui/ui-text-field/ui-text-field.component';
+import { UISelectComponent } from '../shared/ui/ui-select/ui-select.component';
+import { UIOptionComponent } from '../shared/ui/ui-option/ui-option.component';
 import {
-  UiNodeCardComponent,
-  UiNodeStatus,
+  UINodeCardComponent,
+  UINodeStatus,
 } from '../shared/ui/ui-node-card/ui-node-card.component';
+import { UIScaffoldComponent } from '../shared/ui/ui-scaffold/ui-scaffold.component';
+import { UIDrawerComponent } from '../shared/ui/ui-drawer/ui-drawer.component';
+import { UISheetComponent } from '../shared/ui/ui-sheet/ui-sheet.component';
+import { UICheckboxComponent } from '../shared/ui/ui-controls/ui-checkbox.component';
+import { UISwitchComponent } from '../shared/ui/ui-controls/ui-switch.component';
+import { UIProgressComponent } from '../shared/ui/ui-controls/ui-progress.component';
+import { UIInfoRowComponent } from '../shared/ui/ui-controls/ui-info-row.component';
+import { UIOrderedOptionsComponent } from '../shared/ui/ui-controls/ui-ordered-options.component';
+import { UITabsComponent } from '../shared/ui/ui-controls/ui-tabs.component';
+import { UITabComponent } from '../shared/ui/ui-controls/ui-tab.component';
+import {
+  UITreeComponent,
+  UITreeItem,
+  UITreeLeafDirective,
+} from '../shared/ui/ui-tree/ui-tree.component';
+import { UICardComponent } from '../shared/ui/ui-card/ui-card.component';
 
 interface SampleNode {
   id: number;
@@ -37,50 +50,61 @@ interface SampleNode {
   protocol: string;
   source: string;
   tags: string[];
-  status: UiNodeStatus;
+  status: UINodeStatus;
   statusText: string;
 }
 @Component({
   selector: 'app-ui-component',
   imports: [
-    MatAccordion,
-    UiSegmentedComponent,
-    UiCollapseComponent,
-    UiPanelComponent,
+    UISegmentedComponent,
+    UICollapseComponent,
+    UIPanelComponent,
     PanelShowcaseComponent,
     ThemeGalleryComponent,
     AppearancePanelComponent,
     FormsModule,
-    MatDialogClose,
-    UiButtonComponent,
-    UiIconComponent,
-    UiIconButtonComponent,
-    UiTextFieldComponent,
-    UiSelectComponent,
-    UiOptionComponent,
-    UiNodeCardComponent,
+    UIButtonComponent,
+    UIIconComponent,
+    UIIconButtonComponent,
+    UITextFieldComponent,
+    UISelectComponent,
+    UIOptionComponent,
+    UINodeCardComponent,
+    UIScaffoldComponent,
+    UIDrawerComponent,
+    UISheetComponent,
+    UICheckboxComponent,
+    UISwitchComponent,
+    UIProgressComponent,
+    UIInfoRowComponent,
+    UIOrderedOptionsComponent,
+    UITabsComponent,
+    UITabComponent,
+    UITreeComponent,
+    UITreeLeafDirective,
+    UICardComponent,
   ],
   templateUrl: './ui-component.component.html',
   styleUrl: './ui-component.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'ui-kit' },
 })
-export class UiComponentComponent {
-  readonly theme = inject(UiThemeService);
+export class UIComponentComponent {
+  readonly theme = inject(UIThemeService);
   private readonly document = inject(DOCUMENT);
-  private readonly dialog = inject(MatDialog);
   readonly paletteCount = UI_PALETTES.length;
-  readonly sections: { id: string; label: string; icon: UiIconName; count: string }[] = [
+  readonly sections: { id: string; label: string; icon: UIIconName; count: string }[] = [
     { id: 'panels', label: '容器层级', icon: 'layers', count: '03' },
     { id: 'buttons', label: '按钮', icon: 'bolt', count: '05' },
     { id: 'fields', label: '输入与选择', icon: 'sliders', count: '08' },
     { id: 'collapse', label: '折叠面板', icon: 'chevron', count: '02' },
     { id: 'nodes', label: '节点卡片', icon: 'server', count: '12' },
     { id: 'compositions', label: '组合预览', icon: 'layers', count: '02' },
+    { id: 'overlays', label: '布局与反馈', icon: 'sliders', count: '11' },
     { id: 'colors', label: '主题色板', icon: 'palette', count: '32' },
   ];
   readonly activeSection = signal('panels');
-  readonly variants: { value: UiButtonVariant; label: string }[] = [
+  readonly variants: { value: UIButtonVariant; label: string }[] = [
     { value: 'filled', label: 'Filled · 实色' },
     { value: 'tonal', label: 'Tonal · 淡色' },
     { value: 'outlined', label: 'Outlined · 描边' },
@@ -92,6 +116,26 @@ export class UiComponentComponent {
   readonly emptySelection = new Set<number>();
   readonly nodeQuery = signal('');
   readonly nodeLayout = signal<'tiles' | 'list'>('tiles');
+  readonly activeNode = signal<SampleNode | null>(null);
+  readonly drawerOpen = signal(false);
+  readonly sheetOpen = signal(false);
+  readonly demoDrawerOpen = signal(false);
+  readonly demoSheetOpen = signal(false);
+  readonly demoChecked = signal(true);
+  readonly demoEnabled = signal(false);
+  readonly orderedProtocols = signal(['trojan', 'ss']);
+  readonly treeNodes: UITreeItem[] = [
+    {
+      key: 'asia',
+      label: '亚洲',
+      count: 3,
+      children: [
+        { key: 'hk', label: '香港节点', count: 2, children: [] },
+        { key: 'jp', label: '日本节点', count: 1, children: [] },
+      ],
+    },
+    { key: 'direct', label: 'DIRECT', count: 1, children: [] },
+  ];
   readonly selectedCount = computed(() => this.selected().size);
   readonly samples: SampleNode[] = [
     {
@@ -236,7 +280,6 @@ export class UiComponentComponent {
   constructor() {
     inject(DestroyRef).onDestroy(() => {
       clearTimeout(this.timer);
-      this.dialog.closeAll();
     });
   }
   navigate(id: string): void {
@@ -272,19 +315,15 @@ export class UiComponentComponent {
         ]),
     );
   }
-  openNode(template: TemplateRef<unknown>, node: SampleNode): void {
-    this.dialog.open(template, {
-      data: node,
-      panelClass: 'ui-kit-overlay',
-      width: '400px',
-      maxWidth: 'calc(100vw - 32px)',
-    });
+  openNodeDetails(node: SampleNode): void {
+    this.activeNode.set(node);
+    this.drawerOpen.set(true);
+  }
+  openNodeActions(node: SampleNode): void {
+    this.activeNode.set(node);
+    this.sheetOpen.set(true);
   }
   paletteModeLabel(): string {
     return this.theme.mode() === 'dark' ? '深色' : '浅色';
-  }
-
-  dialogClose(): void {
-    this.dialog.closeAll();
   }
 }

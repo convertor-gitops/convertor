@@ -1,134 +1,134 @@
-<section class="predicate" [class.compound]="predicate().op !== 'atom'">
-  <div class="predicate-head">
-    <app-ui-select label="逻辑" [ngModel]="predicate().op" (ngModelChange)="setOperation($event)">
-      @for (operation of operations; track operation.value) {
-        <app-ui-option [value]="operation.value" label="{{ operation.label }}" />
-      }
-    </app-ui-select>
-    @if (predicate().op === 'all') {
-      <span class="hint">空列表表示始终满足</span>
-    } @else if (predicate().op === 'any') {
-      <span class="hint">空列表表示始终不满足</span>
-    }
-  </div>
-
-  @if (predicate().op === 'all' || predicate().op === 'any') {
-    <div class="children">
-      @for (child of asList(predicate()); track $index; let index = $index) {
-        <div class="child">
-          <app-predicate-editor
-            [predicate]="child"
-            [domain]="domain()"
-            (predicateChange)="replaceChild(index, $event)"
-          />
-          <app-ui-button variant="text" class="remove" type="button" (pressed)="removeChild(index)"
-            >删除</app-ui-button
-          >
-        </div>
-      }
-      <app-ui-button variant="outlined" type="button" (pressed)="addChild()"
-        >添加条件</app-ui-button
-      >
-    </div>
-  } @else if (predicate().op === 'not') {
-    <div class="children single">
-      <app-predicate-editor
-        [predicate]="asNot(predicate())"
-        [domain]="domain()"
-        (predicateChange)="replaceNot($event)"
-      />
-    </div>
-  } @else {
-    @let atom = asAtom(predicate());
-    <div class="atom-row">
-      <app-ui-select
-        label="字段"
-        [ngModel]="atomField(atom)"
-        (ngModelChange)="setAtomField($event)"
-      >
-        @if (domain() === 'node') {
-          <app-ui-option value="name" label="名称" />
-          <app-ui-option value="protocol" label="协议" />
-          <app-ui-option value="server" label="服务器" />
-          <app-ui-option value="port" label="端口" />
-          <app-ui-option value="has_tag" label="包含标签" />
-        } @else if (domain() === 'source-group') {
-          <app-ui-option value="name" label="名称" />
-          <app-ui-option value="kind" label="类型" />
-        } @else {
-          <app-ui-option value="name" label="名称" />
-          <app-ui-option value="depth" label="深度" />
-          <app-ui-option value="dimension" label="维度" />
+<app-ui-card>
+  <section class="predicate" [class.compound]="predicate().op !== 'atom'">
+    <div class="predicate-head">
+      <app-ui-select label="逻辑" [ngModel]="predicate().op" (ngModelChange)="setOperation($event)">
+        @for (operation of operations; track operation.value) {
+          <app-ui-option [value]="operation.value" label="{{ operation.label }}" />
         }
       </app-ui-select>
-
-      @if (isStringAtom(atom)) {
-        @let match = stringTest(atom);
-        <app-ui-select
-          label="匹配"
-          [ngModel]="match.op"
-          (ngModelChange)="setMatchOperation(atom, $event)"
-        >
-          @for (operation of matchOperations; track operation.value) {
-            <app-ui-option [value]="operation.value" label="{{ operation.label }}" />
-          }
-        </app-ui-select>
-        <app-ui-text-field
-          label="{{
-            match.op === 'one_of'
-              ? '值（逗号分隔）'
-              : match.op === 'contains'
-                ? '子串（逗号分隔，命中任一）'
-                : match.op === 'regex'
-                  ? '正则表达式'
-                  : '值'
-          }}"
-          class="value"
-          [ngModel]="matchText(match)"
-          (ngModelChange)="setMatchText(atom, $event)"
-        />
-        @if (match.op === 'regex') {
-          <mat-checkbox
-            [ngModel]="regexCaseInsensitive(match)"
-            (ngModelChange)="setRegexCaseInsensitive(atom, $event)"
-            >忽略大小写</mat-checkbox
-          >
-        }
-      } @else if (atomField(atom) === 'dimension') {
-        <app-ui-select
-          label="维度"
-          [ngModel]="dimensionKind(atom)"
-          (ngModelChange)="setDimensionKind(atom, $event)"
-        >
-          <app-ui-option value="region" label="地区" />
-          <app-ui-option value="source" label="来源" />
-          <app-ui-option value="protocol" label="协议" />
-          <app-ui-option value="has_tag" label="标签" />
-        </app-ui-select>
-        @if (dimensionKind(atom) === 'has_tag') {
-          <app-ui-text-field
-            label="标签名"
-            [ngModel]="dimensionTag(atom)"
-            (ngModelChange)="setDimensionTag(atom, $event)"
-          />
-        }
-        <app-ui-text-field
-          label="维度值"
-          class="value"
-          [ngModel]="scalarValue(atom)"
-          (ngModelChange)="setScalarValue(atom, $event)"
-        />
-      } @else {
-        <app-ui-text-field
-          label="{{
-            atomField(atom) === 'port' ? '端口' : atomField(atom) === 'depth' ? '深度' : '标签'
-          }}"
-          class="value"
-          [type]="atomField(atom) === 'port' || atomField(atom) === 'depth' ? 'number' : 'text'"
-          [ngModel]="scalarValue(atom)"
-          (ngModelChange)="setScalarValue(atom, $event)"
-        />
+      @if (predicate().op === 'all') {
+        <span class="hint">空列表表示始终满足</span>
+      } @else if (predicate().op === 'any') {
+        <span class="hint">空列表表示始终不满足</span>
       }
     </div>
-  }
-</section>
+
+    @if (predicate().op === 'all' || predicate().op === 'any') {
+      <div class="children">
+        @for (child of asList(predicate()); track $index; let index = $index) {
+          <div class="child">
+            <app-predicate-editor
+              [predicate]="child"
+              [domain]="domain()"
+              (predicateChange)="replaceChild(index, $event)"
+            />
+            <app-ui-icon-button icon="trash" label="删除条件" (pressed)="removeChild(index)" />
+          </div>
+        }
+        <app-ui-button variant="outlined" type="button" (pressed)="addChild()"
+          >添加条件</app-ui-button
+        >
+      </div>
+    } @else if (predicate().op === 'not') {
+      <div class="children single">
+        <app-predicate-editor
+          [predicate]="asNot(predicate())"
+          [domain]="domain()"
+          (predicateChange)="replaceNot($event)"
+        />
+      </div>
+    } @else {
+      @let atom = asAtom(predicate());
+      <div class="atom-row">
+        <app-ui-select
+          label="字段"
+          [ngModel]="atomField(atom)"
+          (ngModelChange)="setAtomField($event)"
+        >
+          @if (domain() === 'node') {
+            <app-ui-option value="name" label="名称" />
+            <app-ui-option value="protocol" label="协议" />
+            <app-ui-option value="server" label="服务器" />
+            <app-ui-option value="port" label="端口" />
+            <app-ui-option value="has_tag" label="包含标签" />
+          } @else if (domain() === 'source-group') {
+            <app-ui-option value="name" label="名称" />
+            <app-ui-option value="kind" label="类型" />
+          } @else {
+            <app-ui-option value="name" label="名称" />
+            <app-ui-option value="depth" label="深度" />
+            <app-ui-option value="dimension" label="维度" />
+          }
+        </app-ui-select>
+
+        @if (isStringAtom(atom)) {
+          @let match = stringTest(atom);
+          <app-ui-select
+            label="匹配"
+            [ngModel]="match.op"
+            (ngModelChange)="setMatchOperation(atom, $event)"
+          >
+            @for (operation of matchOperations; track operation.value) {
+              <app-ui-option [value]="operation.value" label="{{ operation.label }}" />
+            }
+          </app-ui-select>
+          <app-ui-text-field
+            label="{{
+              match.op === 'one_of'
+                ? '值（逗号分隔）'
+                : match.op === 'contains'
+                  ? '子串（逗号分隔，命中任一）'
+                  : match.op === 'regex'
+                    ? '正则表达式'
+                    : '值'
+            }}"
+            class="value"
+            [ngModel]="matchText(match)"
+            (ngModelChange)="setMatchText(atom, $event)"
+          />
+          @if (match.op === 'regex') {
+            <app-ui-checkbox
+              [ngModel]="regexCaseInsensitive(match)"
+              (ngModelChange)="setRegexCaseInsensitive(atom, $event)"
+              >忽略大小写</app-ui-checkbox
+            >
+          }
+        } @else if (atomField(atom) === 'dimension') {
+          <app-ui-select
+            label="维度"
+            [ngModel]="dimensionKind(atom)"
+            (ngModelChange)="setDimensionKind(atom, $event)"
+          >
+            <app-ui-option value="region" label="地区" />
+            <app-ui-option value="source" label="来源" />
+            <app-ui-option value="protocol" label="协议" />
+            <app-ui-option value="has_tag" label="标签" />
+          </app-ui-select>
+          @if (dimensionKind(atom) === 'has_tag') {
+            <app-ui-text-field
+              label="标签名"
+              [ngModel]="dimensionTag(atom)"
+              (ngModelChange)="setDimensionTag(atom, $event)"
+            />
+          }
+          <app-ui-text-field
+            label="维度值"
+            class="value"
+            [ngModel]="scalarValue(atom)"
+            (ngModelChange)="setScalarValue(atom, $event)"
+          />
+        } @else {
+          <app-ui-text-field
+            label="{{
+              atomField(atom) === 'port' ? '端口' : atomField(atom) === 'depth' ? '深度' : '标签'
+            }}"
+            class="value"
+            [type]="atomField(atom) === 'port' || atomField(atom) === 'depth' ? 'number' : 'text'"
+            [ngModel]="scalarValue(atom)"
+            (ngModelChange)="setScalarValue(atom, $event)"
+          />
+        }
+      </div>
+    }
+  </section>
+</app-ui-card>

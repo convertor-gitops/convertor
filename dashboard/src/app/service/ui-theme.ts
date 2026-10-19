@@ -6,11 +6,11 @@ import {
   restoreUiPreferences,
   UI_DEFAULTS,
   UI_PALETTES,
-  UiPreferences,
+  UIPreferences,
 } from '../common/model/ui-theme';
 
 @Injectable({ providedIn: 'root' })
-export class UiThemeService {
+export class UIThemeService {
   private readonly document = inject(DOCUMENT);
   private readonly window = this.document.defaultView;
   private readonly media = this.window?.matchMedia?.('(prefers-color-scheme: dark)');
@@ -32,6 +32,13 @@ export class UiThemeService {
   constructor() {
     const changed = (event: MediaQueryListEvent) => this.systemDark.set(event.matches);
     this.media?.addEventListener('change', changed);
+    const storageChanged = (event: StorageEvent) => {
+      if (event.key !== 'convertor.ui.preferences.v1' && event.key !== null) return;
+      const next = this.read();
+      if (JSON.stringify(next) !== JSON.stringify(this.preferences())) this.preferences.set(next);
+    };
+    this.window?.addEventListener('storage', storageChanged);
+    inject(DestroyRef).onDestroy(() => this.window?.removeEventListener('storage', storageChanged));
     inject(DestroyRef).onDestroy(() => this.media?.removeEventListener('change', changed));
     effect(() => {
       try {
@@ -45,7 +52,7 @@ export class UiThemeService {
       this.apply();
     });
   }
-  update(patch: Partial<UiPreferences>): void {
+  update(patch: Partial<UIPreferences>): void {
     this.preferences.update((current) => restoreUiPreferences({ ...current, ...patch }));
   }
   selectPalette(id: string): void {
@@ -54,7 +61,7 @@ export class UiThemeService {
   reset(): void {
     this.preferences.set({ ...UI_DEFAULTS });
   }
-  private read(): UiPreferences {
+  private read(): UIPreferences {
     try {
       return restoreUiPreferences(
         JSON.parse(this.window?.localStorage.getItem('convertor.ui.preferences.v1') ?? 'null'),

@@ -7,43 +7,43 @@ app-ui-panel {
   --ui-panel-padding: 8px;
   --ui-gap: 0px;
 }
-mat-expansion-panel {
-  background: transparent;
-  color: var(--ui-text);
-  box-shadow: none;
-  border-radius: var(--ui-radius-button);
-  margin: 0;
-}
-mat-expansion-panel-header,
-mat-expansion-panel-header.mat-expanded {
+.header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 8px;
-  box-sizing: border-box;
   border-radius: var(--ui-radius-button);
+}
+.toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  min-width: 0;
+  padding: 4px 8px;
+  color: var(--ui-text);
+  text-align: left;
+  border: 0;
+  border-radius: var(--ui-radius-button);
+  background: transparent;
+  cursor: pointer;
   user-select: none;
 }
-:host ::ng-deep .mat-expansion-panel-header .mat-content {
-  width: 100%;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  min-width: 0;
-  overflow: hidden;
+.toggle:hover:not(:disabled) {
+  background: var(--ui-active);
 }
-mat-panel-title {
-  width: 0;
-  flex: 1 1 0;
-  min-width: 0;
-  margin: 0;
-  color: var(--ui-text);
+.toggle:focus-visible {
+  outline: 2px solid var(--ui-accent-text);
+  outline-offset: -2px;
+}
+.toggle:disabled {
+  cursor: default;
+  opacity: 0.55;
 }
 .indicator {
   width: 16px;
   height: 16px;
   flex: none;
+  margin-left: auto;
   color: var(--ui-muted);
   transition: transform 150ms ease;
 }
@@ -66,17 +66,13 @@ mat-panel-title {
   min-width: 0;
 }
 strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
   font-size: 12px;
   line-height: 16px;
   font-weight: 600;
 }
 .heading span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
   font-size: 11px;
   line-height: 16px;
   color: var(--ui-muted);
@@ -86,4 +82,5 @@ strong {
   flex-direction: column;
   gap: 8px;
   font-size: 12px;
+  padding: 8px;
 }

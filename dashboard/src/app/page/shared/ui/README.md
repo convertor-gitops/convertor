@@ -1,50 +1,42 @@
-# Workbench UI
+# Shared UI
 
-This folder is the small application layer over Angular Material used by the
-plan workbench. Material still owns focus, keyboard, disabled and expansion
-behavior; this layer supplies the product's visual vocabulary and reusable
-interaction wrappers.
+This is the only component implementation layer. `ui-component` demonstrates it and
+`plan-board` composes it with business data. Consumer pages must not import Material
+controls, redefine their internals, or depend on showcase implementations.
 
-## Inventory
+## Naming and ownership
 
-| Material primitive | Workbench treatment |
-| --- | --- |
-| Text, flat and stroked buttons | `UiButtonDirective`; 4px shape and semantic tone hooks |
-| Icon button | `UiCloseButton`; labelled 40px close action with an inline SVG |
-| Expansion panel / accordion | `UiPanelDirective`; 8px panel and narrow stacked header |
-| Form field, input and select | Adapted by `workbench-ui.theme()`; 4px field shape |
-| Tabs | Adapted 40px density, typography and active indicator |
-| Checkbox and slide toggle | Adapted density plus a 4px switch shape; Material state behavior retained |
-| Sidenav / drawer | Adapted by `workbench-ui.theme()`; 12px outer surface shape |
-| Tree and progress bar | Adapted row density and 4px progress track |
-| Spinner | Material geometry retained so its circle is never reshaped |
+TypeScript UI symbols use the `UI` prefix (`UIButtonComponent`, `UIScaffoldComponent`).
+Selectors and file names remain kebab-case (`app-ui-button`, `ui-button.component.ts`).
+Material and CDK are implementation dependencies of these shared components. CDK
+business drag/drop remains allowed in consumers.
 
-The directives deliberately match Material selectors. Import them once in a
-standalone component and existing Material markup opts in without duplicate
-wrapper elements:
+`UIScaffold` owns the page header, side regions, main content, responsive docking,
+and optional bottom region. `UIPanel` and `UICard` are content surfaces, not page
+layouts. Layout resize uses `UISplitter`; pages do not implement pointer handlers.
+The divider has a 24px pointer target with a visible grip. Resizing one dock consumes
+main-region space without resizing the opposite dock; hidden docks reserve no space.
+Default minimum widths are 160px left, 200px right, and 320px main. Main-region
+margins follow the same size signals immediately rather than Material autosize
+measurements or animated margins. Responsive overlay changes follow container width,
+not drag preference sizes.
 
-```ts
-import {
-    UiButtonDirective,
-    UiCloseButton,
-    UiPanelDirective,
-} from "../shared/ui";
+`UIDrawer` and `UISheet` own focus, modal lifecycle, resizing, and persisted size.
+Only one scaffold-level modal opens at a time. Closing does not clear page data.
 
-@Component({
-    imports: [UiButtonDirective, UiCloseButton, UiPanelDirective],
-})
-export class Example {}
-```
+`UICollapse` is independently expandable. Its action slot is separate from its
+expand button. Business pages keep independent expansion state per stable ID.
+Node cards distinguish read-only display, selection, and independent highlighting.
 
-```html
-<button mat-flat-button uiButtonTone="primary">保存</button>
-<mat-expansion-panel uiPanelDensity="comfortable">...</mat-expansion-panel>
-<app-ui-close-button (closed)="close()" />
-```
+## Styling
 
-Button tones are `default`, `primary`, and `danger`. Panel densities are
-`compact` and `comfortable`. The Sass entry point is
-`styles/_workbench-ui.scss`; consumers include `workbench-ui.theme()` on the
-workbench host so overlays and legacy pages are not restyled accidentally. It
-also publishes `--ui-radius-sm` (4px), `--ui-radius-md` (8px), and
-`--ui-radius-lg` (12px) for feature-owned surfaces.
+Use shared theme tokens and explicit component inputs. Consumers may arrange
+components with grid/flex and spacing; they must not reach into shared descendants.
+New UI behavior must be implemented here and demonstrated in the showcase, including
+narrow widths, long text, keyboard interactions, empty/error/disabled states.
+
+## Checks
+
+Run `npm run check:ui`, `npm test -- --watch=false`, and `npm run build` from dashboard.
+The architecture check rejects old Ui prefixes, direct Material imports in the two
+consumer pages, deep styling overrides, and local details/summary implementations.

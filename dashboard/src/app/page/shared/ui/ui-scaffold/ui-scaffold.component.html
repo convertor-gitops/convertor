@@ -1,0 +1,132 @@
+<header class="header">
+  @if (hasLeft()) {
+    <app-ui-icon-button
+      icon="layers"
+      label="切换左侧栏"
+      [controls]="ids().left"
+      [expanded]="leftOpened()"
+      (pressed)="toggleLeft()"
+    />
+  }
+  <div class="heading">
+    <h1>{{ title() }}</h1>
+    @if (subtitle()) {
+      <p>{{ subtitle() }}</p>
+    }
+  </div>
+  <div class="actions"><ng-content select="[scaffold-actions]" /></div>
+  @if (hasRight()) {
+    <app-ui-icon-button
+      icon="sliders"
+      label="切换右侧栏"
+      [controls]="ids().right"
+      [expanded]="rightOpened()"
+      (pressed)="toggleRight()"
+    />
+  }
+  @if (hasBottom()) {
+    <app-ui-icon-button
+      icon="code"
+      label="切换底部面板"
+      [controls]="ids().bottom"
+      [expanded]="!bottomCollapsed()"
+      (pressed)="toggleBottom()"
+    />
+  }
+</header>
+<div class="notice"><ng-content select="[scaffold-notice]" /></div>
+
+<mat-drawer-container
+  class="workspace"
+  [hasBackdrop]="hasOverlay()"
+  [style.--scaffold-left.px]="leftOpened() && !horizontal().leftOverlay ? horizontal().left : 0"
+  [style.--scaffold-right.px]="rightOpened() && !horizontal().rightOverlay ? horizontal().right : 0"
+>
+  @if (hasLeft()) {
+    <mat-drawer
+      position="start"
+      [id]="ids().left"
+      [mode]="horizontal().leftOverlay ? 'over' : 'side'"
+      [opened]="leftOpened()"
+      [style.width.px]="horizontal().left"
+      (openedChange)="setLeftOpened($event)"
+    >
+      <div class="region side-content"><ng-content select="[scaffold-left]" /></div>
+      @if (!horizontal().leftOverlay) {
+        <app-ui-splitter
+          class="drawer-splitter left-splitter"
+          orientation="vertical"
+          label="调整左侧栏宽度"
+          [controls]="ids().left"
+          [value]="horizontal().left"
+          [min]="leftMin()"
+          [max]="effectiveLeftMax()"
+          [defaultValue]="leftWidth()"
+          (resizeStart)="startLeft($event)"
+          (valueChange)="resizeLeft($event)"
+          (completed)="completeResize('left', $event)"
+          (collapsedChange)="setLeftCollapsed($event)"
+        />
+      }
+    </mat-drawer>
+  }
+
+  @if (hasRight()) {
+    <mat-drawer
+      position="end"
+      [id]="ids().right"
+      [mode]="horizontal().rightOverlay ? 'over' : 'side'"
+      [opened]="rightOpened()"
+      [style.width.px]="horizontal().right"
+      (openedChange)="setRightOpened($event)"
+    >
+      @if (!horizontal().rightOverlay) {
+        <app-ui-splitter
+          class="drawer-splitter right-splitter"
+          orientation="vertical"
+          [direction]="-1"
+          label="调整右侧栏宽度"
+          [controls]="ids().right"
+          [value]="horizontal().right"
+          [min]="rightMin()"
+          [max]="effectiveRightMax()"
+          [defaultValue]="rightWidth()"
+          (resizeStart)="startRight($event)"
+          (valueChange)="resizeRight($event)"
+          (completed)="completeResize('right', $event)"
+          (collapsedChange)="setRightCollapsed($event)"
+        />
+      }
+      <div class="region side-content"><ng-content select="[scaffold-right]" /></div>
+    </mat-drawer>
+  }
+
+  <mat-drawer-content>
+    <main class="region main" [id]="ids().main"><ng-content /></main>
+    @if (hasBottom() && effectiveBottomMax() > 0) {
+      <app-ui-splitter
+        orientation="horizontal"
+        [direction]="-1"
+        label="调整底部面板高度"
+        [controls]="ids().bottom"
+        [value]="effectiveBottom()"
+        [min]="effectiveBottomMin()"
+        [max]="effectiveBottomMax()"
+        [defaultValue]="bottomHeight()"
+        [collapsed]="bottomCollapsed()"
+        (resizeStart)="startBottom($event)"
+        (valueChange)="resizeBottom($event)"
+        (completed)="completeResize('bottom', $event)"
+        (collapsedChange)="setBottomCollapsed($event)"
+      />
+      <section
+        class="region bottom"
+        [class.collapsed]="bottomCollapsed()"
+        [id]="ids().bottom"
+        [style.height.px]="effectiveBottom()"
+      >
+        <ng-content select="[scaffold-bottom]" />
+      </section>
+    }
+  </mat-drawer-content>
+</mat-drawer-container>

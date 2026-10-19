@@ -1,13 +1,13 @@
 import palettes from './ui-palettes.json';
 
-export type UiMode = 'dark' | 'light';
-export type UiModePreference = UiMode | 'system';
-export type UiDensity = 'ultra' | 'compact' | 'comfortable';
-export type UiRadius = 4 | 8 | 12 | 16;
-export interface UiPalette {
+export type UIMode = 'dark' | 'light';
+export type UIModePreference = UIMode | 'system';
+export type UIDensity = 'ultra' | 'compact' | 'comfortable';
+export type UIRadius = 4 | 8 | 12 | 16;
+export interface UIPalette {
   id: string;
   name: string;
-  mode: UiMode;
+  mode: UIMode;
   colors: Record<
     | 'background'
     | 'foreground'
@@ -30,18 +30,18 @@ export interface UiPalette {
     string
   >;
 }
-export interface UiPreferences {
-  mode: UiModePreference;
+export interface UIPreferences {
+  mode: UIModePreference;
   dark: string;
   light: string;
-  density: UiDensity;
-  controlRadius: UiRadius;
-  cardRadius: UiRadius;
-  overlayRadius: UiRadius;
-  panelRadius: UiRadius;
+  density: UIDensity;
+  controlRadius: UIRadius;
+  cardRadius: UIRadius;
+  overlayRadius: UIRadius;
+  panelRadius: UIRadius;
 }
-export const UI_PALETTES = palettes as UiPalette[];
-export const UI_DEFAULTS: UiPreferences = {
+export const UI_PALETTES = palettes as UIPalette[];
+export const UI_DEFAULTS: UIPreferences = {
   mode: 'dark',
   dark: 'githubdark',
   light: 'github',
@@ -53,19 +53,19 @@ export const UI_DEFAULTS: UiPreferences = {
 };
 
 /** Validate independently so one stale setting cannot invalidate the rest. */
-export function restoreUiPreferences(value: unknown): UiPreferences {
+export function restoreUiPreferences(value: unknown): UIPreferences {
   const raw = value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
   const result = { ...UI_DEFAULTS };
   if (['dark', 'light', 'system'].includes(String(raw['mode'])))
-    result.mode = raw['mode'] as UiModePreference;
+    result.mode = raw['mode'] as UIModePreference;
   if (['ultra', 'compact', 'comfortable'].includes(String(raw['density'])))
-    result.density = raw['density'] as UiDensity;
+    result.density = raw['density'] as UIDensity;
   for (const mode of ['dark', 'light'] as const) {
     if (UI_PALETTES.some((p) => p.id === raw[mode] && p.mode === mode))
       result[mode] = raw[mode] as string;
   }
   for (const key of ['controlRadius', 'cardRadius', 'overlayRadius', 'panelRadius'] as const) {
-    if ([4, 8, 12, 16].includes(raw[key] as number)) result[key] = raw[key] as UiRadius;
+    if ([4, 8, 12, 16].includes(raw[key] as number)) result[key] = raw[key] as UIRadius;
   }
   return result;
 }

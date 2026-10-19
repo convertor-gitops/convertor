@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  BaseGroup,
   CustomEvaluatedGroupKind,
   EvaluatedGroup,
   EvaluatedGroupRef,
@@ -54,6 +55,45 @@ describe('ResultPreview', () => {
     expect(fixture.componentInstance.memberGroup(first.members[0])).toBe(second);
     expect(fixture.componentInstance.memberGroup(second.members[0])).toBe(first);
     expect(fixture.componentInstance.memberNode(first.members[0])).toBeNull();
+  });
+
+  it('orders generated base groups by their evaluator parent hierarchy', () => {
+    const parent = new EvaluatedGroup(
+      'base:parent',
+      new CustomEvaluatedGroupKind(1),
+      '美国',
+      [],
+      true,
+      true,
+      '美国',
+    );
+    const child = new EvaluatedGroup(
+      'base:child',
+      new CustomEvaluatedGroupKind(2),
+      '美国-BosLife',
+      [],
+      true,
+      true,
+      '美国-BosLife',
+    );
+    const report = new EvaluationReport(
+      [],
+      [child, parent],
+      [
+        new BaseGroup('base:parent', '美国', 1, '美国', 1, null, []),
+        new BaseGroup('base:child', '美国-BosLife', 1, '美国-BosLife', 2, 'base:parent', []),
+      ],
+      [],
+      [],
+      Profile.empty(),
+    );
+    const fixture = TestBed.createComponent(ResultPreview);
+    fixture.componentRef.setInput('report', report);
+
+    expect(fixture.componentInstance.groupRows()).toEqual([
+      { group: parent, depth: 0 },
+      { group: child, depth: 1 },
+    ]);
   });
 
   it('emits both resource and path when focusing a trace resource', () => {

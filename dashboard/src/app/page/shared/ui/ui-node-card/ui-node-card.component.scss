@@ -19,6 +19,10 @@ app-ui-card {
   --ui-card-border: var(--ui-accent-text);
   --ui-card-background: color-mix(in srgb, var(--ui-accent) 10%, var(--ui-surface));
 }
+:host(.highlighted) {
+  --ui-card-border: var(--ui-accent-text);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ui-accent-text) 35%, transparent);
+}
 :host(.unavailable) {
   opacity: 0.45;
 }
@@ -46,6 +50,9 @@ app-ui-card {
 .selection:disabled {
   cursor: default;
 }
+.selection.readonly {
+  cursor: default;
+}
 .region {
   display: flex;
   align-items: center;
@@ -68,9 +75,8 @@ app-ui-card {
   min-width: 0;
 }
 .name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
   font-size: 12px;
   line-height: 16px;
   font-weight: 500;

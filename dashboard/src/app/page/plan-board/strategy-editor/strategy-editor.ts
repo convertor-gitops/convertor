@@ -1,4 +1,4 @@
-import { UiTextFieldComponent, UiSelectComponent, UiOptionComponent } from '../../shared/ui';
+import { UITextFieldComponent, UISelectComponent, UIOptionComponent } from '../../shared/ui';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
@@ -8,7 +8,7 @@ import {
 } from '../../../common/model/core/plan';
 @Component({
   selector: 'app-strategy-editor',
-  imports: [UiTextFieldComponent, UiSelectComponent, UiOptionComponent, FormsModule],
+  imports: [UITextFieldComponent, UISelectComponent, UIOptionComponent, FormsModule],
   templateUrl: './strategy-editor.html',
   styleUrl: './strategy-editor.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

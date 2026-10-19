@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { UiThemeService } from './ui-theme';
+import { UIThemeService } from './ui-theme';
 import {
   readableOn,
   readableText,
@@ -32,7 +32,7 @@ describe('UI palette registry and preferences', () => {
   });
 
   it('keeps an independent palette for each mode and preserves geometry', () => {
-    const service = TestBed.inject(UiThemeService);
+    const service = TestBed.inject(UIThemeService);
     service.selectPalette('dracula');
     service.update({ cardRadius: 16, density: 'compact' });
     service.update({ mode: 'light' });
@@ -51,12 +51,28 @@ describe('UI palette registry and preferences', () => {
       'convertor.ui.preferences.v1',
       JSON.stringify({ ...UI_DEFAULTS, dark: 'oceanic', controlRadius: 12 }),
     );
-    const service = TestBed.inject(UiThemeService);
+    const service = TestBed.inject(UIThemeService);
     TestBed.tick();
     expect(service.palette().id).toBe('oceanic');
     expect(document.documentElement.dataset['uiTheme']).toBe('oceanic');
     expect(document.documentElement.style.getPropertyValue('--ui-radius-control')).toBe('12px');
     expect(document.documentElement.style.getPropertyValue('--ui-bg')).toBe('#263238');
+  });
+
+  it('synchronizes valid appearance preferences from another tab', () => {
+    const service = TestBed.inject(UIThemeService);
+    TestBed.tick();
+    const key = 'convertor.ui.preferences.v1';
+    const next = JSON.stringify({ ...UI_DEFAULTS, dark: 'dracula', controlRadius: 4 });
+    localStorage.setItem(key, next);
+    window.dispatchEvent(new StorageEvent('storage', { key, newValue: next }));
+    TestBed.tick();
+    expect(service.palette().id).toBe('dracula');
+    expect(document.documentElement.style.getPropertyValue('--ui-radius-control')).toBe('4px');
+    localStorage.setItem(key, 'invalid');
+    window.dispatchEvent(new StorageEvent('storage', { key, newValue: 'invalid' }));
+    TestBed.tick();
+    expect(service.preferences()).toEqual(UI_DEFAULTS);
   });
 
   it('maintains readable accent-button and secondary-label contrast across all palettes', () => {

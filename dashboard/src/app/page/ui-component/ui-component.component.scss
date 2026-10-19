@@ -7,49 +7,6 @@
   color: var(--ui-text);
   overflow: hidden;
 }
-.topbar-shell {
-  --ui-panel-padding: 0;
-  flex: none;
-  margin: 8px 8px 0;
-}
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex: none;
-  gap: 16px;
-  min-height: 52px;
-  padding: 8px 20px;
-}
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 12px;
-}
-.brand strong {
-  font-size: 15px;
-  letter-spacing: -0.4px;
-}
-.brand-mark {
-  display: flex;
-  padding: 6px;
-  border-radius: 8px;
-  background: var(--ui-accent);
-  color: var(--ui-on-accent);
-}
-.slash {
-  color: var(--ui-muted);
-  opacity: 0.6;
-}
-.preview-label {
-  border: 1px solid var(--ui-outline);
-  border-radius: 4px;
-  padding: 1px 5px;
-  font-size: 9px;
-  letter-spacing: 0.8px;
-  color: var(--ui-muted);
-}
 .activity {
   display: flex;
   align-items: center;
@@ -64,30 +21,6 @@
   height: 5px;
   border-radius: 50%;
   background: var(--ui-success);
-}
-.workspace {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  min-width: 0;
-  gap: 8px;
-  padding: 8px;
-}
-.sidebar-shell,
-.showcase-shell,
-.inspector-shell {
-  --ui-panel-padding: 0;
-  --ui-panel-body-flex: 1;
-  min-height: 0;
-}
-.sidebar-shell {
-  flex: 0 0 160px;
-}
-.showcase-shell {
-  flex: 1;
-}
-.inspector-shell {
-  flex: 0 0 228px;
 }
 .sidebar {
   display: flex;
@@ -425,11 +358,10 @@ section {
   border-radius: var(--ui-radius-card);
   color: var(--ui-muted);
 }
-.dialog-content {
+.overlay-content {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 16px;
 }
 .dialog-heading {
   display: flex;
@@ -447,19 +379,13 @@ a:focus-visible {
   outline-offset: 2px;
 }
 @media (max-width: 1120px) {
-  .sidebar-shell {
-    flex-basis: 136px;
-  }
-  .sidebar {
+    .sidebar {
     padding-inline: 8px;
   }
   .showcase {
     padding: 12px;
   }
-  .inspector-shell {
-    flex-basis: 208px;
-  }
-  .inspector {
+    .inspector {
     padding: 12px;
   }
   .row-label {
@@ -474,10 +400,7 @@ a:focus-visible {
   }
 }
 @media (max-width: 920px) {
-  .sidebar-shell {
-    display: none;
   }
-}
 @media (max-width: 680px) {
   :host {
     height: 100dvh;
@@ -487,33 +410,14 @@ a:focus-visible {
     overscroll-behavior-y: contain;
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
-  .topbar {
-    padding-inline: 12px;
-  }
-  .brand {
-    gap: 8px;
-  }
-  .activity,
-  .preview-label {
-    display: none;
-  }
-  .workspace {
-    flex-direction: column;
-    flex: none;
-  }
-  .showcase-shell, .inspector-shell {
-    flex: none;
-    --ui-panel-body-flex: initial;
-  }
-  .showcase, .inspector {
+      .activity,
+      .showcase-shell,
+    .showcase,
+  .inspector {
     flex: none;
     overflow: visible;
   }
-  .inspector-shell {
-    order: -1;
-    flex-basis: auto;
-  }
-  .inspector {
+    .inspector {
     flex-basis: auto;
     flex-direction: row;
     flex-wrap: wrap;
@@ -568,4 +472,78 @@ a:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.control-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.tree-leaf {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  min-width: 0;
+  padding: 4px 8px;
+  color: var(--ui-text);
+}
+
+.tree-leaf small {
+  color: var(--ui-muted);
+}
+
+.node-mode-examples {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 8px;
+}
+
+.scaffold-demo {
+  height: 480px;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: var(--ui-radius-card);
+}
+
+.scaffold-demo > app-ui-scaffold {
+  height: 100%;
+  min-height: 0;
+}
+
+.demo-region,
+.demo-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 6px;
+  padding: 12px;
+  color: var(--ui-muted);
+  font-size: 11px;
+}
+
+.demo-region strong,
+.demo-main strong {
+  color: var(--ui-text);
+  font-size: 12px;
+}
+
+.demo-main {
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.demo-bottom {
+  flex-direction: row;
+  align-items: center;
+}
+
+@media (max-width: 680px) {
+  .scaffold-demo {
+    height: 480px;
+  }
 }

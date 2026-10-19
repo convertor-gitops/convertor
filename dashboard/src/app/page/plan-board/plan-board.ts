@@ -1,13 +1,22 @@
-import { UiPanelComponent } from '../shared/ui';
-import { AppearancePanelComponent } from '../ui-component/appearance-panel/appearance-panel.component';
-import { UiThemeService } from '../../service/ui-theme';
+import { UIScaffoldComponent } from '../shared/ui/ui-scaffold/ui-scaffold.component';
+import { UIDrawerComponent } from '../shared/ui/ui-drawer/ui-drawer.component';
+import { UISheetComponent } from '../shared/ui/ui-sheet/ui-sheet.component';
 import {
-  UiButtonComponent,
-  UiTextFieldComponent,
-  UiSelectComponent,
-  UiOptionComponent,
-  UiCollapseComponent,
-  UiIconComponent,
+  UITabsComponent,
+  UITabComponent,
+  UICheckboxComponent,
+} from '../shared/ui/ui-controls/ui-controls';
+import { UICardComponent } from '../shared/ui';
+import { AppearancePanelComponent } from '../shared/appearance-panel/appearance-panel.component';
+import { UIThemeService } from '../../service/ui-theme';
+import {
+  UIButtonComponent,
+  UITextFieldComponent,
+  UISelectComponent,
+  UIOptionComponent,
+  UICollapseComponent,
+  UIIconComponent,
+  UIIconButtonComponent,
 } from '../shared/ui';
 import {
   CdkDrag,
@@ -29,11 +38,6 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
-import { MatTabsModule } from '@angular/material/tabs';
 import { SurgeBinding } from '../../common/model/local/surge-binding';
 import { patchSurgeHeader } from '../../common/patch/surge-patch';
 import * as P from '../../common/model/core/plan';
@@ -75,24 +79,26 @@ interface TagContainer {
   selector: 'app-plan-board',
   host: { class: 'ui-kit' },
   imports: [
-    UiPanelComponent,
+    UIScaffoldComponent,
+    UIDrawerComponent,
+    UISheetComponent,
+    UITabsComponent,
+    UITabComponent,
+    UICheckboxComponent,
+    UICardComponent,
     AppearancePanelComponent,
-    UiButtonComponent,
-    UiTextFieldComponent,
-    UiSelectComponent,
-    UiOptionComponent,
-    UiCollapseComponent,
-    UiIconComponent,
+    UIButtonComponent,
+    UITextFieldComponent,
+    UISelectComponent,
+    UIOptionComponent,
+    UICollapseComponent,
+    UIIconComponent,
+    UIIconButtonComponent,
     FormsModule,
     CdkDrag,
     CdkDragHandle,
     CdkDragPreview,
     CdkDropList,
-    MatButtonModule,
-    MatCheckboxModule,
-    MatExpansionModule,
-    MatSidenavModule,
-    MatTabsModule,
     CopyAction,
     MemberEditor,
     NodeBrowser,
@@ -107,6 +113,17 @@ interface TagContainer {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlanBoard {
+  setExpanded<T>(
+    state: import('@angular/core').WritableSignal<ReadonlySet<T>>,
+    id: T,
+    expanded: boolean,
+  ): void {
+    state.update((current) => {
+      const next = new Set(current);
+      expanded ? next.add(id) : next.delete(id);
+      return next;
+    });
+  }
   readonly dimensionOptions: ReadonlyArray<{
     kind: P.NodeDimension['kind'];
     label: string;
@@ -116,7 +133,7 @@ export class PlanBoard {
     { kind: 'protocol', label: '协议' },
     { kind: 'has_tag', label: '标签' },
   ];
-  readonly theme = inject(UiThemeService);
+  readonly theme = inject(UIThemeService);
   private readonly injector = inject(Injector);
   readonly board = inject(PlanBoardService);
   readonly metadata = inject(MetadataService);
@@ -124,14 +141,17 @@ export class PlanBoard {
   readonly restoreUrl = signal('');
   readonly highlighted = signal<ReadonlySet<string>>(new Set());
   readonly centerTab = signal(0);
-  readonly expandedPolicyId = signal<number | null>(null);
-  readonly expandedGroupId = signal<number | null>(null);
+  readonly expandedPolicies = signal<ReadonlySet<number>>(new Set());
+  readonly expandedGroups = signal<ReadonlySet<number>>(new Set());
+  readonly expandedTags = signal<ReadonlySet<string>>(new Set());
   readonly focusedNodeName = signal<string | null>(null);
   readonly focusedTag = signal<string | null>(null);
   readonly focusedPath = signal<string | null>(null);
   readonly tagDrafts = signal<ReadonlyMap<string, string>>(new Map());
   readonly nodeBrowser = viewChild(NodeBrowser);
-  readonly sourceDrawer = viewChild(MatDrawer);
+  readonly sourcesOpen = signal(false);
+  readonly appearanceOpen = signal(false);
+  readonly toolsOpen = signal(false);
   readonly localBinding = signal<SurgeBinding | null>(null);
   readonly localFiles = signal<string[]>([]);
   readonly localMessage = signal<string | null>(null);
@@ -574,26 +594,27 @@ export class PlanBoard {
       this.centerTab.set(2);
       const tag = annotation?.add_tags[0] ?? null;
       this.focusedTag.set(tag);
+      this.setExpanded(this.expandedTags, tag, true);
       if (tag) this.scrollTo(this.tagPanelId(tag));
       return;
     }
     const sourceMatch = /^sources?\/(\d+)/.exec(path);
     if (sourceMatch) {
       this.board.selectSource(Number(sourceMatch[1]));
-      void this.sourceDrawer()?.open();
+      this.sourcesOpen.set(true);
       this.scrollTo(`source-${sourceMatch[1]}`);
     }
   }
 
   private focusPolicy(id: number): void {
     this.centerTab.set(0);
-    this.expandedPolicyId.set(id);
+    this.setExpanded(this.expandedPolicies, id, true);
     this.scrollTo(`policy-${id}`);
   }
 
   private focusGroup(id: number, selectorIndex: number | null = null): void {
     this.centerTab.set(1);
-    this.expandedGroupId.set(id);
+    this.setExpanded(this.expandedGroups, id, true);
     this.scrollTo(
       selectorIndex === null ? this.groupDropId(id) : `selector-${id}-${selectorIndex}`,
     );

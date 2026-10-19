@@ -1,110 +1,45 @@
 :host {
   display: block;
   height: 100%;
-  background: var(--ui-bg);
+  min-height: 0;
   color: var(--ui-text);
 }
-.shell {
+.left-pane,
+.right-pane,
+.center-pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
   height: 100%;
 }
-mat-drawer {
-  width: min(680px, 100%);
-  max-width: 100%;
+.center-pane {
+  container-type: inline-size;
 }
-.topbar {
-  min-height: 64px;
-  flex-shrink: 0;
-  padding: 0 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--ui-outline);
-  background: var(--ui-surface);
-}
-.brand,
 .top-actions,
-.panel-actions,
 .row-actions,
+.panel-actions,
 .group-head,
 .dimension-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
-.brand {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1px;
-}
-.brand strong {
-  font-size: 19px;
-}
-.brand span {
-  font-size: 12px;
-  color: var(--ui-muted);
-}
-.stale {
-  padding: 5px 9px;
-  border-radius: var(--ui-radius-md, 8px);
-  color: var(--ui-text);
-  background: var(--ui-active);
-  font-size: 12px;
-}
-.error-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 16px;
-  color: var(--ui-error);
-  background: var(--ui-surface);
-}
-.workspace {
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-.shell mat-drawer-content {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-.left-pane,
-.center-pane,
-.right-pane {
-  min-width: 0;
-  min-height: 0;
-  overflow: auto;
-  scrollbar-gutter: stable;
-}
+.error-banner,
 .focus-banner {
-  position: sticky;
-  top: 0;
-  z-index: 4;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 7px 10px;
-  background: var(--ui-active);
-  color: var(--ui-text);
+  padding: 8px;
 }
-.left-pane,
-.center-pane {
-  border-right: 1px solid var(--ui-outline);
+.error-banner {
+  color: var(--ui-error);
 }
-.left-pane,
-.right-pane {
-  background: var(--ui-surface-low);
-}
-.center-pane {
-  display: flex;
-  flex-direction: column;
-}
-mat-tab-group {
-  flex: 1;
-  min-height: 0;
+.stale {
+  color: var(--ui-warning);
+  font-size: 12px;
 }
 .tab-toolbar {
   position: sticky;
@@ -128,10 +63,7 @@ mat-tab-group {
   gap: 12px;
   padding: 14px;
 }
-.editor-list app-ui-collapse {
-  box-shadow: none;
-  border: 0;
-}
+
 .selector-list {
   display: flex;
   flex-direction: column;
@@ -153,7 +85,7 @@ mat-tab-group {
 .dimension-selection {
   gap: 8px;
   padding: 10px;
-  border-radius: var(--ui-radius-md, 8px);
+  border-radius: var(--ui-radius-card);
   background: color-mix(in srgb, var(--ui-surface-high) 72%, transparent);
 }
 .dimension-section-title,
@@ -187,7 +119,7 @@ mat-tab-group {
   min-height: 42px;
   padding: 6px 8px;
   border: 1px solid color-mix(in srgb, var(--ui-outline) 80%, transparent);
-  border-radius: var(--ui-radius-md, 8px);
+  border-radius: var(--ui-radius-card);
   background: var(--ui-surface);
   cursor: default;
 }
@@ -202,7 +134,7 @@ mat-tab-group {
   overflow: hidden;
   padding: 6px 8px;
   border: 1px solid color-mix(in srgb, var(--ui-outline) 80%, transparent);
-  border-radius: var(--ui-radius-md, 8px);
+  border-radius: var(--ui-radius-card);
   background: var(--ui-surface);
   color: var(--ui-text);
   box-shadow: 0 10px 28px #00000036;
@@ -238,7 +170,7 @@ mat-tab-group {
   align-items: center;
   justify-content: center;
   flex: none;
-  border-radius: 6px;
+  border-radius: 4px;
   background: var(--ui-active);
   color: var(--ui-accent-text);
   font-size: 11px;
@@ -268,18 +200,7 @@ mat-tab-group {
 .group-head app-strategy-editor {
   flex: 2 1 280px;
 }
-.selector-card {
-  --ui-panel-padding: 10px;
-  --ui-radius-panel: 12px;
-  margin-top: 2px;
-  background: color-mix(in srgb, var(--ui-surface-high) 88%, var(--ui-surface));
-  box-shadow:
-    0 2px 5px #00000024,
-    0 8px 18px #0000001f;
-}
-.selector-card.focused {
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-accent-text) 22%, transparent);
-}
+
 .selector-title {
   display: flex;
   align-items: center;
@@ -307,9 +228,7 @@ mat-tab-group {
 .tag-name-row app-ui-button {
   margin-bottom: 0;
 }
-.tag-panel {
-  --ui-panel-padding: 10px;
-}
+
 .row-actions {
   justify-content: flex-end;
   margin-top: 8px;
@@ -344,13 +263,7 @@ mat-tab-group {
   background: var(--ui-active);
   font-size: 12px;
 }
-.tools {
-  flex: 0 0 auto;
-  border-top: 1px solid var(--ui-outline);
-}
-.tools app-ui-collapse {
-  box-shadow: none;
-}
+
 .tool-grid {
   display: flex;
   flex-direction: column;
@@ -381,169 +294,29 @@ mat-tab-group {
   text-align: center;
   color: var(--ui-muted);
 }
-.danger {
-  color: var(--ui-error);
-}
-@media (max-width: 760px) {
-  .topbar {
-    padding: 0 12px;
-  }
-  .tool-grid {
-  }
-  .wide {
-  }
-}
 
-.top-actions,
-.tab-toolbar,
-.row-actions,
-.selector-title {
-  flex-wrap: wrap;
-}
-:is(mat-form-field, app-ui-text-field, app-ui-select),
-app-strategy-editor,
-.editor-list > *,
-.tool-grid > * {
-  min-width: 0;
-  max-width: 100%;
-}
-.center-pane {
-  container-type: inline-size;
-}
-@container (max-width: 460px) {
-  .tool-grid {
-  }
-  .editor-list {
-    padding: 10px;
-  }
-  .selector-card {
-    --ui-panel-padding: 8px;
-  }
-  .tag-name-row {
-    align-items: stretch;
-    flex-direction: column;
-  }
-  .tag-name-row app-ui-button {
-    align-self: flex-end;
-  }
-}
-@media (max-width: 850px) {
-  .workspace {
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-  }
-  .left-pane,
-  .center-pane,
-  .right-pane {
-    flex: none;
-    overflow: visible;
-    border-right: 0;
-    border-bottom: 1px solid var(--ui-outline);
-  }
-  .left-pane {
-    max-height: 420px;
-    overflow-y: auto;
-  }
-  .topbar {
-    padding: 10px 12px;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-}
-
-// Shared panel shells own their surface, inset clipping and elevation.
-.shell {
-  background: var(--ui-bg);
-}
-.top-panel {
-  --ui-panel-padding: 0px;
-  margin: 8px 8px 0;
-  flex: none;
-}
-.topbar {
-  min-height: 48px;
-  padding: 4px 12px;
-  background: transparent;
-  border: 0;
-}
-.brand strong {
-  font-size: 15px;
-}
-.workspace {
-  flex-direction: row;
-  gap: 8px;
-  padding: 8px;
-}
-.pane-shell {
-  --ui-panel-padding: 0px;
-  --ui-panel-body-flex: 1;
-  min-width: 0;
-  min-height: 0;
-}
-.left-shell {
-  flex: 0.85;
-}
-.center-shell {
-  flex: 1.55;
-}
-.right-shell {
-  flex: 1;
-}
-.left-pane,
-.center-pane,
-.right-pane {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  border: 0;
-  background: transparent;
-}
-.editor-list {
-  padding: 8px;
-  gap: 8px;
-}
-.editor-list app-ui-collapse {
-  border: 0;
-}
-.tab-toolbar {
-  padding: 8px;
-  gap: 8px;
-  background: var(--ui-surface);
-}
 .tool-grid {
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.tool-grid > * {
-  flex: 1 1 180px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: 12px;
+  align-items: start;
 }
 .tool-grid > .wide {
-  flex-basis: 100%;
+  grid-column: 1/-1;
 }
-.board-appearance {
+.editor-list {
   padding: 12px;
-  gap: 16px;
+  gap: 12px;
 }
-@media (max-width: 850px) {
-  .workspace {
+.selector-card {
+  min-width: 0;
+}
+@container (max-width:460px) {
+  .tag-name-row {
     flex-direction: column;
-    flex: none;
-    overflow: visible;
+    align-items: stretch;
   }
-  .shell mat-drawer-content {
-    overflow-y: auto;
-  }
-  .pane-shell {
-    flex: none;
-    --ui-panel-body-flex: initial;
-  }
-  .left-pane,
-  .center-pane,
-  .right-pane {
-    flex: none;
-    overflow: visible;
-    max-height: none;
+  .tab-toolbar {
+    flex-wrap: wrap;
   }
 }

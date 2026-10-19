@@ -1,0 +1,14 @@
+@if (kind() === 'spinner') {
+  <mat-progress-spinner
+    [mode]="indeterminate() ? 'indeterminate' : 'determinate'"
+    [value]="value()"
+    [diameter]="diameter()"
+    [attr.aria-label]="label()"
+  />
+} @else {
+  <mat-progress-bar
+    [mode]="indeterminate() ? 'indeterminate' : 'determinate'"
+    [value]="value()"
+    [attr.aria-label]="label()"
+  />
+}

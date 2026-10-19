@@ -1,0 +1,16 @@
+<span class="label">{{ label() }}</span>
+<div class="options" role="group" [attr.aria-label]="label()">
+  @for (option of choices(); track option.value) {
+    <button
+      type="button"
+      [disabled]="option.disabled"
+      [attr.aria-pressed]="order(option.value) > 0"
+      (click)="toggle(option)"
+    >
+      @if (order(option.value); as selectedOrder) {
+        <span class="order">{{ selectedOrder }}</span>
+      }
+      <span>{{ option.label }}</span>
+    </button>
+  }
+</div>

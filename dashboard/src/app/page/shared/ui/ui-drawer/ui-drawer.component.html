@@ -1,0 +1,27 @@
+<ng-template #panel>
+  <section
+    class="drawer"
+    [class.start]="side() === 'start'"
+    role="region"
+    [attr.aria-labelledby]="headingId"
+  >
+    <app-ui-splitter
+      class="drawer-splitter"
+      orientation="vertical"
+      label="调整抽屉宽度"
+      [direction]="side() === 'end' ? -1 : 1"
+      [value]="width()"
+      [min]="320"
+      [max]="960"
+      [defaultValue]="680"
+      (resizeStart)="beginResize($event)"
+      (valueChange)="setWidth($event)"
+      (resizeEnd)="finishResize($event)"
+    />
+    <header>
+      <h2 [id]="headingId">{{ heading() }}</h2>
+      <app-ui-icon-button icon="close" label="关闭" (pressed)="close('button')" />
+    </header>
+    <div class="content" [class.unpadded]="padding() === 'none'"><ng-content /></div>
+  </section>
+</ng-template>

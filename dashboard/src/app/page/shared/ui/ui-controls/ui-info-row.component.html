@@ -1,0 +1,12 @@
+<ng-template #rowContent>
+  <span class="leading"><ng-content select="[info-row-leading]" /></span>
+  <span class="content"><ng-content /></span>
+</ng-template>
+@if (actionable()) {
+  <button matButton="text" type="button" class="trigger" (click)="activated.emit()">
+    <ng-container *ngTemplateOutlet="rowContent" />
+  </button>
+} @else {
+  <div class="static"><ng-container *ngTemplateOutlet="rowContent" /></div>
+}
+<span class="actions"><ng-content select="[info-row-actions]" /></span>

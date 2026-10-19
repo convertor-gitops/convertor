@@ -1,18 +1,13 @@
+import { UIProgressComponent, UISwitchComponent } from '../../shared/ui/ui-controls/ui-controls';
 import {
-  UiButtonComponent,
-  UiTextFieldComponent,
-  UiSelectComponent,
-  UiOptionComponent,
-  UiCollapseComponent,
+  UIButtonComponent,
+  UITextFieldComponent,
+  UISelectComponent,
+  UIOptionComponent,
+  UICollapseComponent,
 } from '../../shared/ui';
-import { UiIconButtonComponent } from '../../shared/ui';
-import { UiIconComponent } from '../../shared/ui';
 import { ChangeDetectionStrategy, Component, effect, inject, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import {
   AllPredicate,
   InlineSourceInput,
@@ -31,18 +26,14 @@ type SourceKind = 'remote' | 'inline';
 @Component({
   selector: 'app-source-manager',
   imports: [
-    UiButtonComponent,
-    UiTextFieldComponent,
-    UiSelectComponent,
-    UiOptionComponent,
-    UiCollapseComponent,
-    UiIconButtonComponent,
-    UiIconComponent,
+    UIProgressComponent,
+    UISwitchComponent,
+    UIButtonComponent,
+    UITextFieldComponent,
+    UISelectComponent,
+    UIOptionComponent,
+    UICollapseComponent,
     FormsModule,
-    MatButtonModule,
-    MatExpansionModule,
-    MatProgressBarModule,
-    MatSlideToggleModule,
     PredicateEditor,
   ],
   templateUrl: './source-manager.html',
@@ -50,6 +41,14 @@ type SourceKind = 'remote' | 'inline';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SourceManager {
+  readonly collapsedSources = signal<ReadonlySet<number>>(new Set());
+  setSourceExpanded(id: number, expanded: boolean): void {
+    this.collapsedSources.update((s) => {
+      const next = new Set(s);
+      expanded ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
   readonly board = inject(PlanBoardService);
   readonly closeRequested = output<void>();
 

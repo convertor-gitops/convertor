@@ -8,7 +8,7 @@ import { MatCard } from '@angular/material/card';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'ui-kit', '[class.subtle]': "appearance() === 'subtle'" },
 })
-export class UiCardComponent {
+export class UICardComponent {
   readonly heading = input('');
   readonly description = input('');
   readonly appearance = input<'outlined' | 'subtle'>('outlined');

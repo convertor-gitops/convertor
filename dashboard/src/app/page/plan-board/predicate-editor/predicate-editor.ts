@@ -1,13 +1,13 @@
+import { UICardComponent, UIIconButtonComponent } from '../../shared/ui';
+import { UICheckboxComponent } from '../../shared/ui/ui-controls/ui-controls';
 import {
-  UiButtonComponent,
-  UiTextFieldComponent,
-  UiSelectComponent,
-  UiOptionComponent,
+  UIButtonComponent,
+  UITextFieldComponent,
+  UISelectComponent,
+  UIOptionComponent,
 } from '../../shared/ui';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import {
   AllPredicate,
   AnyPredicate,
@@ -49,13 +49,14 @@ type StringMatchOp = StringMatch['op'];
 @Component({
   selector: 'app-predicate-editor',
   imports: [
-    UiButtonComponent,
-    UiTextFieldComponent,
-    UiSelectComponent,
-    UiOptionComponent,
+    UICardComponent,
+    UIIconButtonComponent,
+    UICheckboxComponent,
+    UIButtonComponent,
+    UITextFieldComponent,
+    UISelectComponent,
+    UIOptionComponent,
     FormsModule,
-    MatButtonModule,
-    MatCheckboxModule,
   ],
   templateUrl: './predicate-editor.html',
   styleUrl: './predicate-editor.scss',

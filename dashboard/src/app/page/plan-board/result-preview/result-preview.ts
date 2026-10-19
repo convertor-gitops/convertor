@@ -1,13 +1,12 @@
 import {
-  UiButtonComponent,
-  UiCardComponent,
-  UiCollapseComponent,
-  UiNodeCardComponent,
-} from '../../shared/ui';
+  UITabsComponent,
+  UITabComponent,
+  UIProgressComponent,
+  UIInfoRowComponent,
+} from '../../shared/ui/ui-controls/ui-controls';
+import { UICollapseComponent } from '../../shared/ui';
+import { UIButtonComponent, UICardComponent, UINodeCardComponent } from '../../shared/ui';
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTabsModule } from '@angular/material/tabs';
 import {
   Diagnostic,
   EvaluatedGroup,
@@ -18,16 +17,21 @@ import {
 } from '../../../common/model/core/evaluation';
 
 const EMPTY_HIGHLIGHTS: ReadonlySet<string> = new Set<string>();
+interface GroupDisplayRow {
+  group: EvaluatedGroup;
+  depth: number;
+}
 @Component({
   selector: 'app-result-preview',
   imports: [
-    UiCardComponent,
-    UiCollapseComponent,
-    UiNodeCardComponent,
-    UiButtonComponent,
-    MatButtonModule,
-    MatProgressSpinnerModule,
-    MatTabsModule,
+    UITabsComponent,
+    UITabComponent,
+    UIProgressComponent,
+    UIInfoRowComponent,
+    UICollapseComponent,
+    UICardComponent,
+    UINodeCardComponent,
+    UIButtonComponent,
   ],
   templateUrl: './result-preview.html',
   styleUrl: './result-preview.scss',
@@ -56,6 +60,34 @@ export class ResultPreview {
   readonly groupsByIdentity = computed(
     () => new Map((this.report()?.groups ?? []).map((group) => [group.identity, group])),
   );
+  readonly groupRows = computed<GroupDisplayRow[]>(() => {
+    const report = this.report();
+    if (!report) return [];
+
+    const groups = new Map(report.groups.map((group) => [group.identity, group]));
+    const children = new Map<string | null, string[]>();
+    for (const base of report.base_groups) {
+      const siblings = children.get(base.parent) ?? [];
+      siblings.push(base.identity);
+      children.set(base.parent, siblings);
+    }
+
+    const rows: GroupDisplayRow[] = [];
+    const visited = new Set<string>();
+    const visit = (identity: string, depth: number): void => {
+      if (visited.has(identity)) return;
+      visited.add(identity);
+      const group = groups.get(identity);
+      if (group) rows.push({ group, depth });
+      for (const child of children.get(identity) ?? []) visit(child, depth + 1);
+    };
+
+    for (const root of children.get(null) ?? []) visit(root, 0);
+    for (const group of report.groups) {
+      if (!visited.has(group.identity)) rows.push({ group, depth: 0 });
+    }
+    return rows;
+  });
   readonly errorCount = computed(
     () => this.report()?.diagnostics.filter((item) => item.severity === 'error').length ?? 0,
   );

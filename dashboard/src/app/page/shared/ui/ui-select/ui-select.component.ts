@@ -11,9 +11,9 @@ import {
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatSelect, MatSelectTrigger } from '@angular/material/select';
 import { MatOption, MatOptgroup } from '@angular/material/core';
-import { UiValueAccessor } from '../ui-value-accessor';
-import { UiOptionComponent, UiOptionValue } from '../ui-option/ui-option.component';
-export type UiSelectValue = UiOptionValue | UiOptionValue[] | null;
+import { UIValueAccessor } from '../ui-value-accessor';
+import { UIOptionComponent, UIOptionValue } from '../ui-option/ui-option.component';
+export type UISelectValue = UIOptionValue | UIOptionValue[] | null;
 let nextSelectId = 0;
 @Component({
   selector: 'app-ui-select',
@@ -22,13 +22,13 @@ let nextSelectId = 0;
   styleUrl: './ui-select.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
-    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => UiSelectComponent), multi: true },
+    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => UISelectComponent), multi: true },
   ],
   host: { class: 'ui-kit' },
 })
-export class UiSelectComponent extends UiValueAccessor<UiSelectValue> {
+export class UISelectComponent extends UIValueAccessor<UISelectValue> {
   readonly resetAfterSelection = input(false);
-  select(value: UiSelectValue): void {
+  select(value: UISelectValue): void {
     this.updateValue(value);
     if (this.resetAfterSelection()) {
       this.writeValue(null);
@@ -49,10 +49,10 @@ export class UiSelectComponent extends UiValueAccessor<UiSelectValue> {
       control.stateChanges.next();
     }
   });
-  readonly options = contentChildren(UiOptionComponent, { descendants: true });
+  readonly options = contentChildren(UIOptionComponent, { descendants: true });
   protected readonly id = 'ui-select-' + nextSelectId++;
   readonly groups = computed(() => {
-    const groups = new Map<string, UiOptionComponent[]>();
+    const groups = new Map<string, UIOptionComponent[]>();
     for (const option of this.options()) {
       const name = option.group();
       groups.set(name, [...(groups.get(name) ?? []), option]);
@@ -61,7 +61,7 @@ export class UiSelectComponent extends UiValueAccessor<UiSelectValue> {
   });
   readonly selectedLabel = computed(() => {
     const values = Array.isArray(this.current())
-      ? (this.current() as UiOptionValue[])
+      ? (this.current() as UIOptionValue[])
       : [this.current()];
     return this.options()
       .filter((option) => values.includes(option.value()))

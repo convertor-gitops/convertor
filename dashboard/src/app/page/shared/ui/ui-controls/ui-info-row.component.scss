@@ -1,0 +1,51 @@
+:host {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 8px;
+  border: 1px solid var(--ui-outline);
+  border-radius: var(--ui-radius-control);
+  background: var(--ui-surface);
+  color: var(--ui-text);
+  overflow: hidden;
+}
+.trigger,
+.static {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 8px;
+  padding: 8px 10px;
+  color: inherit;
+  text-align: left;
+}
+.trigger {
+  justify-content: flex-start;
+  border-radius: 0;
+}
+.trigger:hover {
+  background: var(--ui-surface-high);
+}
+.trigger:focus-visible {
+  outline: 2px solid var(--ui-accent-text);
+  outline-offset: -2px;
+}
+.leading,
+.actions {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+.leading:empty,
+.actions:empty {
+  display: none;
+}
+.content {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.actions {
+  padding-right: 4px;
+}

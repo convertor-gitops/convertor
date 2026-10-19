@@ -1,0 +1,90 @@
+:host {
+  display: contents;
+}
+.drawer {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ui-text);
+  background: var(--ui-surface);
+  border-left: 1px solid var(--ui-outline);
+  box-shadow: -12px 0 32px #0005;
+}
+.drawer.start {
+  border-right: 1px solid var(--ui-outline);
+  border-left: 0;
+  box-shadow: 12px 0 32px #0005;
+}
+header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 8px 12px 8px 16px;
+  border-bottom: 1px solid var(--ui-outline);
+}
+h2 {
+  margin: 0;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.content {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  padding: 16px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  overflow: auto;
+}
+.content.unpadded {
+  padding: 0;
+}
+app-ui-splitter.drawer-splitter {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  bottom: 0;
+  left: -2px;
+  width: 4px;
+}
+.start app-ui-splitter.drawer-splitter {
+  right: -2px;
+  left: auto;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .drawer {
+    animation: drawer-in 160ms ease-out;
+  }
+  @keyframes drawer-in {
+    from {
+      transform: translateX(20px);
+      opacity: 0.7;
+    }
+  }
+  .drawer.start {
+    animation-name: drawer-in-start;
+  }
+  @keyframes drawer-in-start {
+    from {
+      transform: translateX(-20px);
+      opacity: 0.7;
+    }
+  }
+}
+@media (forced-colors: active) {
+  .drawer {
+    border: 1px solid CanvasText;
+    box-shadow: none;
+  }
+}

@@ -1,0 +1,130 @@
+:host {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--ui-text, var(--mat-sys-on-surface));
+  background: var(--ui-bg, var(--mat-sys-surface));
+}
+.header {
+  position: relative;
+  z-index: 12;
+  display: flex;
+  min-height: 56px;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--ui-outline, var(--mat-sys-outline-variant));
+  background: var(--ui-surface, var(--mat-sys-surface-container));
+}
+.heading {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+h1 {
+  overflow: hidden;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.heading p {
+  overflow: hidden;
+  margin: 0;
+  color: var(--ui-muted, var(--mat-sys-on-surface-variant));
+  font-size: 11px;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.actions {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+.notice:empty {
+  display: none;
+}
+.notice {
+  position: relative;
+  z-index: 11;
+  flex: none;
+  border-bottom: 1px solid var(--ui-outline, var(--mat-sys-outline-variant));
+}
+.workspace,
+.region {
+  min-width: 0;
+  min-height: 0;
+}
+.workspace {
+  flex: 1 1 0;
+  overflow: hidden;
+  background: transparent;
+}
+:host ::ng-deep .mat-drawer-inner-container,
+.side-content,
+mat-drawer-content {
+  min-width: 0;
+  min-height: 0;
+}
+mat-drawer {
+  overflow: visible;
+  max-width: 100%;
+  border-radius: 0;
+  background: var(--ui-surface-low, var(--mat-sys-surface-container-low));
+}
+:host ::ng-deep .mat-drawer-inner-container {
+  position: relative;
+  overflow: visible;
+}
+.side-content {
+  height: 100%;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+mat-drawer-content {
+  // Keep the main region in the same render as the dragged edge. Material's
+  // measured autosize margins and their transition otherwise trail the pointer.
+  margin-left: var(--scaffold-left, 0px) !important;
+  margin-right: var(--scaffold-right, 0px) !important;
+  transition: none !important;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+}
+.drawer-splitter {
+  position: absolute;
+  inset-block: 0;
+}
+.left-splitter {
+  inset-inline-end: -2px;
+}
+.right-splitter {
+  inset-inline-start: -2px;
+}
+.region {
+  overflow: auto;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+}
+.main {
+  flex: 1 1 0;
+}
+.bottom.collapsed {
+  display: none;
+}
+.bottom {
+  flex: none;
+  background: var(--ui-surface-low, var(--mat-sys-surface-container-low));
+}

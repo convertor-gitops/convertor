@@ -1,488 +1,126 @@
 :host {
-  display: block;
+  display: flex;
+  flex: 1;
+  min-height: 0;
   min-width: 0;
+  height: 100%;
 }
-
 .preview {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  color: var(--ui-text);
-}
-
-.preview.stale .result-tabs,
-.preview.stale .metrics {
-  opacity: 0.68;
-}
-
-.result-tabs {
   flex: 1;
-  min-height: 0;
-}
-
-:host ::ng-deep .result-tabs .mat-mdc-tab-body-wrapper {
-  flex: 1;
-  min-height: 0;
-}
-
-:host ::ng-deep .result-tabs .mat-mdc-tab {
-  min-width: 0;
-  flex: 1 1 0;
-  padding: 0 5px;
-}
-
-:host ::ng-deep .result-tabs .mdc-tab__text-label {
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.tab-content {
-  display: flex;
   flex-direction: column;
-  gap: 8px;
+  min-height: 0;
   min-width: 0;
-  padding-top: 8px;
 }
-
-.tab-summary {
-  padding: 0 4px;
-  color: var(--ui-muted);
-  font-size: 11px;
-}
-
-.summary,
-.summary > div,
-.metrics,
-.resource-title,
-.graph-row,
-.trace-resources {
+.summary {
   display: flex;
   align-items: center;
-}
-
-.summary {
-  min-height: 32px;
   justify-content: space-between;
-  gap: 12px;
-}
-
-.summary > div {
+  padding: 12px;
   gap: 8px;
 }
-
-.summary strong {
-  font-size: 15px;
+.summary > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
-
-.status {
-  padding: 3px 7px;
-  border-radius: var(--ui-radius-md, 8px);
-  background: var(--ui-surface-high);
-  color: var(--ui-muted);
+.status,
+.tab-summary {
   font-size: 11px;
+  color: var(--ui-muted);
 }
-
-.status.fresh {
+.fresh {
   color: var(--ui-success);
 }
-
-.stale-status {
+.stale-status,
+.warnings {
   color: var(--ui-warning);
-  background: var(--ui-active);
-  font-weight: 650;
 }
-
+.errors,
+.invalid {
+  color: var(--ui-error);
+}
 .metrics {
+  display: flex;
+  gap: 8px;
   flex-wrap: wrap;
-  gap: 7px;
-}
-
-.metrics span {
-  padding: 6px 9px;
-  border: 1px solid var(--ui-outline);
-  border-radius: 8px;
+  padding: 0 12px 12px;
   font-size: 12px;
 }
-
-.metrics .errors {
-  color: var(--ui-error);
-}
-
-.metrics .warnings {
-  color: var(--ui-warning);
-}
-
-.scroll-list {
-  max-height: 440px;
-  overflow: auto;
-  padding: 4px;
-}
-
-.groups {
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-}
-
-.group-card {
-  padding: 8px;
-  border: 1px solid var(--ui-outline);
-  border-radius: var(--ui-radius-md, 8px);
-}
-
-.resource-title {
-  width: 100%;
-  justify-content: space-between;
-  text-align: left;
-}
-
-.resource-title small,
-.graph-row small {
-  color: var(--ui-muted);
-}
-
-.identity {
-  padding: 0 12px 6px;
-  color: var(--ui-muted);
-  font: 10px var(--app-mono, monospace);
-}
-
-.invalid,
-.graph-row em {
-  color: var(--ui-error);
-  font-size: 11px;
-  font-style: normal;
-}
-
-.graph {
-  overflow: hidden;
-  border-radius: var(--ui-radius-md, 8px);
-  background: var(--ui-surface-high);
-}
-
-.graph-row {
-  width: 100%;
-  min-height: 30px;
-  gap: 7px;
-  border: 0;
-  border-bottom: 1px solid var(--ui-outline);
-  background: transparent;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.graph-row:last-child {
-  border-bottom: 0;
-}
-
-.graph-row small {
-  margin-left: auto;
-}
-
-.graph-row.unreachable {
-  opacity: 0.62;
-}
-
-.graph-row.issue {
-  background: color-mix(in srgb, var(--ui-error), transparent 92%);
-}
-
-.tree-mark {
-  width: 14px;
-  color: var(--app-accent, #6675ef);
-  text-align: center;
-}
-
-.diagnostics,
-.traces {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.diagnostic {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: auto;
-  padding: 7px 9px;
-  text-align: left;
-}
-
-.diagnostic > span {
-  color: var(--ui-warning);
-}
-
-.diagnostic.error > span {
-  color: var(--ui-error);
-}
-
-.diagnostic small {
-  color: var(--ui-muted);
-}
-
-.trace-row {
-  padding: 7px;
-  border: 1px solid var(--ui-outline);
-  border-radius: 8px;
-}
-
-.trace-path {
-  font-family: var(--app-mono, monospace);
-}
-
-.trace-resources {
-  flex-wrap: wrap;
-  gap: 5px;
-  padding: 4px 8px;
-}
-
-.highlighted {
-  outline: 2px solid var(--app-accent, #6675ef);
-  outline-offset: -2px;
-  background: color-mix(in srgb, var(--app-accent, #6675ef), transparent 90%);
-}
-
-.rendered {
-  max-height: 520px;
-  overflow: auto;
-  margin: 0;
-  padding: 12px;
-  border-radius: 8px;
-  background: #0c0f15;
-  color: #d8dce8;
-  font: 11px/1.55 var(--app-mono, monospace);
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-.empty {
-  padding: 18px;
-  color: var(--ui-muted);
-  text-align: center;
-}
-
-.waiting {
-  border: 1px dashed var(--ui-outline);
-  border-radius: var(--ui-radius-md, 8px);
-}
-
-.preview {
-  overflow-wrap: anywhere;
-  padding: 12px;
-}
-.preview > *,
-.group-card,
-.graph-row > * {
-  min-width: 0;
-}
-.summary,
-.summary > div,
-.resource-title,
-.graph-row {
-  flex-wrap: wrap;
-}
-.resource-title,
-.trace-path,
-.trace-resources button {
-  height: auto;
-  min-height: 36px;
-  white-space: normal;
-  max-width: 100%;
-}
-app-ui-card.group-card {
-  border: 0;
-  padding: 0;
-  background: transparent;
-}
-
-// Keep every result category inside the available pane height. Individual lists own scrolling.
-:host {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-}
-.preview {
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-}
-.result-tabs {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-:host ::ng-deep .result-tabs .mat-mdc-tab-body-wrapper,
-:host ::ng-deep .result-tabs .mat-mdc-tab-body,
-:host ::ng-deep .result-tabs .mat-mdc-tab-body-content {
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-}
-:host ::ng-deep .result-tabs .mat-mdc-tab-body-content {
-  display: flex;
-  overflow: hidden;
-}
 .tab-content {
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   min-height: 0;
-  overflow: hidden;
-}
-.tab-summary {
-  flex: none;
+  height: 100%;
+  gap: 8px;
+  padding: 12px;
+  box-sizing: border-box;
 }
 .scroll-list {
-  flex: 1;
-  min-width: 0;
+  overflow: auto;
   min-height: 0;
-  max-height: none;
-  overflow-x: hidden;
-  overflow-y: auto;
-  scrollbar-gutter: stable;
-}
-
-.output-group {
-  flex: none;
   min-width: 0;
-}
-.output-group.highlighted {
-  border-radius: var(--ui-radius-panel, 12px);
-}
-.group-trailing,
-.member-card-button {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 8px;
 }
-.group-trailing {
-  gap: 4px;
+.group-level {
+  min-width: 0;
 }
 .member-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-}
-.member-card {
+  gap: 8px;
   min-width: 0;
 }
 .member-card-button {
-  width: 100%;
-  min-width: 0;
-  min-height: 44px;
+  display: flex;
+  align-items: flex-start;
   gap: 8px;
-  padding: var(--ui-card-padding, 8px);
-  border: 0;
-  background: transparent;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-.member-card-button.static {
-  cursor: default;
-}
-.member-card-button:focus-visible {
-  outline: 2px solid var(--ui-accent-text);
-  outline-offset: -3px;
-}
-.member-mark {
-  display: inline-flex;
-  width: 28px;
-  height: 28px;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  border: 1px solid var(--ui-outline);
-  border-radius: var(--ui-radius-control, 8px);
-  background: var(--ui-surface-high);
-  color: var(--ui-accent-text);
-  font-size: 10px;
-  font-weight: 700;
+  min-width: 0;
 }
 .member-copy {
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
   flex: 1;
-  flex-direction: column;
-  min-width: 0;
-  gap: 3px;
+  overflow-wrap: anywhere;
 }
-.member-copy strong,
+.member-type,
 .member-copy small {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.member-copy strong {
-  font-size: 12px;
-}
-.member-copy small,
-.member-type {
+  font-size: 11px;
   color: var(--ui-muted);
-  font-size: 10px;
 }
-.member-type {
-  flex: none;
+.member-mark {
+  color: var(--ui-muted);
 }
-.missing-member .member-type {
-  color: var(--ui-error);
-}
-.empty.compact {
-  padding: 10px;
-}
-
-// UiButton owns the actual button node, so size and wrapping must be applied through it.
-.diagnostic {
-  display: flex;
-  width: 100%;
-  min-width: 0;
-  flex: none;
-  padding: 0;
-}
-:host ::ng-deep .diagnostic > button {
-  width: 100%;
-  height: auto;
-  min-height: 52px;
-  padding: 8px 10px;
-  border: 1px solid var(--ui-outline);
-  border-radius: var(--ui-radius-control, 8px);
-  background: var(--ui-surface-high);
-  justify-content: flex-start;
-  text-align: left;
-}
-:host ::ng-deep .diagnostic .content {
-  display: flex;
-  width: 100%;
-  min-width: 0;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-.diagnostic :is(span, code, strong, small) {
+.diagnostic strong,
+.diagnostic code,
+.diagnostic small {
   display: block;
-  max-width: 100%;
-  white-space: normal;
   overflow-wrap: anywhere;
+}
+.trace-resources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 .rendered {
-  flex: 1;
-  min-height: 0;
-  max-height: none;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow: auto;
+  min-width: 0;
+  font-family: var(--app-mono);
+  color: var(--ui-text);
 }
-
-@media (max-width: 850px) {
-  :host,
-  .preview,
-  .result-tabs,
-  .tab-content {
-    flex: none;
-    min-height: auto;
-    overflow: visible;
-  }
-  .scroll-list {
-    flex: none;
-    max-height: 520px;
-  }
+.empty {
+  padding: 24px 12px;
+  color: var(--ui-muted);
+  text-align: center;
+}
+.compact {
+  padding: 8px;
 }

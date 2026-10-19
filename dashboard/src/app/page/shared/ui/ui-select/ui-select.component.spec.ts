@@ -4,21 +4,21 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { UiSelectComponent, UiSelectValue } from './ui-select.component';
-import { UiOptionComponent } from '../ui-option/ui-option.component';
+import { UISelectComponent, UISelectValue } from './ui-select.component';
+import { UIOptionComponent } from '../ui-option/ui-option.component';
 
 @Component({
-  imports: [ReactiveFormsModule, UiSelectComponent, UiOptionComponent],
+  imports: [ReactiveFormsModule, UISelectComponent, UIOptionComponent],
   template:
     '<app-ui-select label="地区" [formControl]="control" [multiple]="multiple" [resetAfterSelection]="reset"><app-ui-option value="hk" label="香港" description="主力订阅" group="亚洲" suffix="HK" /><app-ui-option value="jp" label="日本" description="备用订阅" group="亚洲" /><app-ui-option value="de" label="德国" [disabled]="true" group="欧洲" /></app-ui-select>',
 })
 class SelectHost {
-  control = new FormControl<UiSelectValue>('hk');
+  control = new FormControl<UISelectValue>('hk');
   multiple = false;
   reset = false;
 }
 
-describe('UiSelectComponent Angular Forms and real Material options', () => {
+describe('UISelectComponent Angular Forms and real Material options', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [SelectHost] }));
   async function setup(multiple = false) {
     const fixture = TestBed.createComponent(SelectHost);
@@ -79,7 +79,7 @@ describe('UiSelectComponent Angular Forms and real Material options', () => {
     const { fixture, harness, control } = await setup();
     fixture.componentInstance.reset = true;
     fixture.detectChanges();
-    const values: UiSelectValue[] = [];
+    const values: UISelectValue[] = [];
     control.valueChanges.subscribe((value) => values.push(value));
     await harness.open();
     await harness.clickOptions({ text: /日本/ });

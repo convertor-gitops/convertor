@@ -1,0 +1,6 @@
+<mat-checkbox
+  [checked]="checked()"
+  [disabled]="disabled() || formDisabled()"
+  (change)="setChecked($event.checked)"
+  ><ng-content
+/></mat-checkbox>

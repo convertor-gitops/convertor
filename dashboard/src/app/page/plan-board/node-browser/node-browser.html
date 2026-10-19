@@ -12,27 +12,12 @@
       <span class="picker-label">浏览分组</span>
       <small>按点击顺序建立层级</small>
     </div>
-    <div class="dimension-options">
-      @for (kind of dimensionKinds; track kind) {
-        <app-ui-button
-          [variant]="dimensionOrder(kind) ? 'tonal' : 'text'"
-          type="button"
-          class="dimension-option"
-          [class.selected]="dimensionOrder(kind)"
-          [attr.aria-pressed]="!!dimensionOrder(kind)"
-          (pressed)="toggleDimension(kind)"
-        >
-          @if (dimensionOrder(kind); as order) {
-            <span class="order-badge" [attr.aria-label]="'当前第 ' + order + ' 层'">{{
-              order
-            }}</span>
-          } @else {
-            <span class="option-marker" aria-hidden="true"></span>
-          }
-          <span>{{ labels[kind] }}</span>
-        </app-ui-button>
-      }
-    </div>
+    <app-ui-ordered-options
+      label="分组顺序"
+      [choices]="dimensionChoices"
+      [values]="dimensionValues()"
+      (valuesChange)="setDimensionValues($event)"
+    />
     @for (dimension of dimensions(); track dimension.kind; let i = $index) {
       @if (dimension.kind === 'has_tag') {
         <app-ui-text-field
@@ -62,52 +47,31 @@
   [cdkDropListConnectedTo]="dropTargets()"
   [cdkDropListSortingDisabled]="true"
 >
-  <mat-tree
-    #tree
-    [dataSource]="data()"
-    [childrenAccessor]="children"
-    [trackBy]="track"
-    [expansionKey]="expansionKey"
-  >
-    <mat-tree-node
-      *matTreeNodeDef="let item"
-      matTreeNodePadding
-      [matTreeNodePaddingIndent]="14"
-      [class.linked]="highlighted().has(item.node.identity)"
-      cdkDrag
-      [cdkDragData]="dragNodes(item.node)"
-    >
-      <app-ui-node-card
-        [name]="item.label"
-        [region]="regionBadge(item.node.region)"
-        [protocol]="item.node.proxy.protocol"
-        [source]="item.node.sourceName"
-        [tags]="item.node.proxy.tags"
-        [selected]="selected().has(item.node.key)"
-        (selectedChange)="toggle(item.node, $event)"
-        (detailsRequested)="focusNode.emit(item.node.identity)"
-        (actionRequested)="createGroup.emit(dragNodes(item.node))"
-      />
-      <div *cdkDragPreview class="drag-preview">
-        添加 {{ dragNodes(item.node).length }} 个节点到组
-      </div>
-    </mat-tree-node>
-    <mat-tree-node
-      *matTreeNodeDef="let item; when: isBranch"
-      matTreeNodePadding
-      [matTreeNodePaddingIndent]="14"
-      [isExpandable]="true"
-    >
-      <button
-        mat-button
-        matTreeNodeToggle
-        [attr.aria-label]="'展开或折叠 ' + item.label"
-        class="branch-toggle"
+  <app-ui-tree #tree [nodes]="data()">
+    <ng-template uiTreeLeaf let-item>
+      <div
+        class="node-leaf"
+        [class.linked]="highlighted().has(item.node.identity)"
+        cdkDrag
+        [cdkDragData]="dragNodes(item.node)"
       >
-        {{ tree.isExpanded(item) ? '▾' : '▸' }} {{ item.label }} <span>{{ item.count }}</span>
-      </button>
-    </mat-tree-node>
-  </mat-tree>
+        <app-ui-node-card
+          [name]="item.label"
+          [region]="''"
+          [protocol]="item.node.proxy.protocol"
+          [source]="item.node.sourceName"
+          [tags]="item.node.proxy.tags"
+          [selected]="selected().has(item.node.key)"
+          [highlighted]="highlighted().has(item.node.identity)"
+          [showActions]="false"
+          (selectedChange)="toggle(item.node, $event)"
+        />
+        <app-ui-info-row *cdkDragPreview class="drag-preview">
+          添加 {{ dragNodes(item.node).length }} 个节点到组
+        </app-ui-info-row>
+      </div>
+    </ng-template>
+  </app-ui-tree>
   @if (!filtered().length) {
     <div class="empty">
       {{ nodes().length ? '没有匹配的节点' : '添加并加载来源后，在这里浏览节点。' }}

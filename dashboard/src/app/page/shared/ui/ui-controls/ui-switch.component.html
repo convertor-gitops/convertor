@@ -1,0 +1,6 @@
+<mat-slide-toggle
+  [checked]="checked()"
+  [disabled]="disabled() || formDisabled()"
+  (change)="setChecked($event.checked)"
+  ><ng-content
+/></mat-slide-toggle>

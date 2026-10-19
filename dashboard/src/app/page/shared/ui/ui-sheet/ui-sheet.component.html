@@ -1,0 +1,26 @@
+<ng-template #panel>
+  <section class="sheet" role="region" [attr.aria-labelledby]="headingId">
+    <app-ui-splitter
+      class="drag-handle"
+      orientation="horizontal"
+      appearance="handle"
+      label="调整面板高度"
+      [direction]="-1"
+      [value]="height()"
+      [min]="0"
+      [keyboardMin]="viewportHeight() * 0.5"
+      [max]="maximumHeight()"
+      [defaultValue]="viewportHeight() * 0.5"
+      (resizeStart)="beginResize($event)"
+      (valueChange)="setHeight($event)"
+      (pointerResizeEnd)="finishPointerResize($event)"
+      (keyboardResizeEnd)="finishKeyboardResize($event)"
+      (resizeCanceled)="cancelResize($event)"
+    />
+    <header>
+      <h2 [id]="headingId">{{ heading() }}</h2>
+      <app-ui-icon-button icon="close" label="关闭" (pressed)="close('button')" />
+    </header>
+    <div class="content" [class.unpadded]="padding() === 'none'"><ng-content /></div>
+  </section>
+</ng-template>

@@ -3,7 +3,7 @@ import { ControlValueAccessor } from '@angular/forms';
 
 /** Shared Angular Forms contract. Programmatic writes never emit user changes. */
 @Directive()
-export abstract class UiValueAccessor<T> implements ControlValueAccessor {
+export abstract class UIValueAccessor<T> implements ControlValueAccessor {
   readonly disabled = input(false);
   protected readonly formDisabled = signal(false);
   readonly isDisabled = computed(() => this.disabled() || this.formDisabled());

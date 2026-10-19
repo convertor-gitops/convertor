@@ -27,7 +27,7 @@ export const UI_ICONS = {
   palette:
     'M12 3a9 9 0 1 0 0 18h2a2 2 0 0 0 0-4h-1a2 2 0 0 1 0-4h4a4 4 0 0 0 4-4c0-4-5-6-9-6M7 9h.01M10 6h.01M15 6h.01M6 14h.01',
 } as const;
-export type UiIconName = keyof typeof UI_ICONS;
+export type UIIconName = keyof typeof UI_ICONS;
 @Component({
   selector: 'app-ui-icon',
   templateUrl: './ui-icon.component.html',
@@ -35,7 +35,7 @@ export type UiIconName = keyof typeof UI_ICONS;
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { 'aria-hidden': 'true' },
 })
-export class UiIconComponent {
-  readonly name = input<UiIconName>('plus');
+export class UIIconComponent {
+  readonly name = input<UIIconName>('plus');
   protected readonly paths = UI_ICONS;
 }

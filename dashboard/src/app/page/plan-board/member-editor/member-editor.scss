@@ -4,13 +4,18 @@
   gap: 10px;
 }
 .row {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 app-ui-select,
 app-ui-text-field {
-  flex: 1 1 140px;
   min-width: 0;
   max-width: 100%;
+}
+
+@media (max-width: 360px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

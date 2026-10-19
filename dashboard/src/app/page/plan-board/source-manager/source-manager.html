@@ -1,14 +1,3 @@
-<header class="drawer-header">
-  <div class="drawer-title">
-    <span class="drawer-mark"><app-ui-icon name="server" /></span>
-    <div class="drawer-copy">
-      <h2>来源管理</h2>
-      <p>添加、加载和刷新订阅来源</p>
-    </div>
-  </div>
-  <app-ui-icon-button icon="close" label="关闭" (pressed)="closeRequested.emit()" />
-</header>
-
 <section class="client-section">
   <app-ui-select
     label="目标客户端"
@@ -53,15 +42,15 @@
   </div>
 </app-ui-collapse>
 
-<mat-accordion multi class="source-list">
+<div class="source-list">
   @for (source of board.plan().sources; track source.id; let index = $index) {
     @let profile = board.sourceProfiles().get(source.id);
     @let loading = board.loadingSourceIds().has(source.id);
     @let sourceError = board.sourceErrors().get(source.id);
     <app-ui-collapse
       [id]="'source-' + source.id"
-      [expanded]="board.selectedSourceId() === source.id"
-      (opened)="board.selectSource(source.id)"
+      [expanded]="!collapsedSources().has(source.id)"
+      (expandedChange)="setSourceExpanded(source.id, $event)"
       heading="{{ index + 1 }}. {{ source.name || '未命名来源' }}"
       ><span collapse-description>
         @if (loading) {
@@ -76,7 +65,7 @@
       </span>
 
       @if (loading) {
-        <mat-progress-bar mode="indeterminate" />
+        <app-ui-progress kind="bar" label="加载来源" />
       }
       <div class="source-form">
         <app-ui-text-field
@@ -127,7 +116,7 @@
           </app-ui-button>
           <app-ui-button
             variant="text"
-            class="danger"
+            tone="danger"
             type="button"
             [disabled]="loading"
             (pressed)="remove(source)"
@@ -170,10 +159,10 @@
         }
 
         <div class="filter wide">
-          <mat-slide-toggle
+          <app-ui-switch
             [ngModel]="source.node_filter !== null"
             (ngModelChange)="setFilterEnabled(source, $event)"
-            >启用节点过滤</mat-slide-toggle
+            >启用节点过滤</app-ui-switch
           >
           @if (source.node_filter) {
             <app-predicate-editor
@@ -188,4 +177,4 @@
   } @empty {
     <div class="empty">暂无来源。请先在上方填写并提交来源。</div>
   }
-</mat-accordion>
+</div>

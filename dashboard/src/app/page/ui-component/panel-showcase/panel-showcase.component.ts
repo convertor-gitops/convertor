@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { UiPanelComponent } from '../../shared/ui/ui-panel/ui-panel.component';
-import { UiNodeCardComponent } from '../../shared/ui/ui-node-card/ui-node-card.component';
-import { UiButtonComponent } from '../../shared/ui/ui-button/ui-button.component';
+import { UIPanelComponent } from '../../shared/ui/ui-panel/ui-panel.component';
+import { UINodeCardComponent } from '../../shared/ui/ui-node-card/ui-node-card.component';
+import { UIButtonComponent } from '../../shared/ui/ui-button/ui-button.component';
 @Component({
   selector: 'app-panel-showcase',
-  imports: [UiPanelComponent, UiNodeCardComponent, UiButtonComponent],
+  imports: [UIPanelComponent, UINodeCardComponent, UIButtonComponent],
   templateUrl: './panel-showcase.component.html',
   styleUrl: './panel-showcase.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

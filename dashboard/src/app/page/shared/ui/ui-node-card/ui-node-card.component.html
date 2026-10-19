@@ -1,14 +1,23 @@
 <app-ui-card [padded]="false"
   ><div class="node-layout">
-    <button
-      class="selection"
-      type="button"
-      [attr.aria-label]="'选择节点 ' + name()"
-      [attr.aria-pressed]="selected()"
-      [disabled]="status() === 'disabled'"
-      (click)="selectedChange.emit(!selected())"
-    >
-      <span class="region">{{ region() }}</span>
+    @if (mode() === 'selectable') {
+      <button
+        class="selection"
+        type="button"
+        [attr.aria-label]="'选择节点 ' + name()"
+        [attr.aria-pressed]="selected()"
+        [disabled]="status() === 'disabled'"
+        (click)="selectedChange.emit(!selected())"
+      >
+        <ng-container *ngTemplateOutlet="content" />
+      </button>
+    } @else {
+      <div class="selection readonly"><ng-container *ngTemplateOutlet="content" /></div>
+    }
+    <ng-template #content>
+      @if (region()) {
+        <span class="region">{{ region() }}</span>
+      }
       <span class="copy">
         <span class="name" [title]="name()">{{ name() }}</span>
         <span class="metadata"
@@ -27,31 +36,31 @@
         @if (statusText()) {
           <span class="status-label">{{ statusText() }}</span>
         }
-        @if (selected()) {
+        @if (mode() === 'selectable' && selected()) {
           <app-ui-icon name="check" />
         } @else if (status() === 'loading') {
           <app-ui-icon name="refresh" />
         } @else if (status() === 'error') {
           <app-ui-icon name="info" />
-        } @else {
+        } @else if (mode() === 'selectable') {
           <span class="selection-dot" aria-hidden="true"></span>
         }
       </span>
-    </button>
+    </ng-template>
     @if (showActions()) {
-    <div class="actions">
-      <app-ui-icon-button
-        icon="info"
-        [label]="'查看节点 ' + name()"
-        [disabled]="status() === 'disabled'"
-        (pressed)="detailsRequested.emit()"
-      />
-      <app-ui-icon-button
-        icon="more"
-        [label]="'节点操作 ' + name()"
-        [disabled]="status() === 'disabled'"
-        (pressed)="actionRequested.emit()"
-      />
-    </div>
+      <div class="actions">
+        <app-ui-icon-button
+          icon="info"
+          [label]="'查看节点 ' + name()"
+          [disabled]="status() === 'disabled'"
+          (pressed)="detailsRequested.emit()"
+        />
+        <app-ui-icon-button
+          icon="more"
+          [label]="'节点操作 ' + name()"
+          [disabled]="status() === 'disabled'"
+          (pressed)="actionRequested.emit()"
+        />
+      </div>
     }</div
 ></app-ui-card>

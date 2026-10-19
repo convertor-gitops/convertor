@@ -170,7 +170,7 @@ describe('PlanBoard workbench behavior', () => {
     const group = component.board.plan().groups[0];
     expect(component.board.plan().output.roots).toContain(group.id);
     expect(component.centerTab()).toBe(1);
-    expect(component.expandedGroupId()).toBe(group.id);
+    expect(component.expandedGroups().has(group.id)).toBe(true);
   });
 
   it('uses the selected group strategy without mutating the old instance', () => {
@@ -188,7 +188,7 @@ describe('PlanBoard workbench behavior', () => {
     component.focusPath(`custom/${group.id}/member_selectors/0`);
 
     expect(component.centerTab()).toBe(1);
-    expect(component.expandedGroupId()).toBe(group.id);
+    expect(component.expandedGroups().has(group.id)).toBe(true);
     expect(component.focusedPath()).toBe(`custom/${group.id}/member_selectors/0`);
   });
 
@@ -200,7 +200,18 @@ describe('PlanBoard workbench behavior', () => {
     component.focusPath('custom/12/member_selectors/0');
 
     expect(component.centerTab()).toBe(0);
-    expect(component.expandedGroupId()).toBeNull();
+    expect(component.expandedGroups().size).toBe(0);
     expect(component.operationError()).toContain('预览正在更新');
+  });
+  it('keeps rule expansion independent from other rules and focus', () => {
+    component.setExpanded(component.expandedGroups, 1, true);
+    component.setExpanded(component.expandedGroups, 2, true);
+    expect([...component.expandedGroups()]).toEqual([1, 2]);
+    component.setExpanded(component.expandedGroups, 1, false);
+    expect([...component.expandedGroups()]).toEqual([2]);
+    component.setExpanded(component.expandedTags, '家宽', true);
+    component.setExpanded(component.expandedTags, '流媒体', true);
+    component.focusedTag.set('别的标签');
+    expect(component.expandedTags().size).toBe(2);
   });
 });

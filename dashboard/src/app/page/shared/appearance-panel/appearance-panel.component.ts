@@ -1,23 +1,23 @@
-import { UiSegmentedComponent } from '../../shared/ui/ui-segmented/ui-segmented.component';
+import { UISegmentedComponent } from '../ui/ui-segmented/ui-segmented.component';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { UiThemeService } from '../../../service/ui-theme';
-import { UiDensity, UiModePreference, UiRadius } from '../../../common/model/ui-theme';
-import { UiButtonComponent } from '../../shared/ui/ui-button/ui-button.component';
-import { UiIconComponent, UiIconName } from '../../shared/ui/ui-icon/ui-icon.component';
-import { UiIconButtonComponent } from '../../shared/ui/ui-icon-button/ui-icon-button.component';
-import { UiSelectComponent } from '../../shared/ui/ui-select/ui-select.component';
-import { UiOptionComponent } from '../../shared/ui/ui-option/ui-option.component';
+import { UIThemeService } from '../../../service/ui-theme';
+import { UIDensity, UIModePreference, UIRadius } from '../../../common/model/ui-theme';
+import { UIButtonComponent } from '../ui/ui-button/ui-button.component';
+import { UIIconComponent, UIIconName } from '../ui/ui-icon/ui-icon.component';
+import { UIIconButtonComponent } from '../ui/ui-icon-button/ui-icon-button.component';
+import { UISelectComponent } from '../ui/ui-select/ui-select.component';
+import { UIOptionComponent } from '../ui/ui-option/ui-option.component';
 @Component({
   selector: 'app-appearance-panel',
   imports: [
-    UiSegmentedComponent,
+    UISegmentedComponent,
     FormsModule,
-    UiButtonComponent,
-    UiIconComponent,
-    UiIconButtonComponent,
-    UiSelectComponent,
-    UiOptionComponent,
+    UIButtonComponent,
+    UIIconComponent,
+    UIIconButtonComponent,
+    UISelectComponent,
+    UIOptionComponent,
   ],
   templateUrl: './appearance-panel.component.html',
   styleUrl: './appearance-panel.component.scss',
@@ -25,18 +25,18 @@ import { UiOptionComponent } from '../../shared/ui/ui-option/ui-option.component
   host: { class: 'ui-kit', 'aria-label': '外观调节' },
 })
 export class AppearancePanelComponent {
-  readonly theme = inject(UiThemeService);
-  readonly modes: { value: UiModePreference; label: string; icon: UiIconName }[] = [
+  readonly theme = inject(UIThemeService);
+  readonly modes: { value: UIModePreference; label: string; icon: UIIconName }[] = [
     { value: 'dark', label: '深色', icon: 'moon' },
     { value: 'light', label: '浅色', icon: 'sun' },
     { value: 'system', label: '系统', icon: 'monitor' },
   ];
-  readonly densities: { value: UiDensity; label: string }[] = [
+  readonly densities: { value: UIDensity; label: string }[] = [
     { value: 'ultra', label: '极紧凑' },
     { value: 'compact', label: '紧凑' },
     { value: 'comfortable', label: '标准' },
   ];
-  readonly radii: UiRadius[] = [4, 8, 12, 16];
+  readonly radii: UIRadius[] = [4, 8, 12, 16];
   readonly radiusOptions = this.radii.map((value) => ({ value, label: value + 'px' }));
   readonly radiusSettings = [
     { key: 'controlRadius' as const, label: '输入控件圆角' },
@@ -49,7 +49,7 @@ export class AppearancePanelComponent {
   }
   setRadius(
     key: 'controlRadius' | 'cardRadius' | 'overlayRadius' | 'panelRadius',
-    value: UiRadius,
+    value: UIRadius,
   ): void {
     this.theme.update({ [key]: value });
   }

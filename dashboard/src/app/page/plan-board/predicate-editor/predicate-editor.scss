@@ -3,13 +3,6 @@
   min-width: 0;
 }
 
-.predicate {
-  padding: 8px;
-  border: 1px solid var(--ui-outline);
-  border-radius: var(--ui-radius-md, 8px);
-  background: color-mix(in srgb, var(--ui-surface), transparent 8%);
-}
-
 .predicate-head,
 .atom-row,
 .child {
@@ -80,4 +73,39 @@
 }
 .child > app-predicate-editor {
   flex-basis: 180px;
+}
+
+.predicate:not(.compound) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.predicate:not(.compound) .predicate-head,
+.predicate:not(.compound) .atom-row {
+  display: contents;
+}
+
+.predicate:not(.compound) :is(app-ui-select, app-ui-text-field) {
+  width: auto;
+}
+
+.predicate:not(.compound) .atom-row .value {
+  grid-column: 1 / -1;
+  width: auto;
+}
+
+.predicate:not(.compound) .atom-row app-ui-checkbox {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 360px) {
+  .predicate:not(.compound) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .predicate:not(.compound) .atom-row .value,
+  .predicate:not(.compound) .atom-row app-ui-checkbox {
+    grid-column: auto;
+  }
 }

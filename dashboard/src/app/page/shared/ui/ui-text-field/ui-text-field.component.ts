@@ -2,25 +2,25 @@ import { effect, viewChild } from '@angular/core';
 import { ChangeDetectionStrategy, Component, forwardRef, input } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatInput } from '@angular/material/input';
-import { UiValueAccessor } from '../ui-value-accessor';
-import { UiIconComponent, UiIconName } from '../ui-icon/ui-icon.component';
+import { UIValueAccessor } from '../ui-value-accessor';
+import { UIIconComponent, UIIconName } from '../ui-icon/ui-icon.component';
 let nextFieldId = 0;
 @Component({
   selector: 'app-ui-text-field',
-  imports: [MatInput, UiIconComponent],
+  imports: [MatInput, UIIconComponent],
   templateUrl: './ui-text-field.component.html',
   styleUrl: './ui-text-field.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => UiTextFieldComponent),
+      useExisting: forwardRef(() => UITextFieldComponent),
       multi: true,
     },
   ],
   host: { class: 'ui-kit' },
 })
-export class UiTextFieldComponent extends UiValueAccessor<string | number | null> {
+export class UITextFieldComponent extends UIValueAccessor<string | number | null> {
   readonly label = input.required<string>();
   readonly placeholder = input('');
   readonly hint = input('');
@@ -33,7 +33,7 @@ export class UiTextFieldComponent extends UiValueAccessor<string | number | null
       control.stateChanges.next();
     }
   });
-  readonly icon = input<UiIconName>();
+  readonly icon = input<UIIconName>();
   readonly type = input<'text' | 'search' | 'url' | 'password' | 'number'>('text');
   readonly multiline = input(false);
   readonly rows = input(3);

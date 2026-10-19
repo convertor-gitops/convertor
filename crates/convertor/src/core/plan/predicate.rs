@@ -48,14 +48,14 @@ impl<P> Predicate<P> {
 pub enum StringMatch {
     /// 完整字符串相等。
     Equals(String),
-    /// 与给定列表中的任一完整字符串相等。
-    OneOf(Vec<String>),
     /// 包含逗号分隔列表中的任一非空子串。
     Contains(String),
     /// 以给定子串开头。
     StartsWith(String),
     /// 以给定子串结尾。
     EndsWith(String),
+    /// 与给定列表中的任一完整字符串相等。
+    OneOf(Vec<String>),
     /// 使用显式大小写选项的正则表达式。
     Regex { pattern: String, case_insensitive: bool },
 }

@@ -1,11 +1,11 @@
-import { UiSelectComponent, UiOptionComponent } from '../../shared/ui';
+import { UISelectComponent, UIOptionComponent } from '../../shared/ui';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import * as P from '../../../common/model/core/plan';
 import { PredicateEditor } from '../predicate-editor/predicate-editor';
 @Component({
   selector: 'app-member-editor',
-  imports: [UiSelectComponent, UiOptionComponent, FormsModule, PredicateEditor],
+  imports: [UISelectComponent, UIOptionComponent, FormsModule, PredicateEditor],
   templateUrl: './member-editor.html',
   styleUrl: './member-editor.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,5 +1,10 @@
-import { UiNodeCardComponent } from '../../shared/ui';
-import { UiButtonComponent, UiTextFieldComponent } from '../../shared/ui';
+import {
+  UIOrderedOptionsComponent,
+  UIInfoRowComponent,
+} from '../../shared/ui/ui-controls/ui-controls';
+import { UITreeComponent, UITreeLeafDirective } from '../../shared/ui/ui-tree/ui-tree.component';
+import { UINodeCardComponent } from '../../shared/ui';
+import { UIButtonComponent, UITextFieldComponent } from '../../shared/ui';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -14,10 +19,6 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CdkDrag, CdkDragPreview, CdkDropList } from '@angular/cdk/drag-drop';
-import { MatTree, MatTreeModule } from '@angular/material/tree';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { BrowseDimension, groupInputNodes, InputNodeRow, BrowseBranch } from '../board-operations';
 
 interface TreeItem {
@@ -30,17 +31,17 @@ interface TreeItem {
 @Component({
   selector: 'app-node-browser',
   imports: [
-    UiNodeCardComponent,
-    UiButtonComponent,
-    UiTextFieldComponent,
+    UIOrderedOptionsComponent,
+    UIInfoRowComponent,
+    UITreeComponent,
+    UITreeLeafDirective,
+    UINodeCardComponent,
+    UIButtonComponent,
+    UITextFieldComponent,
     FormsModule,
     CdkDrag,
     CdkDragPreview,
     CdkDropList,
-    MatTreeModule,
-    MatButtonModule,
-    MatCheckboxModule,
-    MatTooltipModule,
   ],
   templateUrl: './node-browser.html',
   styleUrl: './node-browser.scss',
@@ -52,7 +53,7 @@ export class NodeBrowser {
   readonly dropTargets = input<string[]>([]);
   readonly createGroup = output<InputNodeRow[]>();
   readonly focusNode = output<string>();
-  readonly tree = viewChild<MatTree<TreeItem>>(MatTree);
+  readonly tree = viewChild(UITreeComponent);
   readonly search = signal('');
   readonly dimensions = signal<BrowseDimension[]>([]);
   readonly selected = signal<ReadonlySet<string>>(new Set());
@@ -87,6 +88,26 @@ export class NodeBrowser {
   readonly expansionKey = (item: TreeItem): string => item.key;
   readonly labels = { source: '来源', protocol: '协议', region: '地区', has_tag: '原始标签' };
   readonly dimensionKinds: BrowseDimension['kind'][] = ['source', 'protocol', 'region', 'has_tag'];
+  readonly dimensionChoices = this.dimensionKinds.map((value) => ({
+    value,
+    label: this.labels[value],
+  }));
+  readonly dimensionValues = computed(() => this.dimensions().map((d) => d.kind));
+  setDimensionValues(values: string[]): void {
+    this.dimensions.update((current) =>
+      values
+        .filter((value): value is BrowseDimension['kind'] =>
+          this.dimensionKinds.includes(value as BrowseDimension['kind']),
+        )
+        .map(
+          (kind) =>
+            current.find((d) => d.kind === kind) ?? {
+              kind,
+              ...(kind === 'has_tag' ? { tag: '' } : {}),
+            },
+        ),
+    );
+  }
   constructor() {
     afterRenderEffect(() => {
       const highlighted = this.highlighted();

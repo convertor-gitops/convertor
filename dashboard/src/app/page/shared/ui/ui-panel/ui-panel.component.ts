@@ -8,7 +8,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'ui-kit', '[attr.data-elevation]': 'elevation()' },
 })
-export class UiPanelComponent {
+export class UIPanelComponent {
   readonly heading = input('');
   readonly description = input('');
   readonly elevation = input<1 | 2 | 3>(1);

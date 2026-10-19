@@ -1,0 +1,21 @@
+<div
+  class="hit-area"
+  role="separator"
+  tabindex="0"
+  [attr.aria-label]="label()"
+  [attr.aria-controls]="controls() || null"
+  [attr.aria-orientation]="orientation()"
+  [attr.aria-valuemin]="min()"
+  [attr.aria-valuemax]="max()"
+  [attr.aria-valuenow]="renderedValue()"
+  [attr.aria-expanded]="!collapsed()"
+  (pointerdown)="pointerDown($event)"
+  (pointermove)="pointerMove($event)"
+  (pointerup)="pointerUp($event)"
+  (pointercancel)="pointerCancel($event)"
+  (lostpointercapture)="lostPointerCapture($event)"
+  (keydown)="keyDown($event)"
+  (dblclick)="reset()"
+>
+  <span class="handle" aria-hidden="true"></span>
+</div>

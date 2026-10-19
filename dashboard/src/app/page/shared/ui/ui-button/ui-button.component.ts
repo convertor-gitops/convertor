@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { MatButton } from '@angular/material/button';
-import { UiIconComponent, UiIconName } from '../ui-icon/ui-icon.component';
+import { UIIconComponent, UIIconName } from '../ui-icon/ui-icon.component';
 
-export type UiButtonVariant = 'filled' | 'tonal' | 'text' | 'outlined';
-export type UiControlSize = 'inherit' | 'small' | 'medium' | 'large';
+export type UIButtonVariant = 'filled' | 'tonal' | 'text' | 'outlined';
+export type UIControlSize = 'inherit' | 'small' | 'medium' | 'large';
 @Component({
   selector: 'app-ui-button',
-  imports: [MatButton, UiIconComponent],
+  imports: [MatButton, UIIconComponent],
   templateUrl: './ui-button.component.html',
   styleUrl: './ui-button.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -16,12 +16,12 @@ export type UiControlSize = 'inherit' | 'small' | 'medium' | 'large';
     '[class.is-danger]': "tone() === 'danger'",
   },
 })
-export class UiButtonComponent {
-  readonly variant = input<UiButtonVariant>('filled');
+export class UIButtonComponent {
+  readonly variant = input<UIButtonVariant>('filled');
   readonly tone = input<'default' | 'danger'>('default');
-  readonly size = input<UiControlSize>('inherit');
-  readonly icon = input<UiIconName>();
-  readonly iconEnd = input<UiIconName>();
+  readonly size = input<UIControlSize>('inherit');
+  readonly icon = input<UIIconName>();
+  readonly iconEnd = input<UIIconName>();
   readonly loading = input(false);
   readonly disabled = input(false);
   readonly type = input<'button' | 'submit' | 'reset'>('button');
